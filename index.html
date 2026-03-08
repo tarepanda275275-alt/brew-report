@@ -1756,9 +1756,10 @@ select.bean-name-inp option {
 }
 .tl-card {
   background: var(--surface);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.06);
 }
 .tl-card-type {
   font-size: 10px;
@@ -1770,7 +1771,7 @@ select.bean-name-inp option {
   gap: 4px;
 }
 .tl-card-body {
-  padding: 8px 12px 10px;
+  padding: 10px 14px 12px;
 }
 .tl-sales-row {
   display: flex;
@@ -2834,10 +2835,15 @@ function buildStepHTML(step) {
           <textarea class="finput" id="iReviewComment" placeholder="なぜできた？できなかった理由は？次はどうする？" style="min-height:70px;">${formData.reviewComment || ''}</textarea>
         </div>
       </div>` : '';
+    const reportType = formData.reportType || 'final';
     return `<div class="step-card">
       <div class="step-badge">💬 STEP 6</div>
       <div class="step-title">今日の気づきを<br>残そう</div>
-      <div class="step-desc">3つの欄に分けて入力してください（すべて任意）</div>
+      <div class="step-desc">報告種別を選んで入力してください（すべて任意）</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button onclick="formData.reportType='interim';document.querySelectorAll('.report-type-btn').forEach(b=>b.classList.remove('sel','done','partial'));this.classList.add('sel','partial');document.getElementById('finalOnlySection').style.display='none';" class="report-type-btn review-choice${reportType==='interim'?' sel partial':''}" style="flex:1;padding:14px 8px;font-size:13px;font-weight:700;line-height:1.6;">🕐 中間報告<br><span style="font-size:10px;font-weight:400;opacity:0.8;">営業中の途中報告</span></button>
+        <button onclick="formData.reportType='final';document.querySelectorAll('.report-type-btn').forEach(b=>b.classList.remove('sel','done','partial'));this.classList.add('sel','done');document.getElementById('finalOnlySection').style.display='block';" class="report-type-btn review-choice${reportType==='final'?' sel done':''}" style="flex:1;padding:14px 8px;font-size:13px;font-weight:700;line-height:1.6;">✅ 最終報告<br><span style="font-size:10px;font-weight:400;opacity:0.8;">閉店後の締め報告</span></button>
+      </div>
       ${prevSection}
       <div class="reflection-section">
         <div class="reflection-section-header s-episode">
@@ -2845,25 +2851,27 @@ function buildStepHTML(step) {
         </div>
         <textarea class="finput" id="iEpisode" placeholder="例：常連のAさんが新しい豆をとても喜んでくれた。混雑時に「ありがとう」と言ってもらえた。" style="min-height:90px;">${formData.episode || ''}</textarea>
       </div>
-      <div class="reflection-section">
-        <div class="reflection-section-header s-good">
-          <span>⭐</span><span>今日できたこと</span>
+      <div id="finalOnlySection" style="display:${reportType==='interim'?'none':'block'};">
+        <div class="reflection-section">
+          <div class="reflection-section-header s-good">
+            <span>⭐</span><span>今日できたこと</span>
+          </div>
+          <textarea class="finput" id="iAchievement" placeholder="例：ラテアートが上手く描けた。お客様を待たせずにスムーズに対応できた。" style="min-height:80px;">${formData.achievement || ''}</textarea>
         </div>
-        <textarea class="finput" id="iAchievement" placeholder="例：ラテアートが上手く描けた。お客様を待たせずにスムーズに対応できた。" style="min-height:80px;">${formData.achievement || ''}</textarea>
-      </div>
-      <div class="reflection-section">
-        <div class="reflection-section-header s-improve">
-          <span>🚀</span><span>改善点・明日からやること</span>
+        <div class="reflection-section">
+          <div class="reflection-section-header s-improve">
+            <span>🚀</span><span>改善点・明日からやること</span>
+          </div>
+          <textarea class="finput" id="iImprovement" placeholder="例：混雑時のオペレーションを改善する。明日はお客様に新商品を積極的におすすめする。" style="min-height:80px;">${formData.improvement || ''}</textarea>
+          <div style="font-size:11px;color:var(--caramel2);margin-top:6px;line-height:1.6;">💡 明日のログイン後に「できたか振り返り」ができます</div>
         </div>
-        <textarea class="finput" id="iImprovement" placeholder="例：混雑時のオペレーションを改善する。明日はお客様に新商品を積極的におすすめする。" style="min-height:80px;">${formData.improvement || ''}</textarea>
-        <div style="font-size:11px;color:var(--caramel2);margin-top:6px;line-height:1.6;">💡 明日のログイン後に「できたか振り返り」ができます</div>
-      </div>
-      <div class="reflection-section">
-        <div class="reflection-section-header" style="background:rgba(180,120,200,0.12);color:#B478C8;border:1px solid rgba(180,120,200,0.2);">
-          <span>🤝</span><span>翌営業日への引継ぎ</span>
+        <div class="reflection-section">
+          <div class="reflection-section-header" style="background:rgba(180,120,200,0.12);color:#B478C8;border:1px solid rgba(180,120,200,0.2);">
+            <span>🤝</span><span>翌営業日への引継ぎ</span>
+          </div>
+          <textarea class="finput" id="iHandover" placeholder="例：冷蔵庫の豆が残り少ない。○○さんへ：昼過ぎに業者が来ます。レジのロール紙を交換してください。" style="min-height:90px;">${formData.handover || ''}</textarea>
+          <div style="font-size:11px;color:rgba(180,120,200,0.8);margin-top:6px;line-height:1.6;">📌 次のスタッフがログイン時に確認できます</div>
         </div>
-        <textarea class="finput" id="iHandover" placeholder="例：冷蔵庫の豆が残り少ない。○○さんへ：昼過ぎに業者が来ます。レジのロール紙を交換してください。" style="min-height:90px;">${formData.handover || ''}</textarea>
-        <div style="font-size:11px;color:rgba(180,120,200,0.8);margin-top:6px;line-height:1.6;">📌 次のスタッフがログイン時に確認できます</div>
       </div>
       <button class="btn-p" onclick="submitRecord()">✅ 送信する！</button>
       <button class="btn-s" onclick="prevStep()">← 戻る</button>
@@ -2878,7 +2886,7 @@ function buildStepHTML(step) {
       <div class="complete-msg">${currentUser.name}さん、<br>${isEdit ? '修正しました！☕' : 'お疲れさまでした！☕'}<br><br>${formData.store} / ${formData.date}<br>売上 ¥${(formData.sales || 0).toLocaleString()} を記録しました</div>
       <div class="post-links">
         <div class="post-link-btn" onclick="switchTab('mydata')"><span class="pli">📈</span>グラフを見る</div>
-        <div class="post-link-btn" onclick="switchTab('goals-staff')"><span class="pli">🎯</span>目標を見る</div>
+        <div class="post-link-btn" onclick="switchTab('timeline')"><span class="pli">📱</span>タイムライン</div>
       </div>
       ${editId ? `<button class="btn-s" style="margin-top:16px;" onclick="editRecord(${editId})">✏️ もう一度修正する</button>` : `<button class="btn-s" style="margin-top:16px;" onclick="editTodayRecord()">✏️ 修正する</button>`}
       <button class="btn-p" style="margin-top:8px;" onclick="resetFlow()">🔄 もう一度入力する</button>
@@ -3090,10 +3098,53 @@ function submitRecord() {
     handover: formData.handover || '',
     reviewDone: formData.reviewDone || '',
     reviewComment: formData.reviewComment,
+    reportType: formData.reportType || 'final',
     createdAt: new Date().toISOString()
   });
   saveDB(db);
+  // タイムラインに自動投稿
+  postToTimeline(db);
   nextStep();
+}
+
+// 売上送信後にタイムラインへ自動投稿
+function postToTimeline(db) {
+  if (!db.posts) db.posts = [];
+  const reportType = formData.reportType || 'final';
+  const now = new Date().toISOString().slice(0, 19);
+  const store = formData.store || currentUser.store || '';
+  const staff = currentUser.name;
+  const date = formData.date || todayStr();
+
+  // 最終報告の場合：同日・同スタッフの中間報告を削除（上書き）
+  if (reportType === 'final') {
+    db.posts = db.posts.filter(p => !(p.date === date && p.staff === staff && p.reportType === 'interim'));
+  }
+
+  // エピソードや振り返りがあれば投稿
+  const lines = [];
+  if (formData.episode) lines.push(`☕ ${formData.episode}`);
+  if (reportType === 'final') {
+    if (formData.achievement) lines.push(`⭐ ${formData.achievement}`);
+    if (formData.improvement) lines.push(`🚀 ${formData.improvement}`);
+    if (formData.handover) lines.push(`🤝 引継ぎ: ${formData.handover}`);
+  }
+  const text = lines.join('
+') || (reportType === 'interim' ? '中間報告（エピソードなし）' : '');
+
+  const post = {
+    id: Date.now().toString(),
+    reportType,
+    date,
+    ts: now,
+    store,
+    staff,
+    sales: formData.sales || 0,
+    text,
+    recordId: db.records[db.records.length - 1]?.id,
+  };
+  db.posts.push(post);
+  saveDB(db);
 }
 
 // 当日のレコードを編集モードで開く
@@ -3517,26 +3568,22 @@ function buildTimelineHTML() {
 
   const filterStore = window._tlStoreFilter || '全店舗';
 
-  // タイムラインアイテムを構築
-  // タイプ: 'sales'（売上報告）, 'memo'（業務メモ・引継ぎ）, 'update'（中間報告）
+  // タイムラインアイテムを構築（postsベース統一）
   const items = [];
 
-  // 売上レコードを変換
-  records.forEach(r => {
-    if (!r.sales && !r.episode && !r.handover) return;
-    const ts = r.updatedAt || (r.date + 'T23:59:00');
-    items.push({ type: 'sales', ts, date: r.date, store: r.store, staff: r.staff, record: r });
-    if (r.episode || r.achievement || r.improvement) {
-      items.push({ type: 'episode', ts: ts + '1', date: r.date, store: r.store, staff: r.staff, record: r });
-    }
-    if (r.handover) {
-      items.push({ type: 'handover', ts: ts + '2', date: r.date, store: r.store, staff: r.staff, record: r });
-    }
+  // posts（中間報告・最終報告）をアイテム化
+  posts.forEach(p => {
+    items.push({ type: 'post', ts: p.ts, date: p.date || p.ts.slice(0, 10), store: p.store, staff: p.staff, post: p });
   });
 
-  // 中間報告を変換
-  posts.forEach(p => {
-    items.push({ type: 'update', ts: p.ts, date: p.ts.slice(0, 10), store: p.store, staff: p.staff, post: p });
+  // postsにないrecordは従来通り売上カードとして表示（移行期の互換性）
+  const postedDates = new Set(posts.filter(p => p.reportType).map(p => `${p.date}_${p.staff}`));
+  records.forEach(r => {
+    const key = `${r.date}_${r.staff}`;
+    if (postedDates.has(key)) return; // postsに同日データあれば重複しない
+    if (!r.sales) return;
+    const ts = r.updatedAt || (r.date + 'T23:59:00');
+    items.push({ type: 'sales', ts, date: r.date, store: r.store, staff: r.staff, record: r });
   });
 
   // フィルタ
@@ -3637,9 +3684,32 @@ function buildTlItem(item, storeMap) {
     const deleteBtn = isOwn ? `<button onclick="deleteTlPost('${p.id}')" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:0 4px;">🗑️</button>` : '';
     cardInner = `<div class="tl-card-type" style="background:rgba(93,184,122,0.15);color:#5DB87A;">💬 中間報告 ${deleteBtn}</div>
       <div class="tl-card-body"><div class="tl-text">${escapeHtml(p.text)}</div></div>`;
+  } else if (item.type === 'post') {
+    const p = item.post;
+    const isOwn = currentUser && currentUser.name === p.staff;
+    const isFinal = p.reportType === 'final';
+    const canEdit = isOwn && p.recordId;
+    const deleteBtn = isOwn ? `<button onclick="deleteTlPost('${p.id}')" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px;" title="削除">🗑</button>` : '';
+    const editBtn = canEdit ? `<button onclick="editRecord(${p.recordId})" style="background:rgba(200,131,58,0.15);border:1px solid var(--caramel2);color:var(--caramel2);font-size:11px;cursor:pointer;padding:3px 10px;border-radius:6px;font-weight:700;margin-top:8px;">✏️ 修正する</button>` : '';
+    const typeLabel = isFinal
+      ? `<span style="background:rgba(93,184,122,0.18);color:#5DB87A;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">✅ 最終報告</span>`
+      : `<span style="background:rgba(255,180,60,0.18);color:#E8A020;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">🕐 中間報告</span>`;
+    const salesRow = p.sales ? `<div style="font-size:20px;font-weight:900;color:var(--cream);margin:8px 0 4px;">¥${Number(p.sales).toLocaleString()}</div>` : '';
+    const textBlock = p.text ? `<div class="tl-text" style="margin-top:8px;white-space:pre-wrap;line-height:1.7;">${escapeHtml(p.text)}</div>` : '';
+    cardInner = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        ${typeLabel}
+        <div>${deleteBtn}</div>
+      </div>
+      ${salesRow}
+      ${textBlock}
+      ${editBtn}`;
   }
 
-  const avatar = `<div class="tl-avatar" style="background:${col}33;">${item.type === 'update' ? '💬' : item.type === 'handover' ? '🤝' : item.type === 'episode' ? '☕' : '💰'}</div>`;
+  const avatarIcon = item.type === 'post'
+    ? (item.post?.reportType === 'final' ? '✅' : '🕐')
+    : (item.type === 'update' ? '💬' : item.type === 'handover' ? '🤝' : item.type === 'episode' ? '☕' : '💰');
+  const avatar = `<div class="tl-avatar" style="background:${col}33;">${avatarIcon}</div>`;
 
   return `<div class="tl-item">
     ${avatar}
