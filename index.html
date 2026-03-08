@@ -3183,7 +3183,17 @@ function renderMyData() {
     last14.push(r ? r.sales : null);
   }
   const today = todayStr();
-  const logHTML = records.slice(0, 8).map(r =>
+  // 今週月曜日を計算
+  const todayDate = new Date(today);
+  const dayOfWeek = todayDate.getDay(); // 0=日, 1=月...
+  const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+  const monday = new Date(todayDate);
+  monday.setDate(todayDate.getDate() + diffToMonday);
+  const mondayStr = monday.toISOString().slice(0, 10);
+  const thisWeekRecords = records.filter(r => r.date >= mondayStr && r.date <= today);
+  const logHTML = thisWeekRecords.length === 0
+    ? `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">今週の入力はまだありません</div>`
+    : thisWeekRecords.map(r =>
     `<div class="log-item">
       <div class="log-avatar" style="overflow:hidden;padding:0;">${r.staffPhoto ? `<img src="${r.staffPhoto}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;">` : `<span style="font-size:14px;font-weight:900;">${(r.staff||'?')[0]}</span>`}</div>
       <div class="log-info">
@@ -3201,7 +3211,7 @@ function renderMyData() {
     <div class="card">
       <div style="position:relative;height:220px;"><canvas id="myTrendChart"></canvas></div>
     </div>
-    <div class="sec-title">📋 入力履歴</div>
+    <div class="sec-title">📋 今週の入力履歴</div>
     ${logHTML}`;
   setTimeout(() => {
     try {
