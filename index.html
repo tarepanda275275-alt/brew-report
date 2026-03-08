@@ -2348,12 +2348,15 @@ function renderHeaderAvatar(user) {
     el.style.background = 'var(--caramel)';
   }
 }
-function doLogin() {
+async function doLogin() {
   const name = document.getElementById('nameInput').value.trim();
   const pass = document.getElementById('passInput').value.trim();
   if (!name) { showToast('名前を入力してください'); return; }
   if (!pass) { showToast('パスワードを入力してください'); return; }
-  const db = getDB();
+  // Supabaseから最新データを取得してから認証
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  showLoadingOverlay(false);
   const user = db.users.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
   if (!user) { showToast('名前またはパスワードが違います'); return; }
   currentUser = user;
@@ -2361,11 +2364,14 @@ function doLogin() {
   renderHeaderAvatar(user);
   checkReportGate();
 }
-function doOwnerLogin() {
+async function doOwnerLogin() {
   const id = document.getElementById('ownerIdInput').value.trim();
   const pass = document.getElementById('ownerPassInput').value.trim();
   if (!id || !pass) { showToast('IDとパスワードを入力してください'); return; }
-  const db = getDB();
+  // Supabaseから最新データを取得してから認証
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  showLoadingOverlay(false);
   const user = db.users.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
   if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
   currentUser = user;
