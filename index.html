@@ -1831,6 +1831,7 @@ select.bean-name-inp option {
   color: #fff;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 <!-- ==================== LOGIN SCREEN ==================== -->
@@ -3203,18 +3204,23 @@ function renderMyData() {
     <div class="sec-title">📋 入力履歴</div>
     ${logHTML}`;
   setTimeout(() => {
-      try {
-    const ctx = document.getElementById('myTrendChart');
-    if (ctx) new Chart(ctx, {
-      type: 'line',
-      data: { labels: last14L, datasets: [{ data: last14, borderColor: '#C8833A', backgroundColor: 'rgba(200,131,58,0.15)', tension: 0.4, pointRadius: 4, pointBackgroundColor: '#C8833A', spanGaps: true }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: {
-        y: { ticks: { callback: v => { if(v===0) return '¥0'; if(Math.abs(v)>=10000) return '¥'+(v/10000).toFixed(1)+'万'; return '¥'+v.toLocaleString(); }, font: { size: 9 }, color: '#7A5A3A' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        x: { ticks: { color: '#7A5A3A', font: { size: 9 }, maxTicksLimit: 7 }, grid: { display: false } }
-      }}
-    });
-      } catch(err) { console.warn('render error:', err); }
-    }, 100);
+    try {
+      const ctx = document.getElementById('myTrendChart');
+      if (ctx) {
+        // 既存インスタンスを破棄してから再生成（重複エラー防止）
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
+        new Chart(ctx, {
+          type: 'line',
+          data: { labels: last14L, datasets: [{ data: last14, borderColor: '#C8833A', backgroundColor: 'rgba(200,131,58,0.15)', tension: 0.4, pointRadius: 4, pointBackgroundColor: '#C8833A', spanGaps: true }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: {
+            y: { ticks: { callback: v => { if(v===0) return '¥0'; if(Math.abs(v)>=10000) return '¥'+(v/10000).toFixed(1)+'万'; return '¥'+v.toLocaleString(); }, font: { size: 9 }, color: '#7A5A3A' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            x: { ticks: { color: '#7A5A3A', font: { size: 9 }, maxTicksLimit: 7 }, grid: { display: false } }
+          }}
+        });
+      }
+    } catch(err) { console.warn('render error:', err); }
+  }, 100);
 }
 function renderDashboardStaff() {
   const el = document.getElementById('dashboardStaffContent');
@@ -3759,6 +3765,8 @@ function renderGoalsStaff() {
       try {
     const ctx = document.getElementById('goalMonthChart');
     if (!ctx) return;
+    const existingGoalChart = Chart.getChart(ctx);
+    if (existingGoalChart) existingGoalChart.destroy();
     const today2 = new Date();
     const daysInMonth2 = new Date(today2.getFullYear(), today2.getMonth() + 1, 0).getDate();
     const labels = [], data = [];
