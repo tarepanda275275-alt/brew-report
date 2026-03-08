@@ -1675,21 +1675,22 @@ select.bean-name-inp option {
 .tl-feed {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0 4px 80px;
+  gap: 10px;
+  padding: 0 0 80px;
 }
 .tl-date-divider {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 16px 0 10px;
+  margin: 18px 0 6px;
 }
 .tl-date-divider span {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 900;
   color: var(--text3);
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   white-space: nowrap;
+  text-transform: uppercase;
 }
 .tl-date-divider::before, .tl-date-divider::after {
   content: '';
@@ -1697,86 +1698,66 @@ select.bean-name-inp option {
   height: 1px;
   background: var(--border);
 }
+/* カード全体 */
 .tl-item {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-  position: relative;
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.07);
 }
-.tl-item::before {
-  content: '';
-  position: absolute;
-  left: 17px;
-  top: 36px;
-  bottom: -12px;
-  width: 2px;
-  background: var(--border);
-  z-index: 0;
-}
-.tl-item:last-of-type::before { display: none; }
-.tl-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+/* 種別ヘッダー帯 */
+.tl-item-header-band {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
+  justify-content: space-between;
+  padding: 7px 14px;
 }
-.tl-body {
-  flex: 1;
-  min-width: 0;
-}
-.tl-header {
+.tl-type-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  gap: 5px;
+}
+.tl-item-meta {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
 }
 .tl-store-badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   padding: 2px 8px;
   border-radius: 10px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 .tl-staff-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text2);
 }
 .tl-time {
   font-size: 11px;
   color: var(--text3);
-  margin-left: auto;
 }
-.tl-card {
-  background: var(--surface);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.28);
-  border: 1px solid rgba(255,255,255,0.06);
-}
-.tl-card-type {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+/* カード本体 */
 .tl-card-body {
-  padding: 10px 14px 12px;
+  padding: 12px 14px 14px;
+}
+.tl-sales-main {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--gold2);
+  line-height: 1.1;
+  margin-bottom: 8px;
 }
 .tl-sales-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
+  margin-bottom: 6px;
 }
 .tl-sales-stat {
   display: flex;
@@ -1784,20 +1765,51 @@ select.bean-name-inp option {
   gap: 1px;
 }
 .tl-sales-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text3);
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
 .tl-sales-value {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
-  color: var(--gold2);
+  color: var(--cream);
 }
 .tl-text {
   font-size: 13px;
   color: var(--text1);
-  line-height: 1.65;
+  line-height: 1.7;
   white-space: pre-wrap;
+  margin-top: 6px;
+}
+.tl-section-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--text3);
+  margin-top: 10px;
+  margin-bottom: 3px;
+}
+.tl-edit-btn {
+  display: inline-block;
+  margin-top: 10px;
+  background: rgba(200,131,58,0.15);
+  border: 1px solid var(--caramel2);
+  color: var(--caramel2);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.tl-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
 }
 .tl-update-badge {
   font-size: 10px;
@@ -1805,15 +1817,13 @@ select.bean-name-inp option {
   padding: 2px 8px;
   background: var(--surface2);
   border-radius: 8px;
-  margin-top: 4px;
   display: inline-block;
 }
 .tl-filter-wrap {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
-  padding: 0 4px;
+  margin-bottom: 14px;
 }
 .tl-filter-tab {
   background: var(--surface2);
@@ -1830,6 +1840,34 @@ select.bean-name-inp option {
   background: var(--caramel2);
   border-color: var(--caramel2);
   color: #fff;
+}
+/* レガシー（旧sales/episode/handoverカード用） */
+.tl-card {
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.tl-card-type {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+/* タイムラインのアバター（レガシー用） */
+.tl-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -3596,8 +3634,8 @@ function buildTimelineHTML() {
   const canPost = !!currentUser;
   const postBox = canPost ? `
     <div class="tl-post-box">
-      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:8px;">💬 中間報告・一言メモ（${currentUser.name} / ${currentUser.store || '管理者'}）</div>
-      <textarea id="tlPostText" placeholder="例：今日は混んでます！残り豆少なめです。夕方の来客多め。"></textarea>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">💬 メモ・一言投稿（${currentUser.name} / ${currentUser.store || '管理者'}）</div>
+      <textarea id="tlPostText" placeholder="例：今日は混んでます！残り豆少なめです。"></textarea>
       <button class="tl-post-btn" onclick="submitTimelinePost()">📮 投稿する</button>
     </div>` : '';
 
@@ -3644,80 +3682,106 @@ function formatDateLabel(dateStr) {
 function buildTlItem(item, storeMap) {
   const col = storeMap[item.store] || '#C8833A';
   const storeShort = item.store ? item.store.replace('号店', '号') : '管理者';
-  const timeStr = item.ts.slice(11, 16);
+  const timeStr = item.ts ? item.ts.slice(11, 16) : '';
 
-  const header = `<div class="tl-header">
+  // メタ情報（店舗バッジ・スタッフ名・時刻）
+  const metaHTML = `<div class="tl-item-meta">
     <span class="tl-store-badge" style="background:${col}22;color:${col};">${storeShort}</span>
     <span class="tl-staff-name">${item.staff || ''}</span>
     <span class="tl-time">${timeStr}</span>
   </div>`;
 
-  let cardInner = '';
-
-  if (item.type === 'sales') {
-    const r = item.record;
-    const editBadge = r.updatedAt ? `<span class="tl-update-badge">✏️修正済</span>` : '';
-    cardInner = `<div class="tl-card-type" style="background:${col}22;color:${col};">💰 売上報告</div>
-      <div class="tl-card-body">
-        <div class="tl-sales-row">
-          <div class="tl-sales-stat"><span class="tl-sales-label">売上</span><span class="tl-sales-value">¥${(r.sales||0).toLocaleString()}</span></div>
-          <div class="tl-sales-stat"><span class="tl-sales-label">客数</span><span class="tl-sales-value">${r.customers||'-'}人</span></div>
-          <div class="tl-sales-stat"><span class="tl-sales-label">客単価</span><span class="tl-sales-value">¥${(r.spend_per_customer||0).toLocaleString()}</span></div>
-        </div>
-        ${editBadge}
-      </div>`;
-  } else if (item.type === 'episode') {
-    const r = item.record;
-    const secs = [];
-    if (r.episode) secs.push(`☕ ${r.episode}`);
-    if (r.achievement) secs.push(`⭐ ${r.achievement}`);
-    if (r.improvement) secs.push(`🚀 ${r.improvement}`);
-    cardInner = `<div class="tl-card-type" style="background:rgba(200,131,58,0.15);color:#C8833A;">📝 エピソード・振り返り</div>
-      <div class="tl-card-body"><div class="tl-text">${secs.join('\n')}</div></div>`;
-  } else if (item.type === 'handover') {
-    const r = item.record;
-    cardInner = `<div class="tl-card-type" style="background:rgba(180,120,200,0.15);color:#B478C8;">🤝 引継ぎ</div>
-      <div class="tl-card-body"><div class="tl-text">${r.handover}</div></div>`;
-  } else if (item.type === 'update') {
-    const p = item.post;
-    const isOwn = currentUser && currentUser.name === p.staff;
-    const deleteBtn = isOwn ? `<button onclick="deleteTlPost('${p.id}')" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:0 4px;">🗑️</button>` : '';
-    cardInner = `<div class="tl-card-type" style="background:rgba(93,184,122,0.15);color:#5DB87A;">💬 中間報告 ${deleteBtn}</div>
-      <div class="tl-card-body"><div class="tl-text">${escapeHtml(p.text)}</div></div>`;
-  } else if (item.type === 'post') {
+  // ---- post タイプ（中間・最終報告）----
+  if (item.type === 'post') {
     const p = item.post;
     const isOwn = currentUser && currentUser.name === p.staff;
     const isFinal = p.reportType === 'final';
     const canEdit = isOwn && p.recordId;
-    const deleteBtn = isOwn ? `<button onclick="deleteTlPost('${p.id}')" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px;" title="削除">🗑</button>` : '';
-    const editBtn = canEdit ? `<button onclick="editRecord(${p.recordId})" style="background:rgba(200,131,58,0.15);border:1px solid var(--caramel2);color:var(--caramel2);font-size:11px;cursor:pointer;padding:3px 10px;border-radius:6px;font-weight:700;margin-top:8px;">✏️ 修正する</button>` : '';
-    const typeLabel = isFinal
-      ? `<span style="background:rgba(93,184,122,0.18);color:#5DB87A;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">✅ 最終報告</span>`
-      : `<span style="background:rgba(255,180,60,0.18);color:#E8A020;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">🕐 中間報告</span>`;
-    const salesRow = p.sales ? `<div style="font-size:20px;font-weight:900;color:var(--cream);margin:8px 0 4px;">¥${Number(p.sales).toLocaleString()}</div>` : '';
-    const textBlock = p.text ? `<div class="tl-text" style="margin-top:8px;white-space:pre-wrap;line-height:1.7;">${escapeHtml(p.text)}</div>` : '';
-    cardInner = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        ${typeLabel}
-        <div>${deleteBtn}</div>
+
+    const bandColor = isFinal ? 'rgba(93,184,122,0.18)' : 'rgba(255,180,60,0.15)';
+    const textColor = isFinal ? '#5DB87A' : '#E8A020';
+    const typeIcon  = isFinal ? '✅' : '🕐';
+    const typeText  = isFinal ? '最終報告' : '中間報告';
+
+    const deleteBtn = isOwn
+      ? `<button class="tl-delete-btn" onclick="deleteTlPost('${p.id}')" title="削除">🗑</button>` : '';
+    const editBtn = canEdit
+      ? `<button class="tl-edit-btn" onclick="editRecord(${p.recordId})">✏️ 修正する</button>` : '';
+
+    // 売上
+    const salesHTML = p.sales
+      ? `<div class="tl-sales-main">¥${Number(p.sales).toLocaleString()}</div>` : '';
+
+    // テキストをセクション別に分解して表示
+    let textHTML = '';
+    if (p.text) {
+      const lines = p.text.split('\n').filter(l => l.trim());
+      const grouped = [];
+      lines.forEach(l => {
+        if (l.startsWith('☕')) grouped.push({ icon:'☕', label:'エピソード', val: l.slice(1).trim() });
+        else if (l.startsWith('⭐')) grouped.push({ icon:'⭐', label:'できたこと', val: l.slice(1).trim() });
+        else if (l.startsWith('🚀')) grouped.push({ icon:'🚀', label:'改善・明日の目標', val: l.slice(1).trim() });
+        else if (l.startsWith('🤝')) grouped.push({ icon:'🤝', label:'引継ぎ', val: l.replace('🤝 引継ぎ:','').trim() });
+        else grouped.push({ icon:'', label:'', val: l });
+      });
+      textHTML = grouped.map(g =>
+        g.label
+          ? `<div class="tl-section-label">${g.icon} ${g.label}</div><div class="tl-text" style="margin-top:0;">${escapeHtml(g.val)}</div>`
+          : `<div class="tl-text">${escapeHtml(g.val)}</div>`
+      ).join('');
+    }
+
+    return `<div class="tl-item">
+      <div class="tl-item-header-band" style="background:${bandColor};">
+        <span class="tl-type-label" style="color:${textColor};">${typeIcon} ${typeText}</span>
+        <div style="display:flex;align-items:center;gap:8px;">${metaHTML}${deleteBtn}</div>
       </div>
-      ${salesRow}
-      ${textBlock}
-      ${editBtn}`;
+      <div class="tl-card-body">
+        ${salesHTML}
+        ${textHTML}
+        ${editBtn}
+      </div>
+    </div>`;
   }
 
-  const avatarIcon = item.type === 'post'
-    ? (item.post?.reportType === 'final' ? '✅' : '🕐')
-    : (item.type === 'update' ? '💬' : item.type === 'handover' ? '🤝' : item.type === 'episode' ? '☕' : '💰');
-  const avatar = `<div class="tl-avatar" style="background:${col}33;">${avatarIcon}</div>`;
+  // ---- update タイプ（タイムライン直接投稿）----
+  if (item.type === 'update') {
+    const p = item.post;
+    const isOwn = currentUser && currentUser.name === p.staff;
+    const deleteBtn = isOwn
+      ? `<button class="tl-delete-btn" onclick="deleteTlPost('${p.id}')" title="削除">🗑</button>` : '';
+    return `<div class="tl-item">
+      <div class="tl-item-header-band" style="background:rgba(74,144,200,0.13);">
+        <span class="tl-type-label" style="color:#6BAED6;">💬 メモ投稿</span>
+        <div style="display:flex;align-items:center;gap:8px;">${metaHTML}${deleteBtn}</div>
+      </div>
+      <div class="tl-card-body">
+        <div class="tl-text">${escapeHtml(p.text)}</div>
+      </div>
+    </div>`;
+  }
 
-  return `<div class="tl-item">
-    ${avatar}
-    <div class="tl-body">
-      ${header}
-      <div class="tl-card">${cardInner}</div>
-    </div>
-  </div>`;
+  // ---- 旧レコードから生成された sales タイプ（移行互換）----
+  if (item.type === 'sales') {
+    const r = item.record;
+    const editBadge = r.updatedAt ? `<span class="tl-update-badge">✏️修正済</span>` : '';
+    return `<div class="tl-item">
+      <div class="tl-item-header-band" style="background:${col}18;">
+        <span class="tl-type-label" style="color:${col};">💰 売上報告</span>
+        <div style="display:flex;align-items:center;gap:8px;">${metaHTML}</div>
+      </div>
+      <div class="tl-card-body">
+        <div class="tl-sales-main">¥${(r.sales||0).toLocaleString()}</div>
+        <div class="tl-sales-row">
+          <div class="tl-sales-stat"><span class="tl-sales-label">客数</span><span class="tl-sales-value">${r.customers||'-'}人</span></div>
+          <div class="tl-sales-stat"><span class="tl-sales-label">客単価</span><span class="tl-sales-value">¥${(r.spend_per_customer||0).toLocaleString()}</span></div>
+        </div>
+        ${editBadge}
+      </div>
+    </div>`;
+  }
+
+  return '';
 }
 
 function escapeHtml(str) {
