@@ -2208,9 +2208,17 @@ async function initData() {
   showLoadingOverlay(true);
   const db = await loadDBFromSupabase();
   _db_cache = db;
-  // Supabaseにデータが全くない場合のみ初期データを保存（usersがない場合）
+
+  // ダミーユーザー名のリスト（これらが入っていたらSupabase取得失敗とみなす）
+  const DUMMY_NAMES = ['田中 花子', '佐藤 健太', '鈴木 あい'];
+  const isDummy = db.users && db.users.length > 0 &&
+    db.users.every(u => u.role === 'owner' || DUMMY_NAMES.includes(u.name));
+
+  // Supabaseにデータが本当に存在しない場合のみ初期データを保存
+  // ダミーデータや取得失敗の場合は上書きしない
   if (!db.users || db.users.length === 0) {
     const fresh = defaultDB();
+    fresh.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
     fresh.records = [];
     await saveDBToSupabase(fresh);
     _db_cache = fresh;
@@ -4538,6 +4546,29 @@ function renderExport() {
           <button class="qbtn" onclick="deleteUser('${u.name}')" style="color:var(--danger);border-color:rgba(208,80,80,0.3);font-size:11px;">削除</button>
         </div>`).join('') || '<div class="no-data-msg">スタッフなし</div>'}
     </div>
+    <div class="sec-title">➕ スタッフを直接追加</div>
+    <div class="card">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6;">スタッフがアカウントを作れない場合、管理者が直接作成できます</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">名前（ID）</div>
+          <input type="text" class="finput" id="adminAddName" placeholder="例：佐藤 エリカ" style="font-size:14px;padding:10px 12px;">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">勤務店舗</div>
+          <select class="finput" id="adminAddStore" style="font-size:14px;padding:10px 12px;cursor:pointer;-webkit-appearance:none;">
+            <option value="1号店大曲">1号店 大曲</option>
+            <option value="2号店秋田">2号店 秋田</option>
+            <option value="3号店横手">3号店 横手</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">パスワード（4文字以上）</div>
+          <input type="text" class="finput" id="adminAddPass" placeholder="例：1234" style="font-size:14px;padding:10px 12px;">
+        </div>
+        <button class="btn-p" style="margin-top:4px;" onclick="adminAddUser()">✅ アカウントを作成する</button>
+      </div>
+    </div>
     <div class="sec-title">📦 在庫品目マスタ</div>
     <div class="card">
       <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;">
@@ -4829,6 +4860,25 @@ function deleteStockItem(i) {
   showToast('削除しました');
   renderExport();
 }
+function adminAddUser() {
+  const name = (document.getElementById('adminAddName')?.value || '').trim();
+  const store = document.getElementById('adminAddStore')?.value || '1号店大曲';
+  const pass = (document.getElementById('adminAddPass')?.value || '').trim();
+  if (!name) { showToast('名前を入力してください'); return; }
+  if (pass.length < 4) { showToast('パスワードは4文字以上にしてください'); return; }
+  const db = getDB();
+  if (db.users.find(u => u.name === name)) { showToast('その名前はすでに登録されています'); return; }
+  const newUser = { name, id: name, pass, role: 'staff', store, photo: null };
+  db.users.push(newUser);
+  saveDB(db);
+  showToast(`✅ ${name} さんのアカウントを作成しました`);
+  // フォームクリア
+  if (document.getElementById('adminAddName')) document.getElementById('adminAddName').value = '';
+  if (document.getElementById('adminAddPass')) document.getElementById('adminAddPass').value = '';
+  renderExport();
+  buildLoginChips();
+}
+
 function deleteUser(name) {
   showConfirm(`${name} さんのアカウントを削除しますか？`, () => {
     const db = getDB();
