@@ -1675,22 +1675,21 @@ select.bean-name-inp option {
 .tl-feed {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 0 0 80px;
+  gap: 0;
+  padding: 0 4px 80px;
 }
 .tl-date-divider {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 18px 0 6px;
+  margin: 16px 0 10px;
 }
 .tl-date-divider span {
-  font-size: 11px;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text3);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
-  text-transform: uppercase;
 }
 .tl-date-divider::before, .tl-date-divider::after {
   content: '';
@@ -1698,66 +1697,85 @@ select.bean-name-inp option {
   height: 1px;
   background: var(--border);
 }
-/* カード全体 */
 .tl-item {
-  background: var(--surface);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  position: relative;
 }
-/* 種別ヘッダー帯 */
-.tl-item-header-band {
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 36px;
+  bottom: -12px;
+  width: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.tl-item:last-of-type::before { display: none; }
+.tl-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 7px 14px;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
-.tl-type-label {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.tl-body {
+  flex: 1;
+  min-width: 0;
 }
-.tl-item-meta {
+.tl-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 .tl-store-badge {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
   padding: 2px 8px;
   border-radius: 10px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 .tl-staff-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text2);
 }
 .tl-time {
   font-size: 11px;
   color: var(--text3);
+  margin-left: auto;
 }
-/* カード本体 */
+.tl-card {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+}
+.tl-card-type {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .tl-card-body {
-  padding: 12px 14px 14px;
-}
-.tl-sales-main {
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--gold2);
-  line-height: 1.1;
-  margin-bottom: 8px;
+  padding: 8px 12px 10px;
 }
 .tl-sales-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 6px;
 }
 .tl-sales-stat {
   display: flex;
@@ -1765,51 +1783,20 @@ select.bean-name-inp option {
   gap: 1px;
 }
 .tl-sales-label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   font-weight: 700;
-  letter-spacing: 0.5px;
 }
 .tl-sales-value {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
-  color: var(--cream);
+  color: var(--gold2);
 }
 .tl-text {
   font-size: 13px;
   color: var(--text1);
-  line-height: 1.7;
+  line-height: 1.65;
   white-space: pre-wrap;
-  margin-top: 6px;
-}
-.tl-section-label {
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  color: var(--text3);
-  margin-top: 10px;
-  margin-bottom: 3px;
-}
-.tl-edit-btn {
-  display: inline-block;
-  margin-top: 10px;
-  background: rgba(200,131,58,0.15);
-  border: 1px solid var(--caramel2);
-  color: var(--caramel2);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 5px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.tl-delete-btn {
-  background: none;
-  border: none;
-  color: var(--text3);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
 }
 .tl-update-badge {
   font-size: 10px;
@@ -1817,13 +1804,15 @@ select.bean-name-inp option {
   padding: 2px 8px;
   background: var(--surface2);
   border-radius: 8px;
+  margin-top: 4px;
   display: inline-block;
 }
 .tl-filter-wrap {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
 .tl-filter-tab {
   background: var(--surface2);
@@ -1841,36 +1830,7 @@ select.bean-name-inp option {
   border-color: var(--caramel2);
   color: #fff;
 }
-/* レガシー（旧sales/episode/handoverカード用） */
-.tl-card {
-  background: var(--surface);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.28);
-  border: 1px solid rgba(255,255,255,0.06);
-}
-.tl-card-type {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-/* タイムラインのアバター（レガシー用） */
-.tl-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 <!-- ==================== LOGIN SCREEN ==================== -->
@@ -2141,23 +2101,25 @@ let _db_cache = null; // メモリキャッシュ
 
 async function loadDBFromSupabase() {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', {
       headers: {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
-      }
+      },
+      signal: controller.signal
     });
+    clearTimeout(timeout);
     const rows = await res.json();
     if (rows && rows.length > 0 && rows[0].data) {
       _db_cache = rows[0].data;
-      // ローカルにもキャッシュ
       try { localStorage.setItem(SK, JSON.stringify(_db_cache)); } catch(e) {}
       return _db_cache;
     }
   } catch(e) {
     console.warn('Supabase load failed, using local cache:', e);
   }
-  // Supabase失敗時はローカルキャッシュを使用
   try { return JSON.parse(localStorage.getItem(SK)) || defaultDB(); }
   catch { return defaultDB(); }
 }
@@ -2204,27 +2166,24 @@ function saveDB(db) {
 }
 
 async function initData() {
-  // まずSupabaseからデータを読み込む
   showLoadingOverlay(true);
-  const db = await loadDBFromSupabase();
-  _db_cache = db;
-
-  // ダミーユーザー名のリスト（これらが入っていたらSupabase取得失敗とみなす）
-  const DUMMY_NAMES = ['田中 花子', '佐藤 健太', '鈴木 あい'];
-  const isDummy = db.users && db.users.length > 0 &&
-    db.users.every(u => u.role === 'owner' || DUMMY_NAMES.includes(u.name));
-
-  // Supabaseにデータが本当に存在しない場合のみ初期データを保存
-  // ダミーデータや取得失敗の場合は上書きしない
-  if (!db.users || db.users.length === 0) {
-    const fresh = defaultDB();
-    fresh.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
-    fresh.records = [];
-    await saveDBToSupabase(fresh);
-    _db_cache = fresh;
+  try {
+    const db = await loadDBFromSupabase();
+    _db_cache = db;
+    // usersもrecordsも0件の時だけ初期化（管理者のみ）
+    if ((!db.users || db.users.length === 0) && (!db.records || db.records.length === 0)) {
+      const fresh = defaultDB();
+      fresh.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
+      fresh.records = [];
+      await saveDBToSupabase(fresh);
+      _db_cache = fresh;
+    }
+  } catch(e) {
+    console.warn('initData error:', e);
+  } finally {
+    showLoadingOverlay(false);
+    buildLoginChips();
   }
-  showLoadingOverlay(false);
-  buildLoginChips();
 }
 
 function showLoadingOverlay(show) {
@@ -2356,15 +2315,12 @@ function renderHeaderAvatar(user) {
     el.style.background = 'var(--caramel)';
   }
 }
-async function doLogin() {
+function doLogin() {
   const name = document.getElementById('nameInput').value.trim();
   const pass = document.getElementById('passInput').value.trim();
   if (!name) { showToast('名前を入力してください'); return; }
   if (!pass) { showToast('パスワードを入力してください'); return; }
-  // Supabaseから最新データを取得してから認証
-  showLoadingOverlay(true);
-  const db = await loadDBFromSupabase();
-  showLoadingOverlay(false);
+  const db = getDB();
   const user = db.users.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
   if (!user) { showToast('名前またはパスワードが違います'); return; }
   currentUser = user;
@@ -2372,14 +2328,11 @@ async function doLogin() {
   renderHeaderAvatar(user);
   checkReportGate();
 }
-async function doOwnerLogin() {
+function doOwnerLogin() {
   const id = document.getElementById('ownerIdInput').value.trim();
   const pass = document.getElementById('ownerPassInput').value.trim();
   if (!id || !pass) { showToast('IDとパスワードを入力してください'); return; }
-  // Supabaseから最新データを取得してから認証
-  showLoadingOverlay(true);
-  const db = await loadDBFromSupabase();
-  showLoadingOverlay(false);
+  const db = getDB();
   const user = db.users.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
   if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
   currentUser = user;
@@ -2887,15 +2840,10 @@ function buildStepHTML(step) {
           <textarea class="finput" id="iReviewComment" placeholder="なぜできた？できなかった理由は？次はどうする？" style="min-height:70px;">${formData.reviewComment || ''}</textarea>
         </div>
       </div>` : '';
-    const reportType = formData.reportType || 'final';
     return `<div class="step-card">
       <div class="step-badge">💬 STEP 6</div>
       <div class="step-title">今日の気づきを<br>残そう</div>
-      <div class="step-desc">報告種別を選んで入力してください（すべて任意）</div>
-      <div style="display:flex;gap:10px;margin-bottom:16px;">
-        <button onclick="formData.reportType='interim';document.querySelectorAll('.report-type-btn').forEach(b=>b.classList.remove('sel','done','partial'));this.classList.add('sel','partial');document.getElementById('finalOnlySection').style.display='none';" class="report-type-btn review-choice${reportType==='interim'?' sel partial':''}" style="flex:1;padding:14px 8px;font-size:13px;font-weight:700;line-height:1.6;">🕐 中間報告<br><span style="font-size:10px;font-weight:400;opacity:0.8;">営業中の途中報告</span></button>
-        <button onclick="formData.reportType='final';document.querySelectorAll('.report-type-btn').forEach(b=>b.classList.remove('sel','done','partial'));this.classList.add('sel','done');document.getElementById('finalOnlySection').style.display='block';" class="report-type-btn review-choice${reportType==='final'?' sel done':''}" style="flex:1;padding:14px 8px;font-size:13px;font-weight:700;line-height:1.6;">✅ 最終報告<br><span style="font-size:10px;font-weight:400;opacity:0.8;">閉店後の締め報告</span></button>
-      </div>
+      <div class="step-desc">3つの欄に分けて入力してください（すべて任意）</div>
       ${prevSection}
       <div class="reflection-section">
         <div class="reflection-section-header s-episode">
@@ -2903,27 +2851,25 @@ function buildStepHTML(step) {
         </div>
         <textarea class="finput" id="iEpisode" placeholder="例：常連のAさんが新しい豆をとても喜んでくれた。混雑時に「ありがとう」と言ってもらえた。" style="min-height:90px;">${formData.episode || ''}</textarea>
       </div>
-      <div id="finalOnlySection" style="display:${reportType==='interim'?'none':'block'};">
-        <div class="reflection-section">
-          <div class="reflection-section-header s-good">
-            <span>⭐</span><span>今日できたこと</span>
-          </div>
-          <textarea class="finput" id="iAchievement" placeholder="例：ラテアートが上手く描けた。お客様を待たせずにスムーズに対応できた。" style="min-height:80px;">${formData.achievement || ''}</textarea>
+      <div class="reflection-section">
+        <div class="reflection-section-header s-good">
+          <span>⭐</span><span>今日できたこと</span>
         </div>
-        <div class="reflection-section">
-          <div class="reflection-section-header s-improve">
-            <span>🚀</span><span>改善点・明日からやること</span>
-          </div>
-          <textarea class="finput" id="iImprovement" placeholder="例：混雑時のオペレーションを改善する。明日はお客様に新商品を積極的におすすめする。" style="min-height:80px;">${formData.improvement || ''}</textarea>
-          <div style="font-size:11px;color:var(--caramel2);margin-top:6px;line-height:1.6;">💡 明日のログイン後に「できたか振り返り」ができます</div>
+        <textarea class="finput" id="iAchievement" placeholder="例：ラテアートが上手く描けた。お客様を待たせずにスムーズに対応できた。" style="min-height:80px;">${formData.achievement || ''}</textarea>
+      </div>
+      <div class="reflection-section">
+        <div class="reflection-section-header s-improve">
+          <span>🚀</span><span>改善点・明日からやること</span>
         </div>
-        <div class="reflection-section">
-          <div class="reflection-section-header" style="background:rgba(180,120,200,0.12);color:#B478C8;border:1px solid rgba(180,120,200,0.2);">
-            <span>🤝</span><span>翌営業日への引継ぎ</span>
-          </div>
-          <textarea class="finput" id="iHandover" placeholder="例：冷蔵庫の豆が残り少ない。○○さんへ：昼過ぎに業者が来ます。レジのロール紙を交換してください。" style="min-height:90px;">${formData.handover || ''}</textarea>
-          <div style="font-size:11px;color:rgba(180,120,200,0.8);margin-top:6px;line-height:1.6;">📌 次のスタッフがログイン時に確認できます</div>
+        <textarea class="finput" id="iImprovement" placeholder="例：混雑時のオペレーションを改善する。明日はお客様に新商品を積極的におすすめする。" style="min-height:80px;">${formData.improvement || ''}</textarea>
+        <div style="font-size:11px;color:var(--caramel2);margin-top:6px;line-height:1.6;">💡 明日のログイン後に「できたか振り返り」ができます</div>
+      </div>
+      <div class="reflection-section">
+        <div class="reflection-section-header" style="background:rgba(180,120,200,0.12);color:#B478C8;border:1px solid rgba(180,120,200,0.2);">
+          <span>🤝</span><span>翌営業日への引継ぎ</span>
         </div>
+        <textarea class="finput" id="iHandover" placeholder="例：冷蔵庫の豆が残り少ない。○○さんへ：昼過ぎに業者が来ます。レジのロール紙を交換してください。" style="min-height:90px;">${formData.handover || ''}</textarea>
+        <div style="font-size:11px;color:rgba(180,120,200,0.8);margin-top:6px;line-height:1.6;">📌 次のスタッフがログイン時に確認できます</div>
       </div>
       <button class="btn-p" onclick="submitRecord()">✅ 送信する！</button>
       <button class="btn-s" onclick="prevStep()">← 戻る</button>
@@ -2938,7 +2884,7 @@ function buildStepHTML(step) {
       <div class="complete-msg">${currentUser.name}さん、<br>${isEdit ? '修正しました！☕' : 'お疲れさまでした！☕'}<br><br>${formData.store} / ${formData.date}<br>売上 ¥${(formData.sales || 0).toLocaleString()} を記録しました</div>
       <div class="post-links">
         <div class="post-link-btn" onclick="switchTab('mydata')"><span class="pli">📈</span>グラフを見る</div>
-        <div class="post-link-btn" onclick="switchTab('timeline')"><span class="pli">📱</span>タイムライン</div>
+        <div class="post-link-btn" onclick="switchTab('goals-staff')"><span class="pli">🎯</span>目標を見る</div>
       </div>
       ${editId ? `<button class="btn-s" style="margin-top:16px;" onclick="editRecord(${editId})">✏️ もう一度修正する</button>` : `<button class="btn-s" style="margin-top:16px;" onclick="editTodayRecord()">✏️ 修正する</button>`}
       <button class="btn-p" style="margin-top:8px;" onclick="resetFlow()">🔄 もう一度入力する</button>
@@ -3150,53 +3096,10 @@ function submitRecord() {
     handover: formData.handover || '',
     reviewDone: formData.reviewDone || '',
     reviewComment: formData.reviewComment,
-    reportType: formData.reportType || 'final',
     createdAt: new Date().toISOString()
   });
   saveDB(db);
-  // タイムラインに自動投稿
-  postToTimeline(db);
   nextStep();
-}
-
-// 売上送信後にタイムラインへ自動投稿
-function postToTimeline(db) {
-  if (!db.posts) db.posts = [];
-  const reportType = formData.reportType || 'final';
-  const now = new Date().toISOString().slice(0, 19);
-  const store = formData.store || currentUser.store || '';
-  const staff = currentUser.name;
-  const date = formData.date || todayStr();
-
-  // 最終報告の場合：同日・同スタッフの中間報告を削除（上書き）
-  if (reportType === 'final') {
-    db.posts = db.posts.filter(p => !(p.date === date && p.staff === staff && p.reportType === 'interim'));
-  }
-
-  // エピソードや振り返りがあれば投稿
-  const lines = [];
-  if (formData.episode) lines.push(`☕ ${formData.episode}`);
-  if (reportType === 'final') {
-    if (formData.achievement) lines.push(`⭐ ${formData.achievement}`);
-    if (formData.improvement) lines.push(`🚀 ${formData.improvement}`);
-    if (formData.handover) lines.push(`🤝 引継ぎ: ${formData.handover}`);
-  }
-  const text = lines.join('
-') || (reportType === 'interim' ? '中間報告（エピソードなし）' : '');
-
-  const post = {
-    id: Date.now().toString(),
-    reportType,
-    date,
-    ts: now,
-    store,
-    staff,
-    sales: formData.sales || 0,
-    text,
-    recordId: db.records[db.records.length - 1]?.id,
-  };
-  db.posts.push(post);
-  saveDB(db);
 }
 
 // 当日のレコードを編集モードで開く
@@ -3286,17 +3189,7 @@ function renderMyData() {
     last14.push(r ? r.sales : null);
   }
   const today = todayStr();
-  // 今週月曜日を計算
-  const todayDate = new Date(today);
-  const dayOfWeek = todayDate.getDay(); // 0=日, 1=月...
-  const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
-  const monday = new Date(todayDate);
-  monday.setDate(todayDate.getDate() + diffToMonday);
-  const mondayStr = monday.toISOString().slice(0, 10);
-  const thisWeekRecords = records.filter(r => r.date >= mondayStr && r.date <= today);
-  const logHTML = thisWeekRecords.length === 0
-    ? `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">今週の入力はまだありません</div>`
-    : thisWeekRecords.map(r =>
+  const logHTML = records.slice(0, 8).map(r =>
     `<div class="log-item">
       <div class="log-avatar" style="overflow:hidden;padding:0;">${r.staffPhoto ? `<img src="${r.staffPhoto}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;">` : `<span style="font-size:14px;font-weight:900;">${(r.staff||'?')[0]}</span>`}</div>
       <div class="log-info">
@@ -3314,26 +3207,21 @@ function renderMyData() {
     <div class="card">
       <div style="position:relative;height:220px;"><canvas id="myTrendChart"></canvas></div>
     </div>
-    <div class="sec-title">📋 今週の入力履歴</div>
+    <div class="sec-title">📋 入力履歴</div>
     ${logHTML}`;
   setTimeout(() => {
-    try {
-      const ctx = document.getElementById('myTrendChart');
-      if (ctx) {
-        // 既存インスタンスを破棄してから再生成（重複エラー防止）
-        const existing = Chart.getChart(ctx);
-        if (existing) existing.destroy();
-        new Chart(ctx, {
-          type: 'line',
-          data: { labels: last14L, datasets: [{ data: last14, borderColor: '#C8833A', backgroundColor: 'rgba(200,131,58,0.15)', tension: 0.4, pointRadius: 4, pointBackgroundColor: '#C8833A', spanGaps: true }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: {
-            y: { ticks: { callback: v => { if(v===0) return '¥0'; if(Math.abs(v)>=10000) return '¥'+(v/10000).toFixed(1)+'万'; return '¥'+v.toLocaleString(); }, font: { size: 9 }, color: '#7A5A3A' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            x: { ticks: { color: '#7A5A3A', font: { size: 9 }, maxTicksLimit: 7 }, grid: { display: false } }
-          }}
-        });
-      }
-    } catch(err) { console.warn('render error:', err); }
-  }, 100);
+      try {
+    const ctx = document.getElementById('myTrendChart');
+    if (ctx) new Chart(ctx, {
+      type: 'line',
+      data: { labels: last14L, datasets: [{ data: last14, borderColor: '#C8833A', backgroundColor: 'rgba(200,131,58,0.15)', tension: 0.4, pointRadius: 4, pointBackgroundColor: '#C8833A', spanGaps: true }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: {
+        y: { ticks: { callback: v => { if(v===0) return '¥0'; if(Math.abs(v)>=10000) return '¥'+(v/10000).toFixed(1)+'万'; return '¥'+v.toLocaleString(); }, font: { size: 9 }, color: '#7A5A3A' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        x: { ticks: { color: '#7A5A3A', font: { size: 9 }, maxTicksLimit: 7 }, grid: { display: false } }
+      }}
+    });
+      } catch(err) { console.warn('render error:', err); }
+    }, 100);
 }
 function renderDashboardStaff() {
   const el = document.getElementById('dashboardStaffContent');
@@ -3620,22 +3508,26 @@ function buildTimelineHTML() {
 
   const filterStore = window._tlStoreFilter || '全店舗';
 
-  // タイムラインアイテムを構築（postsベース統一）
+  // タイムラインアイテムを構築
+  // タイプ: 'sales'（売上報告）, 'memo'（業務メモ・引継ぎ）, 'update'（中間報告）
   const items = [];
 
-  // posts（中間報告・最終報告）をアイテム化
-  posts.forEach(p => {
-    items.push({ type: 'post', ts: p.ts, date: p.date || p.ts.slice(0, 10), store: p.store, staff: p.staff, post: p });
-  });
-
-  // postsにないrecordは従来通り売上カードとして表示（移行期の互換性）
-  const postedDates = new Set(posts.filter(p => p.reportType).map(p => `${p.date}_${p.staff}`));
+  // 売上レコードを変換
   records.forEach(r => {
-    const key = `${r.date}_${r.staff}`;
-    if (postedDates.has(key)) return; // postsに同日データあれば重複しない
-    if (!r.sales) return;
+    if (!r.sales && !r.episode && !r.handover) return;
     const ts = r.updatedAt || (r.date + 'T23:59:00');
     items.push({ type: 'sales', ts, date: r.date, store: r.store, staff: r.staff, record: r });
+    if (r.episode || r.achievement || r.improvement) {
+      items.push({ type: 'episode', ts: ts + '1', date: r.date, store: r.store, staff: r.staff, record: r });
+    }
+    if (r.handover) {
+      items.push({ type: 'handover', ts: ts + '2', date: r.date, store: r.store, staff: r.staff, record: r });
+    }
+  });
+
+  // 中間報告を変換
+  posts.forEach(p => {
+    items.push({ type: 'update', ts: p.ts, date: p.ts.slice(0, 10), store: p.store, staff: p.staff, post: p });
   });
 
   // フィルタ
@@ -3648,8 +3540,8 @@ function buildTimelineHTML() {
   const canPost = !!currentUser;
   const postBox = canPost ? `
     <div class="tl-post-box">
-      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">💬 メモ・一言投稿（${currentUser.name} / ${currentUser.store || '管理者'}）</div>
-      <textarea id="tlPostText" placeholder="例：今日は混んでます！残り豆少なめです。"></textarea>
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:8px;">💬 中間報告・一言メモ（${currentUser.name} / ${currentUser.store || '管理者'}）</div>
+      <textarea id="tlPostText" placeholder="例：今日は混んでます！残り豆少なめです。夕方の来客多め。"></textarea>
       <button class="tl-post-btn" onclick="submitTimelinePost()">📮 投稿する</button>
     </div>` : '';
 
@@ -3696,106 +3588,57 @@ function formatDateLabel(dateStr) {
 function buildTlItem(item, storeMap) {
   const col = storeMap[item.store] || '#C8833A';
   const storeShort = item.store ? item.store.replace('号店', '号') : '管理者';
-  const timeStr = item.ts ? item.ts.slice(11, 16) : '';
+  const timeStr = item.ts.slice(11, 16);
 
-  // メタ情報（店舗バッジ・スタッフ名・時刻）
-  const metaHTML = `<div class="tl-item-meta">
+  const header = `<div class="tl-header">
     <span class="tl-store-badge" style="background:${col}22;color:${col};">${storeShort}</span>
     <span class="tl-staff-name">${item.staff || ''}</span>
     <span class="tl-time">${timeStr}</span>
   </div>`;
 
-  // ---- post タイプ（中間・最終報告）----
-  if (item.type === 'post') {
-    const p = item.post;
-    const isOwn = currentUser && currentUser.name === p.staff;
-    const isFinal = p.reportType === 'final';
-    const canEdit = isOwn && p.recordId;
+  let cardInner = '';
 
-    const bandColor = isFinal ? 'rgba(93,184,122,0.18)' : 'rgba(255,180,60,0.15)';
-    const textColor = isFinal ? '#5DB87A' : '#E8A020';
-    const typeIcon  = isFinal ? '✅' : '🕐';
-    const typeText  = isFinal ? '最終報告' : '中間報告';
-
-    const deleteBtn = isOwn
-      ? `<button class="tl-delete-btn" onclick="deleteTlPost('${p.id}')" title="削除">🗑</button>` : '';
-    const editBtn = canEdit
-      ? `<button class="tl-edit-btn" onclick="editRecord(${p.recordId})">✏️ 修正する</button>` : '';
-
-    // 売上
-    const salesHTML = p.sales
-      ? `<div class="tl-sales-main">¥${Number(p.sales).toLocaleString()}</div>` : '';
-
-    // テキストをセクション別に分解して表示
-    let textHTML = '';
-    if (p.text) {
-      const lines = p.text.split('\n').filter(l => l.trim());
-      const grouped = [];
-      lines.forEach(l => {
-        if (l.startsWith('☕')) grouped.push({ icon:'☕', label:'エピソード', val: l.slice(1).trim() });
-        else if (l.startsWith('⭐')) grouped.push({ icon:'⭐', label:'できたこと', val: l.slice(1).trim() });
-        else if (l.startsWith('🚀')) grouped.push({ icon:'🚀', label:'改善・明日の目標', val: l.slice(1).trim() });
-        else if (l.startsWith('🤝')) grouped.push({ icon:'🤝', label:'引継ぎ', val: l.replace('🤝 引継ぎ:','').trim() });
-        else grouped.push({ icon:'', label:'', val: l });
-      });
-      textHTML = grouped.map(g =>
-        g.label
-          ? `<div class="tl-section-label">${g.icon} ${g.label}</div><div class="tl-text" style="margin-top:0;">${escapeHtml(g.val)}</div>`
-          : `<div class="tl-text">${escapeHtml(g.val)}</div>`
-      ).join('');
-    }
-
-    return `<div class="tl-item">
-      <div class="tl-item-header-band" style="background:${bandColor};">
-        <span class="tl-type-label" style="color:${textColor};">${typeIcon} ${typeText}</span>
-        <div style="display:flex;align-items:center;gap:8px;">${metaHTML}${deleteBtn}</div>
-      </div>
-      <div class="tl-card-body">
-        ${salesHTML}
-        ${textHTML}
-        ${editBtn}
-      </div>
-    </div>`;
-  }
-
-  // ---- update タイプ（タイムライン直接投稿）----
-  if (item.type === 'update') {
-    const p = item.post;
-    const isOwn = currentUser && currentUser.name === p.staff;
-    const deleteBtn = isOwn
-      ? `<button class="tl-delete-btn" onclick="deleteTlPost('${p.id}')" title="削除">🗑</button>` : '';
-    return `<div class="tl-item">
-      <div class="tl-item-header-band" style="background:rgba(74,144,200,0.13);">
-        <span class="tl-type-label" style="color:#6BAED6;">💬 メモ投稿</span>
-        <div style="display:flex;align-items:center;gap:8px;">${metaHTML}${deleteBtn}</div>
-      </div>
-      <div class="tl-card-body">
-        <div class="tl-text">${escapeHtml(p.text)}</div>
-      </div>
-    </div>`;
-  }
-
-  // ---- 旧レコードから生成された sales タイプ（移行互換）----
   if (item.type === 'sales') {
     const r = item.record;
     const editBadge = r.updatedAt ? `<span class="tl-update-badge">✏️修正済</span>` : '';
-    return `<div class="tl-item">
-      <div class="tl-item-header-band" style="background:${col}18;">
-        <span class="tl-type-label" style="color:${col};">💰 売上報告</span>
-        <div style="display:flex;align-items:center;gap:8px;">${metaHTML}</div>
-      </div>
+    cardInner = `<div class="tl-card-type" style="background:${col}22;color:${col};">💰 売上報告</div>
       <div class="tl-card-body">
-        <div class="tl-sales-main">¥${(r.sales||0).toLocaleString()}</div>
         <div class="tl-sales-row">
+          <div class="tl-sales-stat"><span class="tl-sales-label">売上</span><span class="tl-sales-value">¥${(r.sales||0).toLocaleString()}</span></div>
           <div class="tl-sales-stat"><span class="tl-sales-label">客数</span><span class="tl-sales-value">${r.customers||'-'}人</span></div>
           <div class="tl-sales-stat"><span class="tl-sales-label">客単価</span><span class="tl-sales-value">¥${(r.spend_per_customer||0).toLocaleString()}</span></div>
         </div>
         ${editBadge}
-      </div>
-    </div>`;
+      </div>`;
+  } else if (item.type === 'episode') {
+    const r = item.record;
+    const secs = [];
+    if (r.episode) secs.push(`☕ ${r.episode}`);
+    if (r.achievement) secs.push(`⭐ ${r.achievement}`);
+    if (r.improvement) secs.push(`🚀 ${r.improvement}`);
+    cardInner = `<div class="tl-card-type" style="background:rgba(200,131,58,0.15);color:#C8833A;">📝 エピソード・振り返り</div>
+      <div class="tl-card-body"><div class="tl-text">${secs.join('\n')}</div></div>`;
+  } else if (item.type === 'handover') {
+    const r = item.record;
+    cardInner = `<div class="tl-card-type" style="background:rgba(180,120,200,0.15);color:#B478C8;">🤝 引継ぎ</div>
+      <div class="tl-card-body"><div class="tl-text">${r.handover}</div></div>`;
+  } else if (item.type === 'update') {
+    const p = item.post;
+    const isOwn = currentUser && currentUser.name === p.staff;
+    const deleteBtn = isOwn ? `<button onclick="deleteTlPost('${p.id}')" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:0 4px;">🗑️</button>` : '';
+    cardInner = `<div class="tl-card-type" style="background:rgba(93,184,122,0.15);color:#5DB87A;">💬 中間報告 ${deleteBtn}</div>
+      <div class="tl-card-body"><div class="tl-text">${escapeHtml(p.text)}</div></div>`;
   }
 
-  return '';
+  const avatar = `<div class="tl-avatar" style="background:${col}33;">${item.type === 'update' ? '💬' : item.type === 'handover' ? '🤝' : item.type === 'episode' ? '☕' : '💰'}</div>`;
+
+  return `<div class="tl-item">
+    ${avatar}
+    <div class="tl-body">
+      ${header}
+      <div class="tl-card">${cardInner}</div>
+    </div>
+  </div>`;
 }
 
 function escapeHtml(str) {
@@ -3923,8 +3766,6 @@ function renderGoalsStaff() {
       try {
     const ctx = document.getElementById('goalMonthChart');
     if (!ctx) return;
-    const existingGoalChart = Chart.getChart(ctx);
-    if (existingGoalChart) existingGoalChart.destroy();
     const today2 = new Date();
     const daysInMonth2 = new Date(today2.getFullYear(), today2.getMonth() + 1, 0).getDate();
     const labels = [], data = [];
@@ -4546,29 +4387,6 @@ function renderExport() {
           <button class="qbtn" onclick="deleteUser('${u.name}')" style="color:var(--danger);border-color:rgba(208,80,80,0.3);font-size:11px;">削除</button>
         </div>`).join('') || '<div class="no-data-msg">スタッフなし</div>'}
     </div>
-    <div class="sec-title">➕ スタッフを直接追加</div>
-    <div class="card">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6;">スタッフがアカウントを作れない場合、管理者が直接作成できます</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">名前（ID）</div>
-          <input type="text" class="finput" id="adminAddName" placeholder="例：佐藤 エリカ" style="font-size:14px;padding:10px 12px;">
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">勤務店舗</div>
-          <select class="finput" id="adminAddStore" style="font-size:14px;padding:10px 12px;cursor:pointer;-webkit-appearance:none;">
-            <option value="1号店大曲">1号店 大曲</option>
-            <option value="2号店秋田">2号店 秋田</option>
-            <option value="3号店横手">3号店 横手</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">パスワード（4文字以上）</div>
-          <input type="text" class="finput" id="adminAddPass" placeholder="例：1234" style="font-size:14px;padding:10px 12px;">
-        </div>
-        <button class="btn-p" style="margin-top:4px;" onclick="adminAddUser()">✅ アカウントを作成する</button>
-      </div>
-    </div>
     <div class="sec-title">📦 在庫品目マスタ</div>
     <div class="card">
       <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;">
@@ -4860,25 +4678,6 @@ function deleteStockItem(i) {
   showToast('削除しました');
   renderExport();
 }
-function adminAddUser() {
-  const name = (document.getElementById('adminAddName')?.value || '').trim();
-  const store = document.getElementById('adminAddStore')?.value || '1号店大曲';
-  const pass = (document.getElementById('adminAddPass')?.value || '').trim();
-  if (!name) { showToast('名前を入力してください'); return; }
-  if (pass.length < 4) { showToast('パスワードは4文字以上にしてください'); return; }
-  const db = getDB();
-  if (db.users.find(u => u.name === name)) { showToast('その名前はすでに登録されています'); return; }
-  const newUser = { name, id: name, pass, role: 'staff', store, photo: null };
-  db.users.push(newUser);
-  saveDB(db);
-  showToast(`✅ ${name} さんのアカウントを作成しました`);
-  // フォームクリア
-  if (document.getElementById('adminAddName')) document.getElementById('adminAddName').value = '';
-  if (document.getElementById('adminAddPass')) document.getElementById('adminAddPass').value = '';
-  renderExport();
-  buildLoginChips();
-}
-
 function deleteUser(name) {
   showConfirm(`${name} さんのアカウントを削除しますか？`, () => {
     const db = getDB();
@@ -5226,4 +5025,4 @@ function showToast(msg) {
 initData();
 </script>
 </body>
-</html>
+</html></html>
