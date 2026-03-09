@@ -3646,8 +3646,19 @@ function buildTlCard(card, storeMap, today) {
 
   // メモ行
   let memoHTML = '';
-  if (p && p.text) {
-    memoHTML = `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px 10px;background:rgba(200,131,58,0.08);border-radius:8px;line-height:1.6;">💬 ${escapeHtml(p.text)}</div>`;
+  if (p) {
+    const parts = [];
+    if (p.topItem) parts.push(`⭐ ${escapeHtml(p.topItem)}${p.topItemCount ? ' ' + p.topItemCount + '杯' : ''}`);
+    if (p.lossItem) parts.push(`🗑️ ${escapeHtml(p.lossItem)}`);
+    if (p.stockNote) parts.push(`📦 ${escapeHtml(p.stockNote)}`);
+    if (p.episode) parts.push(`☕ ${escapeHtml(p.episode)}`);
+    if (p.achievement) parts.push(`⭐ ${escapeHtml(p.achievement)}`);
+    if (p.improvement) parts.push(`🚀 ${escapeHtml(p.improvement)}`);
+    if (p.handover) parts.push(`🤝 ${escapeHtml(p.handover)}`);
+    if (p.text) parts.push(`💬 ${escapeHtml(p.text)}`);
+    if (parts.length > 0) {
+      memoHTML = `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px 10px;background:rgba(200,131,58,0.08);border-radius:8px;line-height:1.8;">${parts.join('<br>')}</div>`;
+    }
   }
   if (r && (r.episode || r.achievement || r.improvement)) {
     const secs = [];
@@ -3805,31 +3816,43 @@ function submitTimelinePost() {
 function startInterimReport() {
   const db = getDB();
   const today = todayStr();
-  const existing = (db.posts||[]).find(p => p.staff === currentUser.name && p.date === today && p.type === 'interim');
-  if (existing) {
-    document.getElementById('interimSales').value = existing.sales || '';
-    document.getElementById('interimMemo').value = existing.text || '';
+  const ex = (db.posts||[]).find(p => p.staff === currentUser.name && p.date === today && p.type === 'interim');
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  if (ex) {
+    set('interimSales', ex.sales);
+    set('interimTopItem', ex.topItem);
+    set('interimTopItemCount', ex.topItemCount);
+    set('interimLossItem', ex.lossItem);
+    set('interimLossCount', ex.lossCount);
+    set('interimLossGram', ex.lossGram);
+    set('interimStockNote', ex.stockNote);
+    set('interimEpisode', ex.episode);
+    set('interimAchievement', ex.achievement);
+    set('interimImprovement', ex.improvement);
+    set('interimHandover', ex.handover);
+    set('interimMemo', ex.text);
     document.getElementById('interimModalTitle').textContent = '📊 中間報告を修正';
   } else {
-    document.getElementById('interimSales').value = '';
-    document.getElementById('interimMemo').value = '';
+    ['interimSales','interimTopItem','interimTopItemCount','interimLossItem','interimLossCount','interimLossGram','interimStockNote','interimEpisode','interimAchievement','interimImprovement','interimHandover','interimMemo'].forEach(id => set(id, ''));
     document.getElementById('interimModalTitle').textContent = '📊 中間報告';
   }
-  const modal = document.getElementById('interimModal');
-  modal.style.display = 'flex';
+  document.getElementById('interimModal').style.display = 'flex';
 }
 function closeInterimModal() {
   document.getElementById('interimModal').style.display = 'none';
 }
 function submitInterimReport() {
-  const sales = document.getElementById('interimSales').value.trim();
-  const memo = document.getElementById('interimMemo').value.trim();
-  if (!memo && !sales) { showToast('売上かメモを入力してください'); return; }
+  const g = id => (document.getElementById(id)?.value || '').trim();
+  const sales = g('interimSales');
+  const memo = g('interimMemo');
+  const topItem = g('interimTopItem');
+  const episode = g('interimEpisode');
+  if (!sales && !memo && !topItem && !episode) { showToast('何か1つ入力してください'); return; }
   const db = getDB();
   if (!db.posts) db.posts = [];
   const today = todayStr();
   const now = new Date().toISOString();
-  // 同日・同スタッフの中間報告を上書き（1件だけ保持）
+  // 同日・同スタッフの中間報告を上書き（1件のみ保持）
   db.posts = db.posts.filter(p => !(p.staff === currentUser.name && p.date === today && p.type === 'interim'));
   db.posts.push({
     id: Date.now().toString(),
@@ -3839,6 +3862,16 @@ function submitInterimReport() {
     store: currentUser.store || '',
     staff: currentUser.name,
     sales: sales ? parseInt(sales) : null,
+    topItem: g('interimTopItem'),
+    topItemCount: parseInt(g('interimTopItemCount')) || 0,
+    lossItem: g('interimLossItem'),
+    lossCount: parseInt(g('interimLossCount')) || 0,
+    lossGram: parseInt(g('interimLossGram')) || 0,
+    stockNote: g('interimStockNote'),
+    episode: g('interimEpisode'),
+    achievement: g('interimAchievement'),
+    improvement: g('interimImprovement'),
+    handover: g('interimHandover'),
     text: memo,
   });
   saveDB(db);
@@ -5195,17 +5228,57 @@ initData();
 
 <!-- 中間報告モーダル -->
 <div id="interimModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);align-items:flex-end;justify-content:center;">
-  <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 -4px 30px rgba(0,0,0,0.5);">
-    <div style="font-size:16px;font-weight:900;color:var(--gold2);margin-bottom:4px;" id="interimModalTitle">📊 中間報告</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:18px;" id="interimModalSub">営業中の状況を共有しよう</div>
+  <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:0 -4px 30px rgba(0,0,0,0.5);">
+    <div style="font-size:16px;font-weight:900;color:var(--gold2);margin-bottom:2px;" id="interimModalTitle">📊 中間報告</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:18px;">何度でも修正できます</div>
+
     <div class="form-group">
-      <label class="form-label">現時点の売上 <span style="color:var(--text3);font-weight:400;">(任意)</span></label>
+      <label class="form-label">現時点の売上</label>
       <input type="number" class="finput" id="interimSales" placeholder="例：45000" inputmode="numeric">
     </div>
     <div class="form-group">
-      <label class="form-label">ひとことメモ</label>
-      <textarea class="finput" id="interimMemo" placeholder="例：昼が混んでます。豆の在庫少なめです。" style="min-height:80px;resize:vertical;"></textarea>
+      <label class="form-label">今日1番売れた商品</label>
+      <input type="text" class="finput" id="interimTopItem" placeholder="例：エチオピア、カプチーノ">
     </div>
+    <div class="inp-row">
+      <div class="form-group"><label class="form-label">杯数・個数</label>
+        <input type="number" class="finput" id="interimTopItemCount" placeholder="0" inputmode="numeric"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">廃棄した商品・豆</label>
+      <input type="text" class="finput" id="interimLossItem" placeholder="例：エチオピア、パン">
+    </div>
+    <div class="inp-row">
+      <div class="form-group"><label class="form-label">廃棄 個数</label>
+        <input type="number" class="finput" id="interimLossCount" placeholder="0" inputmode="numeric"></div>
+      <div class="form-group"><label class="form-label">廃棄 グラム</label>
+        <input type="number" class="finput" id="interimLossGram" placeholder="0" inputmode="numeric"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">在庫メモ</label>
+      <textarea class="finput" id="interimStockNote" placeholder="例：カップ残り20個、ミルク2本" style="min-height:60px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">お客さんとのエピソード</label>
+      <textarea class="finput" id="interimEpisode" placeholder="例：常連のAさんが新しい豆をとても喜んでくれた。" style="min-height:70px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">今日できたこと</label>
+      <textarea class="finput" id="interimAchievement" placeholder="例：ラテアートが上手く描けた。" style="min-height:70px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">改善点・明日からやること</label>
+      <textarea class="finput" id="interimImprovement" placeholder="例：混雑時のオペレーションを改善する。" style="min-height:70px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">翌営業日への引継ぎ</label>
+      <textarea class="finput" id="interimHandover" placeholder="例：冷蔵庫の豆が残り少ない。レジのロール紙を交換してください。" style="min-height:70px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ひとことメモ</label>
+      <textarea class="finput" id="interimMemo" placeholder="例：昼が混んでます。豆の在庫少なめです。" style="min-height:60px;"></textarea>
+    </div>
+
     <button class="btn-p" onclick="submitInterimReport()">📮 中間報告を送信</button>
     <button class="btn-s" style="margin-top:8px;" onclick="closeInterimModal()">キャンセル</button>
   </div>
