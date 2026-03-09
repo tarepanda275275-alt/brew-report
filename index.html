@@ -1835,6 +1835,41 @@ select.bean-name-inp option {
   border-color: var(--caramel2);
   color: #fff;
 }
+
+/* ===== 中間・最終報告ボタン ===== */
+.report-mode-btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.btn-interim {
+  flex: 1;
+  background: rgba(93,184,122,0.15);
+  border: 2px solid #5DB87A;
+  color: #5DB87A;
+  border-radius: 14px;
+  padding: 14px 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-interim:active { opacity: 0.7; transform: scale(0.98); }
+.btn-final {
+  flex: 1;
+  background: var(--caramel2);
+  border: 2px solid var(--caramel2);
+  color: #fff;
+  border-radius: 14px;
+  padding: 14px 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-final:active { opacity: 0.7; transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -2686,7 +2721,16 @@ function buildStepHTML(step) {
       `<button class="store-btn${s === (formData.store || userStore) ? ' selected' : ''}" data-store="${s}" onclick="selStore(this)">
         <span class="se">🏪</span><span class="sn">${s.replace('号店', '号店\n')}</span>
       </button>`).join('');
+    // 今日すでに中間報告があるか確認
+    const db = getDB();
+    const todayPost = (db.posts||[]).find(p => p.staff === currentUser.name && p.date === today && p.type === 'interim');
+    const todayRecord = (db.records||[]).find(r => r.staff === currentUser.name && r.date === today);
+    const interimBtn = !todayRecord ? `
+      <button class="btn-interim" onclick="startInterimReport()">
+        📊 中間報告${todayPost ? '（修正）' : ''}
+      </button>` : '';
     return `<div class="step-card">
+      ${interimBtn ? `<div class="report-mode-btns">${interimBtn}<button class="btn-final" onclick="fromStoreDate()">✅ 最終報告へ →</button></div>` : ''}
       <div class="step-badge">📍 STEP 1</div>
       <div class="step-title">店舗と日付を\n選択</div>
       <div class="step-desc">今日勤務している店舗と日付を確認してください</div>
@@ -3073,6 +3117,10 @@ function submitRecord() {
   }
 
   // 新規送信
+  // 最終報告時に同日の中間報告を削除
+  const _today = formData.date || todayStr();
+  db.posts = (db.posts||[]).filter(p => !(p.staff === currentUser.name && p.date === _today && p.type === 'interim'));
+
   db.records.push({
     id: Date.now(),
     staff: currentUser.name,
@@ -3503,45 +3551,38 @@ function buildTimelineHTML() {
   const records = db.records || [];
   const STORE_MAP = {};
   STORES.forEach((s, i) => { STORE_MAP[s] = STORE_COLORS[i]; });
-
   const filterStore = window._tlStoreFilter || '全店舗';
+  const today = todayStr();
 
-  // タイムラインアイテムを構築
-  // タイプ: 'sales'（売上報告）, 'memo'（業務メモ・引継ぎ）, 'update'（中間報告）
-  const items = [];
+  // 店舗×日付でカードをまとめる
+  // key: "store__date"
+  const cardMap = {};
 
-  // 売上レコードを変換
   records.forEach(r => {
     if (!r.sales && !r.episode && !r.handover) return;
-    const ts = r.updatedAt || (r.date + 'T23:59:00');
-    items.push({ type: 'sales', ts, date: r.date, store: r.store, staff: r.staff, record: r });
-    if (r.episode || r.achievement || r.improvement) {
-      items.push({ type: 'episode', ts: ts + '1', date: r.date, store: r.store, staff: r.staff, record: r });
-    }
-    if (r.handover) {
-      items.push({ type: 'handover', ts: ts + '2', date: r.date, store: r.store, staff: r.staff, record: r });
-    }
+    const key = `${r.store}__${r.date}`;
+    if (!cardMap[key]) cardMap[key] = { store: r.store, date: r.date, record: null, interim: null };
+    cardMap[key].record = r;
   });
 
-  // 中間報告を変換
   posts.forEach(p => {
-    items.push({ type: 'update', ts: p.ts, date: p.ts.slice(0, 10), store: p.store, staff: p.staff, post: p });
+    const date = p.date || (p.ts||'').slice(0,10);
+    const key = `${p.store}__${date}`;
+    if (!cardMap[key]) cardMap[key] = { store: p.store, date, record: null, interim: null };
+    if (p.type === 'interim') {
+      cardMap[key].interim = p;
+    }
+    // 旧来のupdateタイプも表示（後方互換）
+    if (p.type === 'update') {
+      if (!cardMap[key].updates) cardMap[key].updates = [];
+      cardMap[key].updates.push(p);
+    }
   });
 
-  // フィルタ
-  const filtered = filterStore === '全店舗' ? items : items.filter(i => i.store === filterStore);
-
-  // 日付降順ソート
-  filtered.sort((a, b) => b.ts.localeCompare(a.ts));
-
-  // 投稿ボックス
-  const canPost = !!currentUser;
-  const postBox = canPost ? `
-    <div class="tl-post-box">
-      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:8px;">💬 ${currentUser.name}（${currentUser.store || '管理者'}）</div>
-      <textarea id="tlPostText" placeholder="例：今日は混んでます！残り豆少なめです。夕方の来客多め。"></textarea>
-      <button class="tl-post-btn" onclick="submitTimelinePost()">📮 投稿する</button>
-    </div>` : '';
+  // フィルタ＆日付降順ソート
+  let cards = Object.values(cardMap);
+  if (filterStore !== '全店舗') cards = cards.filter(c => c.store === filterStore);
+  cards.sort((a, b) => b.date.localeCompare(a.date) || b.store.localeCompare(a.store));
 
   // フィルタタブ
   const allStores = ['全店舗', ...STORES];
@@ -3549,30 +3590,100 @@ function buildTimelineHTML() {
     `<button class="tl-filter-tab${s === filterStore ? ' active' : ''}" onclick="setTlFilter('${s}')">${s.replace('号店', '号')}</button>`
   ).join('');
 
-  if (filtered.length === 0) {
-    return `${postBox}
-    <div class="sec-title">📱 タイムライン</div>
+  if (cards.length === 0) {
+    return `<div class="sec-title">📱 タイムライン</div>
     <div class="tl-filter-wrap">${filterTabsHTML}</div>
     <div class="no-data-msg"><span class="nde">☕</span><br>まだ投稿がありません</div>`;
   }
 
-  // 日付グループ
   let lastDate = '';
   let feedHTML = '';
-  filtered.forEach(item => {
-    const d = item.date;
-    if (d !== lastDate) {
-      lastDate = d;
-      const dLabel = formatDateLabel(d);
-      feedHTML += `<div class="tl-date-divider"><span>${dLabel}</span></div>`;
+  cards.forEach(card => {
+    if (card.date !== lastDate) {
+      lastDate = card.date;
+      feedHTML += `<div class="tl-date-divider"><span>${formatDateLabel(card.date)}</span></div>`;
     }
-    feedHTML += buildTlItem(item, STORE_MAP);
+    feedHTML += buildTlCard(card, STORE_MAP, today);
   });
 
-  return `${postBox}
-    <div class="sec-title">📱 タイムライン</div>
+  return `<div class="sec-title">📱 タイムライン</div>
     <div class="tl-filter-wrap">${filterTabsHTML}</div>
     <div class="tl-feed">${feedHTML}</div>`;
+}
+
+function buildTlCard(card, storeMap, today) {
+  const col = storeMap[card.store] || '#C8833A';
+  const storeShort = card.store ? card.store.replace('号店', '号') : '';
+  const r = card.record;
+  const p = card.interim;
+  const isToday = card.date === today;
+
+  // ステータス
+  const status = r ? '✅ 最終' : p ? '📊 中間' : '📝';
+  const statusCol = r ? '#5DB87A' : p ? '#C8833A' : '#7A7A7A';
+
+  // スタッフ名（最終報告 or 中間報告から）
+  const staffName = (r ? r.staff : p ? p.staff : '') || '';
+  const db = getDB();
+  const userObj = (db.users||[]).find(u => u.name === staffName);
+  const avatarInner = userObj && userObj.photo
+    ? `<img src="${userObj.photo}" alt="${staffName}" style="width:36px;height:36px;object-fit:cover;border-radius:8px;">`
+    : `<span style="font-size:14px;font-weight:900;color:#fff;">${(staffName||'?')[0]}</span>`;
+
+  // 売上行
+  let salesHTML = '';
+  if (r) {
+    salesHTML = `<div class="tl-sales-card" style="border-color:${col};">
+      <div class="tl-sales-stat"><span class="tl-sales-label">売上</span><span class="tl-sales-value">¥${(r.sales||0).toLocaleString()}</span></div>
+      <div class="tl-sales-stat"><span class="tl-sales-label">客数</span><span class="tl-sales-value">${r.customers||'-'}人</span></div>
+      <div class="tl-sales-stat"><span class="tl-sales-label">客単価</span><span class="tl-sales-value">¥${(r.spend_per_customer||0).toLocaleString()}</span></div>
+    </div>`;
+  } else if (p && p.sales) {
+    salesHTML = `<div class="tl-sales-card" style="border-color:${col};opacity:0.8;">
+      <div class="tl-sales-stat"><span class="tl-sales-label">途中売上</span><span class="tl-sales-value">¥${(p.sales||0).toLocaleString()}</span></div>
+    </div>`;
+  }
+
+  // メモ行
+  let memoHTML = '';
+  if (p && p.text) {
+    memoHTML = `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px 10px;background:rgba(200,131,58,0.08);border-radius:8px;line-height:1.6;">💬 ${escapeHtml(p.text)}</div>`;
+  }
+  if (r && (r.episode || r.achievement || r.improvement)) {
+    const secs = [];
+    if (r.episode) secs.push(escapeHtml(r.episode));
+    if (r.achievement) secs.push('⭐ ' + escapeHtml(r.achievement));
+    if (r.improvement) secs.push('🚀 ' + escapeHtml(r.improvement));
+    memoHTML += `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px 10px;background:rgba(93,184,122,0.08);border-radius:8px;line-height:1.6;">☕ ${secs.join(' / ')}</div>`;
+  }
+  if (r && r.handover) {
+    memoHTML += `<div style="font-size:12px;color:#B478C8;margin-top:6px;padding:8px 10px;background:rgba(180,120,200,0.08);border-radius:8px;line-height:1.6;">🤝 ${escapeHtml(r.handover)}</div>`;
+  }
+
+  // アクションボタン
+  const isOwn = currentUser && (currentUser.name === staffName || currentUser.role === 'owner');
+  let actionsHTML = '';
+  if (isToday && isOwn) {
+    if (r) {
+      actionsHTML = `<div class="tl-actions"><button class="tl-action-btn" onclick="editRecord(${r.id})">✏️ 修正する</button></div>`;
+    } else {
+      actionsHTML = `<div class="tl-actions"><button class="tl-action-btn" onclick="startInterimReport()">📊 中間報告を修正</button></div>`;
+    }
+  }
+
+  return `<div class="tl-item">
+    <div class="tl-avatar" style="background:${col};">${avatarInner}</div>
+    <div class="tl-body">
+      <div class="tl-header">
+        <span class="tl-staff-name">${staffName}</span>
+        <span class="tl-store-badge" style="background:${col}22;color:${col};">${storeShort}</span>
+        <span style="font-size:10px;font-weight:700;color:${statusCol};margin-left:auto;">${status}</span>
+      </div>
+      ${salesHTML}
+      ${memoHTML}
+      ${actionsHTML}
+    </div>
+  </div>`;
 }
 
 function formatDateLabel(dateStr) {
@@ -3689,6 +3800,52 @@ function submitTimelinePost() {
   renderTimeline(currentTab);
 }
 
+
+// ===== 中間報告 =====
+function startInterimReport() {
+  const db = getDB();
+  const today = todayStr();
+  const existing = (db.posts||[]).find(p => p.staff === currentUser.name && p.date === today && p.type === 'interim');
+  if (existing) {
+    document.getElementById('interimSales').value = existing.sales || '';
+    document.getElementById('interimMemo').value = existing.text || '';
+    document.getElementById('interimModalTitle').textContent = '📊 中間報告を修正';
+  } else {
+    document.getElementById('interimSales').value = '';
+    document.getElementById('interimMemo').value = '';
+    document.getElementById('interimModalTitle').textContent = '📊 中間報告';
+  }
+  const modal = document.getElementById('interimModal');
+  modal.style.display = 'flex';
+}
+function closeInterimModal() {
+  document.getElementById('interimModal').style.display = 'none';
+}
+function submitInterimReport() {
+  const sales = document.getElementById('interimSales').value.trim();
+  const memo = document.getElementById('interimMemo').value.trim();
+  if (!memo && !sales) { showToast('売上かメモを入力してください'); return; }
+  const db = getDB();
+  if (!db.posts) db.posts = [];
+  const today = todayStr();
+  const now = new Date().toISOString();
+  // 同日・同スタッフの中間報告を上書き（1件だけ保持）
+  db.posts = db.posts.filter(p => !(p.staff === currentUser.name && p.date === today && p.type === 'interim'));
+  db.posts.push({
+    id: Date.now().toString(),
+    type: 'interim',
+    date: today,
+    ts: now,
+    store: currentUser.store || '',
+    staff: currentUser.name,
+    sales: sales ? parseInt(sales) : null,
+    text: memo,
+  });
+  saveDB(db);
+  closeInterimModal();
+  showToast('📊 中間報告を送信しました！');
+  renderTimeline(currentTab);
+}
 function deleteTlPost(postId) {
   const db = getDB();
   if (!db.posts) return;
@@ -5035,5 +5192,23 @@ function showToast(msg) {
 }
 initData();
 </script>
+
+<!-- 中間報告モーダル -->
+<div id="interimModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 -4px 30px rgba(0,0,0,0.5);">
+    <div style="font-size:16px;font-weight:900;color:var(--gold2);margin-bottom:4px;" id="interimModalTitle">📊 中間報告</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:18px;" id="interimModalSub">営業中の状況を共有しよう</div>
+    <div class="form-group">
+      <label class="form-label">現時点の売上 <span style="color:var(--text3);font-weight:400;">(任意)</span></label>
+      <input type="number" class="finput" id="interimSales" placeholder="例：45000" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ひとことメモ</label>
+      <textarea class="finput" id="interimMemo" placeholder="例：昼が混んでます。豆の在庫少なめです。" style="min-height:80px;resize:vertical;"></textarea>
+    </div>
+    <button class="btn-p" onclick="submitInterimReport()">📮 中間報告を送信</button>
+    <button class="btn-s" style="margin-top:8px;" onclick="closeInterimModal()">キャンセル</button>
+  </div>
+</div>
 </body>
-</html></html></html>
+</html>
