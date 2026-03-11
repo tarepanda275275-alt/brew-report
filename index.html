@@ -2195,7 +2195,10 @@ async function saveDBToSupabase(db, retryCount = 0) {
       signal: controller.signal
     });
     clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + ' ' + errText);
+    }
     // 保存成功 - 未送信キューをクリア
     try { localStorage.removeItem(SK + '_pending'); } catch(e) {}
   } catch(e) {
