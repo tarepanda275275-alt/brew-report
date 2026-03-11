@@ -2177,12 +2177,12 @@ function loadDB() {
   return defaultDB();
 }
 
-async function saveDBToSupabase(db) {
+async function saveDBToSupabase(db, retryCount = 0) {
   _db_cache = db;
-  // ローカルにも保存（オフライン対応）
   try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
-  // Supabaseに保存
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data', {
       method: 'POST',
       headers: {
@@ -2191,30 +2191,57 @@ async function saveDBToSupabase(db) {
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates'
       },
-      body: JSON.stringify({ id: 'main', data: db })
+      body: JSON.stringify({ id: 'main', data: db }),
+      signal: controller.signal
     });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error('HTTP ' + res.status);
+    // 保存成功 - 未送信キューをクリア
+    try { localStorage.removeItem(SK + '_pending'); } catch(e) {}
   } catch(e) {
     console.warn('Supabase save failed:', e);
-    showToast('⚠️ クラウド保存に失敗しました（ローカルには保存済み）');
+    if (retryCount < 2) {
+      // 3秒後に自動リトライ（最大2回）
+      setTimeout(() => saveDBToSupabase(db, retryCount + 1), 3000);
+      if (retryCount === 0) showToast('⚠️ 保存中...再試行します');
+    } else {
+      // 3回失敗したら未送信として保存しておく
+      try { localStorage.setItem(SK + '_pending', JSON.stringify(db)); } catch(e2) {}
+      showToast('⚠️ 保存に失敗しました。次回起動時に再送信します');
+    }
   }
 }
 
 function saveDB(db) {
   _db_cache = db;
   try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
-  // 非同期でSupabaseに保存
   saveDBToSupabase(db).catch(e => console.warn('saveDB async failed:', e));
 }
 
 async function initData() {
-  // まずSupabaseからデータを読み込む
   showLoadingOverlay(true);
   const db = await loadDBFromSupabase();
   _db_cache = db;
-  // Supabaseにデータが全くない場合のみ初期データを保存（usersがない場合）
-  if (!db.users || db.users.length === 0) {
+  // 未送信の保留データがあれば再送信
+  try {
+    const pending = localStorage.getItem(SK + '_pending');
+    if (pending) {
+      const pendingDb = JSON.parse(pending);
+      const pendingRecords = (pendingDb.records || []).length;
+      const serverRecords = (db.records || []).length;
+      if (pendingRecords > serverRecords) {
+        showToast('📤 未送信データを再送信中...');
+        await saveDBToSupabase(pendingDb);
+        _db_cache = pendingDb;
+      } else {
+        localStorage.removeItem(SK + '_pending');
+      }
+    }
+  } catch(pe) {}
+  // Supabaseに本当に何もない時だけ初期化
+  if ((!_db_cache.users || _db_cache.users.length === 0) && (!_db_cache.records || _db_cache.records.length === 0)) {
     const fresh = defaultDB();
+    fresh.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
     fresh.records = [];
     await saveDBToSupabase(fresh);
     _db_cache = fresh;
