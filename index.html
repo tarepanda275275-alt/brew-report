@@ -1237,6 +1237,7 @@ textarea.finput { resize: vertical; min-height: 100px; line-height: 1.7; }
 .done-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .done-dot.done { background: var(--success); }
 .done-dot.pending { background: var(--text3); }
+.done-dot.interim { background: var(--caramel2); }
 .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .exp-btn {
   padding: 18px 12px;
@@ -2115,6 +2116,9 @@ select.bean-name-inp option {
     <div class="tab-content" id="tab-monthly">
       <div id="monthlyContent"></div>
     </div>
+    <div class="tab-content" id="tab-stock">
+      <div id="stockViewContent"></div>
+    </div>
     <div class="tab-content" id="tab-timeline-owner">
       <div id="timelineOwnerContent"></div>
     </div>
@@ -2642,6 +2646,42 @@ function confirmReport(key, reports, idx) {
   if (remaining.length > 0) showNextReport(remaining, 0);
   else enterApp();
 }
+// 中間報告データをformDataとして読み込む
+function loadInterimAsFormData() {
+  const db = getDB();
+  const today = todayStr();
+  const interim = (db.posts || []).find(p =>
+    p.type === 'interim' &&
+    p.staff === currentUser.name &&
+    p.date === today
+  );
+  const base = {
+    store: currentUser.store || '',
+    date: today,
+  };
+  if (!interim) return base;
+  // 中間報告の全項目をformDataに反映
+  return {
+    ...base,
+    sales:          interim.sales     || '',
+    topItem:        interim.topItem   || '',
+    topItemCount:   interim.topItemCount || '',
+    lossItem:       interim.lossItem  || '',
+    lossCount:      interim.lossCount || '',
+    lossGram:       interim.lossGram  || '',
+    stockNote:      interim.stockNote || '',
+    episode:        interim.episode   || '',
+    achievement:    interim.achievement || '',
+    improvement:    interim.improvement || '',
+    handover:       interim.handover  || '',
+    registerCash:   interim.registerCash || '',
+    suppliesCost:   interim.suppliesCost || '',
+    suppliesNote:   interim.suppliesNote || '',
+    beanEntries:    interim.beanEntries || [],
+    _fromInterim:   true,
+  };
+}
+
 function enterApp() {
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('reportGate').classList.remove('active');
@@ -2656,7 +2696,7 @@ function enterApp() {
     document.getElementById('staffTabs').style.display = 'block';
     document.getElementById('ownerTabs').style.display = 'none';
     stepIdx = 0;
-    formData = {};
+    formData = loadInterimAsFormData();
     renderStep();
   }
 }
@@ -2669,7 +2709,8 @@ function setupNav() {
       <button class="nav-btn" id="nb-comments" onclick="switchTab('comments')"><span class="nav-icon">💬</span><span class="nav-label">コメント</span></button>
       <button class="nav-btn" id="nb-timeline-owner" onclick="switchTab('timeline-owner')"><span class="nav-icon">📱</span><span class="nav-label">TL</span></button>
       <button class="nav-btn" id="nb-export" onclick="switchTab('export')"><span class="nav-icon">📤</span><span class="nav-label">出力</span></button>
-      <button class="nav-btn" id="nb-monthly" onclick="switchTab('monthly')"><span class="nav-icon">📅</span><span class="nav-label">月別分析</span></button>`;
+      <button class="nav-btn" id="nb-monthly" onclick="switchTab('monthly')"><span class="nav-icon">📅</span><span class="nav-label">月別分析</span></button>
+      <button class="nav-btn" id="nb-stock" onclick="switchTab('stock')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>`;
   } else {
     nav.innerHTML = `
       <button class="nav-btn active" id="nb-input" onclick="switchTab('input')"><span class="nav-icon">✏️</span><span class="nav-label">入力</span></button>
@@ -2677,7 +2718,8 @@ function setupNav() {
       <button class="nav-btn" id="nb-goals-staff" onclick="switchTab('goals-staff')"><span class="nav-icon">🎯</span><span class="nav-label">自店目標</span></button>
       <button class="nav-btn" id="nb-episodes" onclick="switchTab('episodes')"><span class="nav-icon">☕</span><span class="nav-label">エピソード</span></button>
       <button class="nav-btn" id="nb-timeline" onclick="switchTab('timeline')"><span class="nav-icon">💬</span><span class="nav-label">TL</span></button>
-      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">📊</span><span class="nav-label">全体</span></button>`;
+      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">📊</span><span class="nav-label">全体</span></button>
+      <button class="nav-btn" id="nb-stock" onclick="switchTab('stock')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>`;
   }
 }
 function switchTab(tab) {
@@ -2701,8 +2743,9 @@ function switchTab(tab) {
   if (tab === 'goals-all') renderGoalsAll();
   if (tab === 'episodes') renderEpisodes();
   if (tab === 'timeline' || tab === 'timeline-owner') renderTimeline(tab);
+  if (tab === 'stock') renderStockView();
 }
-const STEPS = ['store_date','sales','sales_chart','top_item','loss','stock','episode','complete'];
+const STEPS = ['store_date','sales','sales_chart','top_item','loss','stock','register','episode','complete'];
 function renderStep() {
   const step = STEPS[stepIdx];
   const pct = Math.min(Math.round(((stepIdx + 1) / STEPS.length) * 100), 100);
@@ -2729,8 +2772,12 @@ function buildStepHTML(step) {
       <button class="btn-interim" onclick="startInterimReport()">
         📊 中間報告${todayPost ? '（修正）' : ''}
       </button>` : '';
+    const fromInterimBanner = formData._fromInterim
+      ? `<div style="background:rgba(93,184,122,0.12);border:1px solid rgba(93,184,122,0.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#5DB87A;font-weight:700;">✅ 中間報告の内容を引き継いでいます。そのまま進めてください。</div>`
+      : '';
     return `<div class="step-card">
       ${interimBtn ? `<div class="report-mode-btns">${interimBtn}<button class="btn-final" onclick="fromStoreDate()">✅ 最終報告へ →</button></div>` : ''}
+      ${fromInterimBanner}
       <div class="step-badge">📍 STEP 1</div>
       <div class="step-title">店舗と日付を\n選択</div>
       <div class="step-desc">今日勤務している店舗と日付を確認してください</div>
@@ -2836,25 +2883,82 @@ function buildStepHTML(step) {
     </div>`;
   }
   if (step === 'stock') {
-    const entries = formData.beanEntries || [{ name: '', gram: '', bag: '' }];
-    return '<div class="step-card">' +
-      '<div class="step-badge">📦 STEP 5</div>' +
-      '<div class="step-title">在庫状況を<br>入力</div>' +
-      '<div class="step-desc">商品ごとに在庫を入力してください（任意）</div>' +
-      '<div class="form-group">' +
-        '<label class="form-label">📦 在庫リスト</label>' +
-        '<div class="bean-entry-header">' +
-          '<span style="flex:1;font-size:10px;color:var(--text3);letter-spacing:1px;">商品名</span>' +
-          '<span style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-right:4px;">重さ(g)　個数/袋</span>' +
-        '</div>' +
-        '<div id="beanEntriesWrap">' + buildBeanRowsHtml(entries) + '</div>' +
-        '<button class="bean-add-btn" onclick="addBeanEntry()">＋ 商品を追加</button>' +
-      '</div>' +
-      '<div class="form-group"><label class="form-label">その他メモ</label>' +
-        '<textarea class="finput" id="iSNote" placeholder="例：カップ残り20個、ミルク2本" style="min-height:70px;">' + (formData.stockNote || '') + '</textarea></div>' +
-      '<button class="btn-p" onclick="fromStock()">次へ →</button>' +
-      '<button class="btn-s" onclick="prevStep()">← 戻る</button>' +
-    '</div>';
+    const db2 = getDB();
+    const items = db2.stockItems || [];
+    // マスタ全商品を表示、保存済み数量を復元
+    const saved = {};
+    (formData.beanEntries || []).forEach(e => { if (e.name) saved[e.name] = e; });
+    const masterRows = items.map((item, i) => {
+      const e = saved[item] || {};
+      return `<div class="bean-entry-row">
+        <div style="flex:1;font-size:13px;font-weight:700;color:var(--text1);padding:2px 0;">${item}</div>
+        <div class="bean-entry-qty">
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateMasterEntry('${item}','gram',this.value)" style="width:72px;">
+          <span class="stock-unit">g</span>
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateMasterEntry('${item}','bag',this.value)" style="width:56px;margin-left:8px;">
+          <span class="stock-unit">個/袋</span>
+        </div>
+      </div>`;
+    }).join('');
+    const customRows = (formData.beanEntries||[]).filter(e => e.name && items.indexOf(e.name)===-1).map((e,i)=>`
+      <div class="bean-entry-row">
+        <input type="text" class="finput" placeholder="商品名" value="${e.name||''}" oninput="updateCustomEntry(${i},this.value)" style="flex:1;font-size:13px;">
+        <div class="bean-entry-qty">
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateCustomEntry(${i},null,'gram',this.value)" style="width:72px;">
+          <span class="stock-unit">g</span>
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateCustomEntry(${i},null,'bag',this.value)" style="width:56px;margin-left:8px;">
+          <span class="stock-unit">個/袋</span>
+        </div>
+      </div>`).join('');
+    return `<div class="step-card">
+      <div class="step-badge">📦 STEP 5</div>
+      <div class="step-title">在庫状況を<br>入力</div>
+      <div class="step-desc">数量・グラムを入力してください（0のままでもOK）</div>
+      <div class="form-group">
+        <div class="bean-entry-header">
+          <span style="flex:1;font-size:10px;color:var(--text3);letter-spacing:1px;">商品名</span>
+          <span style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-right:4px;">重さ(g)　個数/袋</span>
+        </div>
+        ${masterRows || '<div style="font-size:12px;color:var(--text3);padding:8px;">管理者画面で商品を追加してください</div>'}
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="font-size:11px;color:var(--text3);">✏️ 手書き追加</label>
+        <div id="customStockWrap">${customRows}</div>
+        <button class="bean-add-btn" onclick="addCustomStockEntry()">＋ 手書きで追加</button>
+      </div>
+      <div class="form-group"><label class="form-label">その他メモ</label>
+        <textarea class="finput" id="iSNote" placeholder="例：カップ残り20個、注文済み" style="min-height:70px;">${formData.stockNote || ''}</textarea>
+      </div>
+      <button class="btn-p" onclick="fromStock()">次へ →</button>
+      <button class="btn-s" onclick="prevStep()">← 戻る</button>
+    </div>`;
+  }
+  if (step === 'register') {
+    return `<div class="step-card">
+      <div class="step-badge">💴 STEP 6</div>
+      <div class="step-title">レジ金・備品</div>
+      <div class="step-desc">閉店時の金額を入力してください（任意）</div>
+      <div class="form-group">
+        <label class="form-label">レジ金（閉店時）</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" class="finput" id="iRegisterCash" placeholder="例：50000" inputmode="numeric" value="${formData.registerCash||''}" style="flex:1;">
+          <span style="font-size:14px;color:var(--text3);font-weight:700;">円</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備品購入金額</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" class="finput" id="iSuppliesCost" placeholder="例：3000" inputmode="numeric" value="${formData.suppliesCost||''}" style="flex:1;">
+          <span style="font-size:14px;color:var(--text3);font-weight:700;">円</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備品メモ</label>
+        <textarea class="finput" id="iSuppliesNote" placeholder="例：コーヒーフィルター、カップ補充" style="min-height:60px;">${formData.suppliesNote||''}</textarea>
+      </div>
+      <button class="btn-p" onclick="fromRegister()">次へ →</button>
+      <button class="btn-s" onclick="prevStep()">← 戻る</button>
+    </div>`;
   }
   if (step === 'episode') {
     const db = getDB();
@@ -3065,9 +3169,54 @@ function removeBeanEntry(idx) {
   if (!wrap) return;
   wrap.innerHTML = buildBeanRowsHtml(formData.beanEntries);
 }
+function updateMasterEntry(name, field, val) {
+  if (!formData.beanEntries) formData.beanEntries = [];
+  const db2 = getDB();
+  const items = db2.stockItems || [];
+  // マスタ商品の既存エントリを探す
+  let entry = formData.beanEntries.find(e => e.name === name);
+  if (!entry) {
+    entry = { name, gram: '', bag: '' };
+    // マスタ順に並ぶよう挿入
+    const masterIdx = items.indexOf(name);
+    const insertAt = formData.beanEntries.filter(e => items.indexOf(e.name) < masterIdx && items.indexOf(e.name) !== -1).length;
+    formData.beanEntries.splice(insertAt, 0, entry);
+  }
+  entry[field] = val;
+}
+function addCustomStockEntry() {
+  if (!formData.beanEntries) formData.beanEntries = [];
+  formData.beanEntries.push({ name: '', gram: '', bag: '' });
+  // 画面を再描画
+  const step = STEPS[stepIdx];
+  document.getElementById('stepContainer').innerHTML = buildStepHTML(step);
+}
+function updateCustomEntry(i, nameVal, field, val) {
+  if (!formData.beanEntries) return;
+  const db2 = getDB();
+  const items = db2.stockItems || [];
+  const customEntries = formData.beanEntries.filter(e => !e.name || items.indexOf(e.name) === -1);
+  if (customEntries[i]) {
+    if (nameVal !== null) customEntries[i].name = nameVal;
+    else customEntries[i][field] = val;
+  }
+}
+
+function fromRegister() {
+  formData.registerCash  = document.getElementById('iRegisterCash')?.value || '';
+  formData.suppliesCost  = document.getElementById('iSuppliesCost')?.value || '';
+  formData.suppliesNote  = document.getElementById('iSuppliesNote')?.value || '';
+  nextStep();
+}
+
 function fromStock() {
   formData.stockNote = document.getElementById('iSNote')?.value || '';
   if (!formData.beanEntries) formData.beanEntries = [];
+  // マスタ入力欄の値を再収集（input要素から直接読む）
+  document.querySelectorAll('.bean-entry-row').forEach(row => {
+    const nameEl = row.querySelector('[data-item-name]');
+    if (nameEl) { /* マスタ行は updateMasterEntry で処理済み */ }
+  });
   formData.stockBeanGram = formData.beanEntries.reduce((s, e) => s + (parseInt(e.gram)||0), 0);
   formData.stockBeanBag  = formData.beanEntries.reduce((s, e) => s + (parseInt(e.bag)||0), 0);
   nextStep();
@@ -3137,6 +3286,9 @@ function submitRecord() {
     stockBeanBag: parseInt(formData.stockBeanBag) || 0,
     beanEntries: formData.beanEntries || [],
     stockNote: formData.stockNote || '',
+    registerCash: parseInt(formData.registerCash) || 0,
+    suppliesCost: parseInt(formData.suppliesCost) || 0,
+    suppliesNote: formData.suppliesNote || '',
     episode: formData.episode,
     achievement: formData.achievement,
     improvement: formData.improvement,
@@ -3195,7 +3347,7 @@ function editTodayRecord() {
   editRecord(rec.id);
 }
 
-function resetFlow() { stepIdx = 0; formData = {}; renderStep(); }
+function resetFlow() { stepIdx = 0; formData = loadInterimAsFormData(); renderStep(); }
 function setReviewDone(val, btn) {
   formData.reviewDone = val;
   document.querySelectorAll('.review-choice').forEach(b => b.classList.remove('sel','done','partial','not'));
@@ -3812,6 +3964,113 @@ function submitTimelinePost() {
 }
 
 
+// ===== 在庫ビュー =====
+function renderStockView() {
+  const el = document.getElementById('stockViewContent');
+  if (!el) return;
+  const db = getDB();
+  const records = db.records || [];
+  const today = todayStr();
+
+  // 各店舗の最新在庫レコードを取得
+  const latestByStore = {};
+  STORES.forEach(s => {
+    const storeRecs = records
+      .filter(r => r.store === s && r.beanEntries && r.beanEntries.some(b => b.name))
+      .sort((a, b) => b.date.localeCompare(a.date));
+    if (storeRecs.length > 0) latestByStore[s] = storeRecs[0];
+  });
+
+  // 中間報告の在庫も加味（当日分）
+  const interimByStore = {};
+  (db.posts || []).forEach(p => {
+    if (p.type === 'interim' && p.date === today && p.stockNote) {
+      interimByStore[p.store] = p;
+    }
+  });
+
+  let html = '';
+  STORES.forEach((store, i) => {
+    const col = STORE_COLORS[i];
+    const rec = latestByStore[store];
+    const interim = interimByStore[store];
+    const dateLabel = rec ? (rec.date === today ? '今日' : rec.date.slice(5).replace('-','/')) : null;
+    const isOwn = currentUser && currentUser.store === store;
+
+    // 在庫リスト
+    let itemsHTML = '';
+    if (rec && rec.beanEntries && rec.beanEntries.some(b => b.name)) {
+      itemsHTML = rec.beanEntries
+        .filter(b => b.name)
+        .map(b => {
+          const gram = b.gram ? `${parseInt(b.gram).toLocaleString()}g` : '';
+          const bag  = b.bag  ? `${b.bag}袋` : '';
+          const qty  = [gram, bag].filter(Boolean).join(' / ');
+          // 在庫が少ないか判定（豆は200g以下、袋は2以下で警告）
+          const lowG = b.gram && parseInt(b.gram) <= 200;
+          const lowB = b.bag  && parseInt(b.bag)  <= 2;
+          const warn = (lowG || lowB) ? '⚠️ ' : '';
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;color:var(--text1);font-weight:600;">${warn}${b.name}</span>
+            <span style="font-size:13px;color:${warn ? 'var(--danger)' : 'var(--gold2)'};font-weight:700;">${qty || '—'}</span>
+          </div>`;
+        }).join('');
+    } else {
+      itemsHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">在庫データなし</div>';
+    }
+
+    // メモ
+    let memoHTML = '';
+    if (rec && rec.stockNote) {
+      memoHTML = `<div style="margin-top:8px;font-size:12px;color:var(--text3);padding:8px 10px;background:var(--surface3);border-radius:8px;line-height:1.6;">📝 ${rec.stockNote}</div>`;
+    }
+    if (interim && interim.stockNote) {
+      memoHTML += `<div style="margin-top:6px;font-size:12px;color:var(--caramel2);padding:8px 10px;background:rgba(200,131,58,0.08);border-radius:8px;line-height:1.6;">📊 中間報告: ${interim.stockNote}</div>`;
+    }
+
+    html += `<div class="card" style="border-left:3px solid ${col};margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:900;color:${col};">${store}</div>
+        <div style="font-size:11px;color:var(--text3);">${dateLabel ? `最終更新: ${dateLabel}` : '未入力'}</div>
+      </div>
+      ${itemsHTML}
+      ${memoHTML}
+    </div>`;
+  });
+
+  // レジ金・備品セクション
+  let registerHTML = '<div class="sec-title">💴 レジ金・備品（最新）</div>';
+  STORES.forEach((store, i) => {
+    const col = STORE_COLORS[i];
+    const storeRecs2 = records.filter(r => r.store === store && (r.registerCash || r.suppliesCost || r.suppliesNote))
+      .sort((a,b) => b.date.localeCompare(a.date));
+    const rec2 = storeRecs2[0];
+    if (!rec2) return;
+    const dateLabel2 = rec2.date === today ? '今日' : rec2.date.slice(5).replace('-','/');
+    registerHTML += `<div class="card" style="border-left:3px solid ${col};margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:900;color:${col};">${store}</div>
+        <div style="font-size:11px;color:var(--text3);">${dateLabel2}</div>
+      </div>
+      ${rec2.registerCash ? `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--text3);">💴 レジ金</span>
+        <span style="font-size:13px;font-weight:700;color:var(--gold2);">¥${(rec2.registerCash||0).toLocaleString()}</span>
+      </div>` : ''}
+      ${rec2.suppliesCost ? `<div style="display:flex;justify-content:space-between;padding:5px 0;">
+        <span style="font-size:12px;color:var(--text3);">🛒 備品</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text1);">¥${(rec2.suppliesCost||0).toLocaleString()}</span>
+      </div>` : ''}
+      ${rec2.suppliesNote ? `<div style="font-size:12px;color:var(--text3);margin-top:4px;">${rec2.suppliesNote}</div>` : ''}
+    </div>`;
+  });
+
+  el.innerHTML = `
+    <div class="sec-title">📦 店舗別在庫状況</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">各店舗の最新レコードの在庫を表示しています</div>
+    ${html}
+    ${registerHTML}`;
+}
+
 // ===== 中間報告 =====
 function startInterimReport() {
   const db = getDB();
@@ -4200,16 +4459,35 @@ function renderInputLog(records, db) {
   const el = document.getElementById('dInputLog');
   if (!el) return;
   const today = todayStr();
+  const posts = db.posts || [];
   const html = STORES.map((s, i) => {
-    const r = records.filter(rec => rec.store === s && rec.date === today).sort((a, b) => b.createdAt?.localeCompare(a.createdAt))[0];
+    const finalRec = records.filter(rec => rec.store === s && rec.date === today)
+      .sort((a, b) => (b.createdAt||'').localeCompare(a.createdAt||''))[0];
+    const interimPost = posts.filter(p => p.store === s && p.date === today && p.type === 'interim')
+      .sort((a, b) => (b.ts||'').localeCompare(a.ts||''))[0];
+
+    let statusLabel, statusDot, salesHTML = '';
+    if (finalRec) {
+      statusLabel = `✅ ${finalRec.staff} さんが最終報告済み`;
+      statusDot = 'done';
+      salesHTML = `<div class="log-sales">¥${(finalRec.sales||0).toLocaleString()}</div>`;
+    } else if (interimPost) {
+      statusLabel = `📊 ${interimPost.staff} さんが中間報告中`;
+      statusDot = 'interim';
+      if (interimPost.sales) salesHTML = `<div class="log-sales" style="color:var(--caramel2);">¥${interimPost.sales.toLocaleString()}<span style="font-size:10px;opacity:0.7;">途中</span></div>`;
+    } else {
+      statusLabel = '⏳ 未入力';
+      statusDot = 'pending';
+    }
+
     return `<div class="log-item">
       <div class="log-avatar" style="background:${STORE_COLORS[i]}">${i+1}</div>
       <div class="log-info">
         <div class="log-name">${s}</div>
-        <div class="log-detail">${r ? `${r.staff} さんが入力済み` : '未入力'}</div>
+        <div class="log-detail" style="font-size:12px;">${statusLabel}</div>
       </div>
-      ${r ? `<div class="log-sales">¥${r.sales.toLocaleString()}</div>` : ''}
-      <div class="done-dot ${r ? 'done' : 'pending'}"></div>
+      ${salesHTML}
+      <div class="done-dot ${statusDot}"></div>
     </div>`;
   }).join('');
   el.innerHTML = html;
