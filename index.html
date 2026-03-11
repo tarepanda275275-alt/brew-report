@@ -2183,13 +2183,13 @@ async function saveDBToSupabase(db, retryCount = 0) {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_data', {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_data?on_conflict=id', {
       method: 'POST',
       headers: {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
       body: JSON.stringify({ id: 'main', data: db }),
       signal: controller.signal
@@ -2379,12 +2379,15 @@ function renderHeaderAvatar(user) {
     el.style.background = 'var(--caramel)';
   }
 }
-function doLogin() {
+async function doLogin() {
   const name = document.getElementById('nameInput').value.trim();
   const pass = document.getElementById('passInput').value.trim();
   if (!name) { showToast('名前を入力してください'); return; }
   if (!pass) { showToast('パスワードを入力してください'); return; }
-  const db = getDB();
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  _db_cache = db;
+  showLoadingOverlay(false);
   const user = db.users.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
   if (!user) { showToast('名前またはパスワードが違います'); return; }
   currentUser = user;
@@ -2392,11 +2395,14 @@ function doLogin() {
   renderHeaderAvatar(user);
   checkReportGate();
 }
-function doOwnerLogin() {
+async function doOwnerLogin() {
   const id = document.getElementById('ownerIdInput').value.trim();
   const pass = document.getElementById('ownerPassInput').value.trim();
   if (!id || !pass) { showToast('IDとパスワードを入力してください'); return; }
-  const db = getDB();
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  _db_cache = db;
+  showLoadingOverlay(false);
   const user = db.users.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
   if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
   currentUser = user;
@@ -2759,14 +2765,14 @@ function switchTab(tab) {
   if (nb) nb.classList.add('active');
   const body = document.getElementById('appBody');
   if (body) body.scrollTop = 0;
-  if (tab === 'dashboard') renderDashboard();
-  if (tab === 'goals') renderGoals();
-  if (tab === 'goals-staff') renderGoalsStaff();
-  if (tab === 'mydata') renderMyData();
-  if (tab === 'comments') renderComments();
-  if (tab === 'export') renderExport();
-  if (tab === 'monthly') renderMonthly();
-  if (tab === 'dashboard-staff') renderDashboardStaff();
+  if (tab === 'dashboard') { loadDBFromSupabase().then(db => { _db_cache = db; renderDashboard(); }); }
+  else if (tab === 'goals') renderGoals();
+  else if (tab === 'goals-staff') renderGoalsStaff();
+  else if (tab === 'mydata') { loadDBFromSupabase().then(db => { _db_cache = db; renderMyData(); }); }
+  else if (tab === 'comments') renderComments();
+  else if (tab === 'export') renderExport();
+  else if (tab === 'monthly') { loadDBFromSupabase().then(db => { _db_cache = db; renderMonthly(); }); }
+  else if (tab === 'dashboard-staff') { loadDBFromSupabase().then(db => { _db_cache = db; renderDashboardStaff(); }); }
   if (tab === 'goals-all') renderGoalsAll();
   if (tab === 'episodes') renderEpisodes();
   if (tab === 'timeline' || tab === 'timeline-owner') renderTimeline(tab);
