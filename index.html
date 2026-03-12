@@ -2186,7 +2186,7 @@ async function _saveConfig(config) {
 async function _loadAllRecords() {
   try {
     // 全件取得（10000件上限）
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_records?select=*&order=date.asc&limit=10000', {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_records?select=*&order=created_at.asc&limit=10000', {
       headers: _supaHeaders()
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
