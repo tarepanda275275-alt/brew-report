@@ -3422,6 +3422,9 @@ function submitRecord() {
     createdAt: new Date().toISOString()
   });
   saveDB(db);
+  // グラフを即時反映
+  try { renderMyData(); } catch(e) {}
+  try { renderDashboardStaff(); } catch(e) {}
   nextStep();
 }
 
@@ -5610,10 +5613,14 @@ function confirmRestoreBackup() {
     if (preview) preview.innerHTML = '';
   }, { icon: '⬆️', okLabel: '復元する', danger: true });
 }
-function todayStr() { return new Date().toISOString().split('T')[0]; }
+function todayStr() {
+  const _d = new Date();
+  return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0');
+}
 function offsetDate(dateStr, days) {
-  const d = new Date(dateStr); d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  const _d = new Date(dateStr + 'T00:00:00');
+  _d.setDate(_d.getDate() + days);
+  return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0');
 }
 function prevMonthStr() {
   const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
