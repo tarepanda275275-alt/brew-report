@@ -3511,8 +3511,9 @@ function renderMyData() {
   for (let i = 13; i >= 0; i--) {
     const d = offsetDate(todayStr(), -i);
     last14L.push(d.slice(5).replace('-', '/'));
-    const r = records.find(rec => rec.date === d);
-    last14.push(r ? r.sales : null);
+    const recs_d = records.filter(rec => rec.date === d);
+    const r = recs_d.find(rec => rec.sales > 0) || recs_d[0];
+    last14.push(r && r.sales > 0 ? r.sales : null);
   }
   const today = todayStr();
   const logHTML = records.slice(0, 8).map(r =>
