@@ -3394,6 +3394,9 @@ function submitRecord() {
   const _today = formData.date || todayStr();
   db.posts = (db.posts||[]).filter(p => !(p.staff === currentUser.name && p.date === _today && p.type === 'interim'));
 
+  // 同日・同店舗の重複を全て削除してから新規追加（後から入力したもので上書き）
+  db.records = db.records.filter(r => !(r.date === _today && r.store === formData.store));
+
   db.records.push({
     id: Date.now(),
     staff: currentUser.name,
@@ -5208,16 +5211,24 @@ function executeImport() {
   const db = getDB();
   let added = 0, updated = 0;
   pendingImportRows.forEach(r => {
-    // 日付＋店舗が同じレコードを探す（スタッフ不問）
+    // 日付＋店舗が同じレコードを全て探す
+    const indices = [];
+    db.records.forEach((ex, i) => { if (ex.date === r.date && ex.store === r.store) indices.push(i); });
+    // 重複がある場合は最初の1件だけ残して他を削除
+    if (indices.length > 1) {
+      // 後ろから削除（インデックスがずれないよう）
+      for (let i = indices.length - 1; i >= 1; i--) {
+        db.records.splice(indices[i], 1);
+      }
+    }
     const idx = db.records.findIndex(ex => ex.date === r.date && ex.store === r.store);
     if (idx >= 0) {
-      // 上書き（手入力データは保持、Airメイトの数値で更新）
+      // 後から入力したもので完全上書き
       db.records[idx] = {
         ...db.records[idx],
-        sales: r.sales || db.records[idx].sales,
-        customers: r.customers || db.records[idx].customers,
-        spend_per_customer: r.spend_per_customer || db.records[idx].spend_per_customer,
-        weather: r.weather || db.records[idx].weather,
+        ...r,
+        id: db.records[idx].id, // IDは保持
+        updatedAt: new Date().toISOString(),
       };
       updated++;
     } else {
