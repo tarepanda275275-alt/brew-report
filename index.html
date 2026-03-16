@@ -2098,6 +2098,9 @@ select.bean-name-inp option {
     <div class="tab-content" id="tab-timeline">
       <div id="timelineContent"></div>
     </div>
+    <div class="tab-content" id="tab-stock-staff">
+      <div id="stockViewContentStaff"></div>
+    </div>
   </div>
   <!-- Owner tabs -->
   <div id="ownerTabs" style="display:none;">
@@ -2843,7 +2846,7 @@ function setupNav() {
       <button class="nav-btn" id="nb-episodes" onclick="switchTab('episodes')"><span class="nav-icon">☕</span><span class="nav-label">エピソード</span></button>
       <button class="nav-btn" id="nb-timeline" onclick="switchTab('timeline')"><span class="nav-icon">💬</span><span class="nav-label">TL</span></button>
       <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">📊</span><span class="nav-label">全体</span></button>
-      <button class="nav-btn" id="nb-stock" onclick="switchTab('stock')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>`;
+      <button class="nav-btn" id="nb-stock-staff" onclick="switchTab('stock-staff')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>`;
   }
 }
 function switchTab(tab) {
@@ -2868,6 +2871,7 @@ function switchTab(tab) {
   if (tab === 'episodes') renderEpisodes();
   if (tab === 'timeline' || tab === 'timeline-owner') renderTimeline(tab);
   if (tab === 'stock') renderStockView();
+  if (tab === 'stock-staff') renderStockViewStaff();
 }
 const STEPS = ['store_date','sales','sales_chart','top_item','loss','stock','register','episode','complete'];
 function renderStep() {
@@ -4095,10 +4099,21 @@ function submitTimelinePost() {
 }
 
 
+// ===== スタッフ用在庫ビュー =====
+function renderStockViewStaff() {
+  const el = document.getElementById('stockViewContentStaff');
+  if (!el) return;
+  // 内容はrenderStockViewと同じものをレンダリング
+  renderStockViewTo(el);
+}
+
 // ===== 在庫ビュー =====
 function renderStockView() {
   const el = document.getElementById('stockViewContent');
   if (!el) return;
+  renderStockViewTo(el);
+}
+function renderStockViewTo(el) {
   const db = getDB();
   const records = db.records || [];
   const today = todayStr();
