@@ -2188,14 +2188,22 @@ async function _saveConfig(config) {
 
 async function _loadAllRecords() {
   try {
-    // 全件取得（10000件上限）
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_records?select=*&order=created_at.asc&limit=10000', {
-      headers: Object.assign(_supaHeaders(), { 'Range-Unit': 'items', 'Range': '0-9999' })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const rows = await res.json();
-    // 各行の data フィールドを展開して配列に
-    return rows.map(r => r.data);
+    // 1000件ずつページングして全件取得
+    const allRows = [];
+    let offset = 0;
+    const pageSize = 1000;
+    while (true) {
+      const res = await fetch(
+        SUPA_URL + '/rest/v1/brew_records?select=*&order=created_at.asc&limit=' + pageSize + '&offset=' + offset,
+        { headers: Object.assign(_supaHeaders(), { 'Range-Unit': 'items', 'Range': offset + '-' + (offset + pageSize - 1), 'Prefer': 'count=none' }) }
+      );
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      allRows.push(...rows);
+      if (rows.length < pageSize) break; // 最後のページ
+      offset += pageSize;
+    }
+    return allRows.map(r => r.data);
   } catch(e) {
     console.warn('records load failed:', e);
     return null;
