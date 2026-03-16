@@ -2203,15 +2203,27 @@ async function _loadAllRecords() {
 }
 
 async function _upsertRecord(record) {
-  // record.id を主キーとして upsert
-  try {
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_records?on_conflict=record_id', {
-      method: 'POST',
-      headers: Object.assign(_supaHeaders(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
-      body: JSON.stringify({ record_id: String(record.id), data: record })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-  } catch(e) { console.warn('record upsert failed:', e); throw e; }
+  return _upsertRecords([record]);
+}
+
+// 一括upsert（最大500件ずつ）
+async function _upsertRecords(records) {
+  const CHUNK = 500;
+  for (let i = 0; i < records.length; i += CHUNK) {
+    const chunk = records.slice(i, i + CHUNK);
+    const payload = chunk.map(r => ({ record_id: String(r.id), data: r }));
+    try {
+      const res = await fetch(SUPA_URL + '/rest/v1/brew_records?on_conflict=record_id', {
+        method: 'POST',
+        headers: Object.assign(_supaHeaders(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error('HTTP ' + res.status + ' ' + errText);
+      }
+    } catch(e) { console.warn('records upsert failed:', e); throw e; }
+  }
 }
 
 async function _deleteRecord(recordId) {
@@ -2276,21 +2288,23 @@ async function saveDBToSupabase(db, retryCount = 0) {
     // 1. 設定を保存（recordsを除いた軽量データ）
     await _saveConfig(db);
 
-    // 2. recordsを差分upsert（新規・更新のみ）
+    // 2. recordsを差分upsert（新規・更新のみ、一括送信）
     const records = db.records || [];
     const currentIds = new Set(records.map(r => String(r.id)));
 
-    // 新規・更新レコードをupsert
+    // 新規・更新レコードを一括upsert
     const toUpsert = records.filter(r => !_lastSavedRecordIds.has(String(r.id)) || r._dirty);
-    for (const rec of toUpsert) {
-      await _upsertRecord(rec);
+    if (toUpsert.length > 0) {
+      await _upsertRecords(toUpsert);
     }
 
     // 削除されたレコードを検出してDBからも削除
+    const toDelete = [];
     for (const oldId of _lastSavedRecordIds) {
-      if (!currentIds.has(oldId)) {
-        await _deleteRecord(oldId);
-      }
+      if (!currentIds.has(oldId)) toDelete.push(oldId);
+    }
+    for (const oldId of toDelete) {
+      await _deleteRecord(oldId);
     }
 
     _lastSavedRecordIds = currentIds;
@@ -5221,7 +5235,7 @@ function showImportPreview(rows, filename) {
       </div>
     </div>`;
 }
-function executeImport() {
+async function executeImport() {
   if (!pendingImportRows.length) return;
   const db = getDB();
   let added = 0, updated = 0;
@@ -5251,12 +5265,18 @@ function executeImport() {
       added++;
     }
   });
-  saveDB(db);
-  pendingImportRows = [];
-  const msg = `✅ 新規${added}件追加${updated ? `・${updated}件上書き` : ''}`;
-  showToast(msg);
-  document.getElementById('importPreview').innerHTML = `<div style="color:var(--success);font-weight:700;font-size:13px;padding:8px 0;">${msg}</div>`;
-  renderDashboard();
+  // 保存完了を待つ（ログアウト前に保存が完了するように）
+  showToast('⏳ 保存中...');
+  try {
+    await saveDBToSupabase(db);
+    pendingImportRows = [];
+    const msg = `✅ 新規${added}件追加${updated ? `・${updated}件上書き` : ''} — 保存完了`;
+    showToast(msg);
+    document.getElementById('importPreview').innerHTML = `<div style="color:var(--success);font-weight:700;font-size:13px;padding:8px 0;">${msg}</div>`;
+    renderDashboard();
+  } catch(e) {
+    showToast('⚠️ 保存に失敗しました。再度お試しください');
+  }
 }
 function exportCSV(type) { exportXLSX(type); }
 function exportReport() { exportXLSX('all'); }
