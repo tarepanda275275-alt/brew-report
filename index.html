@@ -2214,11 +2214,18 @@ async function _upsertRecord(record) {
   return _upsertRecords([record]);
 }
 
-// 一括upsert（最大500件ずつ）
+// 一括upsert（最大500件ずつ、重複除去済み）
 async function _upsertRecords(records) {
+  // record_id重複を除去（後勝ち）
+  const seen = new Map();
+  for (const r of records) {
+    seen.set(String(r.id), r);
+  }
+  const deduped = Array.from(seen.values());
+
   const CHUNK = 500;
-  for (let i = 0; i < records.length; i += CHUNK) {
-    const chunk = records.slice(i, i + CHUNK);
+  for (let i = 0; i < deduped.length; i += CHUNK) {
+    const chunk = deduped.slice(i, i + CHUNK);
     const payload = chunk.map(r => ({ record_id: String(r.id), data: r }));
     try {
       const res = await fetch(SUPA_URL + '/rest/v1/brew_records?on_conflict=record_id', {
@@ -5228,7 +5235,13 @@ function showImportPreview(rows, filename) {
     achievement: mapCol(r,'achievement'),
     improvement: mapCol(r,'improvement'),
   })).filter(r => r.date && r.store);
-  pendingImportRows = mapped;
+  // 同じ日付・店舗の重複を除去（後勝ち）
+  const dedupMap = new Map();
+  for (const r of mapped) {
+    dedupMap.set(r.store + '_' + r.date, r);
+  }
+  const dedupedMapped = Array.from(dedupMap.values());
+  pendingImportRows = dedupedMapped;
   const sample = mapped.slice(0,3).map(r =>
     `<div style="font-size:11px;padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">${r.date} / ${r.store} / ${r.staff} / ¥${r.sales.toLocaleString()}</div>`
   ).join('');
