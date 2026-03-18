@@ -2880,7 +2880,6 @@ function setupNav() {
       <button class="nav-btn" id="nb-goals" onclick="switchTab('goals')"><span class="nav-icon">🎯</span><span class="nav-label">目標管理</span></button>
       <button class="nav-btn" id="nb-comments" onclick="switchTab('comments')"><span class="nav-icon">💬</span><span class="nav-label">コメント</span></button>
       <button class="nav-btn" id="nb-timeline-owner" onclick="switchTab('timeline-owner')"><span class="nav-icon">📱</span><span class="nav-label">TL</span></button>
-      <button class="nav-btn" id="nb-export" onclick="switchTab('export')"><span class="nav-icon">📤</span><span class="nav-label">出力</span></button>
       <button class="nav-btn" id="nb-monthly" onclick="switchTab('monthly')"><span class="nav-icon">📅</span><span class="nav-label">月別分析</span></button>
       <button class="nav-btn" id="nb-stock" onclick="switchTab('stock')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>`;
   } else {
@@ -3063,13 +3062,17 @@ function buildStepHTML(step) {
     (formData.beanEntries || []).forEach(e => { if (e.name) saved[e.name] = e; });
     const masterRows = items.map((item, i) => {
       const e = saved[item] || {};
+      const unitVal = e.unit || '袋';
       return `<div class="bean-entry-row">
         <div style="flex:1;font-size:13px;font-weight:700;color:var(--text1);padding:2px 0;">${item}</div>
         <div class="bean-entry-qty">
           <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateMasterEntry('${item}','gram',this.value)" style="width:72px;">
           <span class="stock-unit">g</span>
           <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateMasterEntry('${item}','bag',this.value)" style="width:56px;margin-left:8px;">
-          <span class="stock-unit">個/袋</span>
+          <select class="stock-inp" onchange="updateMasterEntry('${item}','unit',this.value)" style="width:48px;margin-left:4px;font-size:11px;padding:2px;border-radius:6px;background:var(--surface2);color:var(--text1);border:1px solid var(--border2);">
+            <option value="袋" ${unitVal==='袋'?'selected':''}>袋</option>
+            <option value="個" ${unitVal==='個'?'selected':''}>個</option>
+          </select>
         </div>
       </div>`;
     }).join('');
@@ -3080,7 +3083,10 @@ function buildStepHTML(step) {
           <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateCustomEntry(${i},null,'gram',this.value)" style="width:72px;">
           <span class="stock-unit">g</span>
           <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateCustomEntry(${i},null,'bag',this.value)" style="width:56px;margin-left:8px;">
-          <span class="stock-unit">個/袋</span>
+          <select class="stock-inp" onchange="updateCustomEntry(${i},null,'unit',this.value)" style="width:48px;margin-left:4px;font-size:11px;padding:2px;border-radius:6px;background:var(--surface2);color:var(--text1);border:1px solid var(--border2);">
+            <option value="袋" ${(e.unit||'袋')==='袋'?'selected':''}>袋</option>
+            <option value="個" ${(e.unit||'袋')==='個'?'selected':''}>個</option>
+          </select>
         </div>
       </div>`).join('');
     return `<div class="step-card">
