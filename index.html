@@ -1540,7 +1540,7 @@ function switchTab(tab) {
 // ================================================================
 // 入力フロー
 // ================================================================
-const STEPS = ['store_date', 'sales', 'sales_chart', 'loss', 'episode', 'complete'];
+const STEPS = ['store_date', 'sales', 'sales_chart', 'loss', 'stock', 'register', 'episode', 'complete'];
 let stepIdx = 0;
 let formData = {};
 let miniChartInst = null;
@@ -1643,6 +1643,84 @@ function buildStepHTML(step) {
       <div class="form-group"><label class="form-label">在庫メモ</label>
         <textarea class="finput" id="iSNote" placeholder="例：カップ残り20個" style="min-height:70px;">${formData.stockNote || ''}</textarea></div>
       <button class="btn-p" onclick="fromLoss()">次へ →</button>
+      <button class="btn-s" onclick="prevStep()">← 戻る</button>
+    </div>`;
+  }
+  if (step === 'stock') {
+    const db2 = getDB();
+    const items = db2.stockItems || [];
+    // マスタ全商品を表示、保存済み数量を復元
+    const saved = {};
+    (formData.beanEntries || []).forEach(e => { if (e.name) saved[e.name] = e; });
+    const masterRows = items.map((item, i) => {
+      const e = saved[item] || {};
+      return `<div class="bean-entry-row">
+        <div style="flex:1;font-size:13px;font-weight:700;color:var(--text1);padding:2px 0;">${item}</div>
+        <div class="bean-entry-qty">
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateMasterEntry('${item}','gram',this.value)" style="width:72px;">
+          <span class="stock-unit">g</span>
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateMasterEntry('${item}','bag',this.value)" style="width:56px;margin-left:8px;">
+          <span class="stock-unit">個/袋</span>
+        </div>
+      </div>`;
+    }).join('');
+    const customRows = (formData.beanEntries||[]).filter(e => e.name && items.indexOf(e.name)===-1).map((e,i)=>`
+      <div class="bean-entry-row">
+        <input type="text" class="finput" placeholder="商品名" value="${e.name||''}" oninput="updateCustomEntry(${i},this.value)" style="flex:1;font-size:13px;">
+        <div class="bean-entry-qty">
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateCustomEntry(${i},null,'gram',this.value)" style="width:72px;">
+          <span class="stock-unit">g</span>
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateCustomEntry(${i},null,'bag',this.value)" style="width:56px;margin-left:8px;">
+          <span class="stock-unit">個/袋</span>
+        </div>
+      </div>`).join('');
+    return `<div class="step-card">
+      <div class="step-badge">📦 STEP 5</div>
+      <div class="step-title">在庫状況を<br>入力</div>
+      <div class="step-desc">数量・グラムを入力してください（0のままでもOK）</div>
+      <div class="form-group">
+        <div class="bean-entry-header">
+          <span style="flex:1;font-size:10px;color:var(--text3);letter-spacing:1px;">商品名</span>
+          <span style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-right:4px;">重さ(g)　個数/袋</span>
+        </div>
+        ${masterRows || '<div style="font-size:12px;color:var(--text3);padding:8px;">管理者画面で商品を追加してください</div>'}
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="font-size:11px;color:var(--text3);">✏️ 手書き追加</label>
+        <div id="customStockWrap">${customRows}</div>
+        <button class="bean-add-btn" onclick="addCustomStockEntry()">＋ 手書きで追加</button>
+      </div>
+      <div class="form-group"><label class="form-label">その他メモ</label>
+        <textarea class="finput" id="iSNote" placeholder="例：カップ残り20個、注文済み" style="min-height:70px;">${formData.stockNote || ''}</textarea>
+      </div>
+      <button class="btn-p" onclick="fromStock()">次へ →</button>
+      <button class="btn-s" onclick="prevStep()">← 戻る</button>
+    </div>`;
+  }
+  if (step === 'register') {
+    return `<div class="step-card">
+      <div class="step-badge">💴 STEP 6</div>
+      <div class="step-title">レジ金・備品</div>
+      <div class="step-desc">閉店時の金額を入力してください（任意）</div>
+      <div class="form-group">
+        <label class="form-label">レジ金（閉店時）</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" class="finput" id="iRegisterCash" placeholder="例：50000" inputmode="numeric" value="${formData.registerCash||''}" style="flex:1;">
+          <span style="font-size:14px;color:var(--text3);font-weight:700;">円</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備品購入金額</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" class="finput" id="iSuppliesCost" placeholder="例：3000" inputmode="numeric" value="${formData.suppliesCost||''}" style="flex:1;">
+          <span style="font-size:14px;color:var(--text3);font-weight:700;">円</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備品メモ</label>
+        <textarea class="finput" id="iSuppliesNote" placeholder="例：コーヒーフィルター、カップ補充" style="min-height:60px;">${formData.suppliesNote||''}</textarea>
+      </div>
+      <button class="btn-p" onclick="fromRegister()">次へ →</button>
       <button class="btn-s" onclick="prevStep()">← 戻る</button>
     </div>`;
   }
@@ -1771,6 +1849,58 @@ function fromLoss() {
   nextStep();
 }
 
+function updateMasterEntry(name, field, val) {
+  if (!formData.beanEntries) formData.beanEntries = [];
+  const db2 = getDB();
+  const items = db2.stockItems || [];
+  // マスタ商品の既存エントリを探す
+  let entry = formData.beanEntries.find(e => e.name === name);
+  if (!entry) {
+    entry = { name, gram: '', bag: '' };
+    // マスタ順に並ぶよう挿入
+    const masterIdx = items.indexOf(name);
+    const insertAt = formData.beanEntries.filter(e => items.indexOf(e.name) < masterIdx && items.indexOf(e.name) !== -1).length;
+    formData.beanEntries.splice(insertAt, 0, entry);
+  }
+  entry[field] = val;
+}
+function addCustomStockEntry() {
+  if (!formData.beanEntries) formData.beanEntries = [];
+  formData.beanEntries.push({ name: '', gram: '', bag: '' });
+  // 画面を再描画
+  const step = STEPS[stepIdx];
+  document.getElementById('stepContainer').innerHTML = buildStepHTML(step);
+}
+function updateCustomEntry(i, nameVal, field, val) {
+  if (!formData.beanEntries) return;
+  const db2 = getDB();
+  const items = db2.stockItems || [];
+  const customEntries = formData.beanEntries.filter(e => !e.name || items.indexOf(e.name) === -1);
+  if (customEntries[i]) {
+    if (nameVal !== null) customEntries[i].name = nameVal;
+    else customEntries[i][field] = val;
+  }
+}
+
+function fromRegister() {
+  formData.registerCash  = document.getElementById('iRegisterCash')?.value || '';
+  formData.suppliesCost  = document.getElementById('iSuppliesCost')?.value || '';
+  formData.suppliesNote  = document.getElementById('iSuppliesNote')?.value || '';
+  nextStep();
+}
+
+function fromStock() {
+  formData.stockNote = document.getElementById('iSNote')?.value || '';
+  if (!formData.beanEntries) formData.beanEntries = [];
+  // マスタ入力欄の値を再収集（input要素から直接読む）
+  document.querySelectorAll('.bean-entry-row').forEach(row => {
+    const nameEl = row.querySelector('[data-item-name]');
+    if (nameEl) { /* マスタ行は updateMasterEntry で処理済み */ }
+  });
+  formData.stockBeanGram = formData.beanEntries.reduce((s, e) => s + (parseInt(e.gram)||0), 0);
+  formData.stockBeanBag  = formData.beanEntries.reduce((s, e) => s + (parseInt(e.bag)||0), 0);
+  nextStep();
+}
 function nextStep() { stepIdx++; renderStep(); }
 function prevStep() { if (stepIdx > 0) stepIdx--; renderStep(); }
 function addAmt(n) { const i = document.getElementById('iSales'); if(i) i.value = (parseInt(i.value)||0)+n; }
