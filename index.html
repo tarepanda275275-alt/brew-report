@@ -366,7 +366,7 @@ function previewPastedBackup(text) {
       + '<div>・売上レコード数: <b>' + recCount + '件</b></div>'
       + '<div>・スタッフ数: <b>' + userCount + '名</b></div>'
       + '<div>・作成日時: ' + exportedAt + '</div>'
-      + '<div style="margin-top:8px;color:var(--text3);font-size:11px;">※ 現在のデータはすべて上書きされます</div>'
+      + '<div style="margin-top:8px;color:var(--success);font-size:11px;font-weight:700;">✅ アカウント情報は現在のものを維持します</div>'
       + '</div>'
       + '<button class="btn-p" onclick="confirmRestoreBackup()" style="margin-top:10px;">このデータで復元する ✅</button>';
   } catch(err) {
@@ -380,10 +380,16 @@ function previewPastedBackup(text) {
 
 function confirmRestoreBackup() {
   if (!window._pendingRestoreData) return;
-  showConfirm('現在のデータをバックアップで上書きしますか？\nこの操作は取り消せません。', function() {
-    saveDB(window._pendingRestoreData);
+  showConfirm('現在のデータをバックアップで復元しますか？\nアカウント情報は現在のものを維持します。', function() {
+    const src = window._pendingRestoreData;
+    const db = getDB();
+    // ★ アカウントは現在のものを維持、データだけ復元
+    const currentUsers = db.users ? db.users.slice() : [];
+    const newDb = Object.assign({}, src);
+    newDb.users = currentUsers;
+    saveDB(newDb);
     window._pendingRestoreData = null;
-    showToast('データを復元しました ✅');
+    showToast('データを復元しました ✅ アカウントは維持されています');
     renderExport();
     const preview = document.getElementById('backupRestorePreview');
     if (preview) preview.innerHTML = '';
