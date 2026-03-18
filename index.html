@@ -2170,9 +2170,27 @@ async function _loadConfig() {
 }
 
 async function _saveConfig(config) {
+  // まず現在のbrew_dataを取得してusersを保護
+  let existingUsers = null;
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', {
+      headers: _supaHeaders()
+    });
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].data && rows[0].data.users && rows[0].data.users.length > 0) {
+      existingUsers = rows[0].data.users;
+    }
+  } catch(e) { console.warn('config fetch failed:', e); }
+
   // records を除いた設定だけ保存
   const payload = Object.assign({}, config);
   delete payload.records;
+
+  // usersが空・未定義の場合は既存のusersを使う（絶対に上書きしない）
+  if (existingUsers && (!payload.users || payload.users.length === 0)) {
+    payload.users = existingUsers;
+  }
+
   try {
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data?on_conflict=id', {
       method: 'POST',
