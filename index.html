@@ -280,6 +280,118 @@
   ChartFactory.registry = { plugins: {} };
   global.Chart = ChartFactory;
 })(window);
+
+// ================================================================
+// バックアップ・復元（元のアプリから移植）
+// ================================================================
+function downloadBackup() {
+  const db = getDB();
+  const backup = {
+    _type: 'brew_backup',
+    _version: 'brew_v8',
+    _exportedAt: new Date().toISOString(),
+    data: db
+  };
+  const json = JSON.stringify(backup);
+  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const filename = 'Brew_report' + dateStr + '_Backupdate.txt';
+  const existing = document.getElementById('backupModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'backupModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:stretch;padding:16px;box-sizing:border-box;';
+  modal.innerHTML = '<div style="background:var(--surface2);border-radius:16px;flex:1;display:flex;flex-direction:column;overflow:hidden;max-height:100%;">'
+    + '<div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">'
+    + '<div><div style="font-weight:900;font-size:15px;color:var(--cream);">💾 バックアップデータ</div>'
+    + '<div style="font-size:11px;color:var(--text3);margin-top:2px;" id="backupFilename"></div></div>'
+    + '<button onclick="document.getElementById(\'backupModal\').remove()" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:4px 8px;">✕</button>'
+    + '</div>'
+    + '<div style="padding:14px 16px;background:rgba(200,131,58,0.08);border-bottom:1px solid var(--border);">'
+    + '<div style="font-size:12px;color:var(--text2);line-height:1.8;">'
+    + '<b style="color:var(--caramel2);">① 「全てコピー」ボタンを押す</b><br>'
+    + '<b style="color:var(--caramel2);">② メモアプリを開いて貼り付け</b>（長押し → ペースト）<br>'
+    + '<b style="color:var(--caramel2);">③ ファイル名をつけて保存</b>'
+    + '</div></div>'
+    + '<div style="flex:1;overflow-y:auto;padding:12px 14px;">'
+    + '<textarea id="backupJsonText" readonly style="width:100%;height:180px;background:var(--surface3);border:none;border-radius:10px;padding:10px;font-size:10px;color:var(--text2);font-family:monospace;resize:none;box-sizing:border-box;line-height:1.4;"></textarea>'
+    + '</div>'
+    + '<div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border);">'
+    + '<button onclick="copyBackupJson()" style="background:linear-gradient(135deg,var(--caramel2),var(--gold2));color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:1px;">📋 全てコピー</button>'
+    + '<div id="backupCopyMsg" style="text-align:center;font-size:12px;color:var(--caramel2);height:18px;"></div>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+  const ta = document.getElementById('backupJsonText');
+  if (ta) ta.value = json;
+  const fn = document.getElementById('backupFilename');
+  if (fn) fn.textContent = filename;
+  setTimeout(function() { if (ta) { ta.focus(); ta.select(); } }, 100);
+}
+
+function copyBackupJson() {
+  const ta = document.getElementById('backupJsonText');
+  if (!ta) return;
+  ta.select();
+  const msg = document.getElementById('backupCopyMsg');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value)
+      .then(function() { if (msg) msg.textContent = 'コピーしました！メモアプリに貼り付けてください ✅'; })
+      .catch(function() {
+        document.execCommand('copy');
+        if (msg) msg.textContent = 'コピーしました！メモアプリに貼り付けてください ✅';
+      });
+  } else {
+    document.execCommand('copy');
+    if (msg) msg.textContent = 'コピーしました！メモアプリに貼り付けてください ✅';
+  }
+}
+
+function previewPastedBackup(text) {
+  const preview = document.getElementById('backupRestorePreview');
+  if (!preview) return;
+  const trimmed = text.trim();
+  if (!trimmed) { preview.innerHTML = ''; return; }
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (!parsed._type || parsed._type !== 'brew_backup' || !parsed.data) {
+      preview.innerHTML = '<div style="color:var(--danger);font-size:12px;padding:10px;background:rgba(208,80,80,0.1);border-radius:8px;">❌ BrewReportのバックアップデータではありません</div>';
+      return;
+    }
+    const db = parsed.data;
+    const recCount = (db.records || []).length;
+    const userCount = (db.users || []).filter(function(u){ return u.role === 'staff'; }).length;
+    const exportedAt = parsed._exportedAt ? new Date(parsed._exportedAt).toLocaleString('ja-JP') : '不明';
+    window._pendingRestoreData = db;
+    preview.innerHTML = '<div style="background:var(--surface3);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text2);">'
+      + '<div style="font-weight:700;margin-bottom:8px;color:var(--caramel2);">📋 バックアップ内容を確認</div>'
+      + '<div>・売上レコード数: <b>' + recCount + '件</b></div>'
+      + '<div>・スタッフ数: <b>' + userCount + '名</b></div>'
+      + '<div>・作成日時: ' + exportedAt + '</div>'
+      + '<div style="margin-top:8px;color:var(--text3);font-size:11px;">※ 現在のデータはすべて上書きされます</div>'
+      + '</div>'
+      + '<button class="btn-p" onclick="confirmRestoreBackup()" style="margin-top:10px;">このデータで復元する ✅</button>';
+  } catch(err) {
+    if (trimmed.length > 10) {
+      preview.innerHTML = '<div style="color:var(--danger);font-size:12px;padding:10px;background:rgba(208,80,80,0.1);border-radius:8px;">❌ データの読み込みに失敗しました。正しくコピーされているか確認してください。</div>';
+    } else {
+      preview.innerHTML = '';
+    }
+  }
+}
+
+function confirmRestoreBackup() {
+  if (!window._pendingRestoreData) return;
+  showConfirm('現在のデータをバックアップで上書きしますか？\nこの操作は取り消せません。', function() {
+    saveDB(window._pendingRestoreData);
+    window._pendingRestoreData = null;
+    showToast('データを復元しました ✅');
+    renderExport();
+    const preview = document.getElementById('backupRestorePreview');
+    if (preview) preview.innerHTML = '';
+    const ta = document.getElementById('backupPasteArea');
+    if (ta) ta.value = '';
+  }, { icon: '⬆️', okLabel: '復元する', danger: true });
+}
+
 </script>
 <style>
 :root {
@@ -2191,6 +2303,22 @@ function renderExport() {
   const db = getDB();
   const el = document.getElementById('exportContent');
   el.innerHTML = `
+    <div class="sec-title">💾 バックアップ・復元</div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text3);line-height:1.8;margin-bottom:14px;">
+        売上データ・スタッフ・設定をすべて含むバックアップを作成します。<br>
+        <span style="color:var(--caramel2);font-weight:700;">📱 操作手順：</span>ボタンを押す → 「全てコピー」→ メモアプリに貼り付けて保存
+      </div>
+      <button class="btn-p" onclick="downloadBackup()" style="margin-bottom:16px;">💾 バックアップを作成する</button>
+      <div style="border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:700;">バックアップデータから復元する</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:10px;">
+          メモアプリに保存したバックアップデータを貼り付けてください
+        </div>
+        <textarea id="backupPasteArea" placeholder="ここにバックアップデータを貼り付け..." style="width:100%;height:100px;background:var(--surface3);border:1px dashed var(--border);border-radius:10px;padding:10px;font-size:11px;color:var(--text2);font-family:monospace;resize:none;box-sizing:border-box;" oninput="previewPastedBackup(this.value)"></textarea>
+        <div id="backupRestorePreview" style="margin-top:10px;"></div>
+      </div>
+    </div>
     <div class="sec-title">📤 データ出力</div>
     <div class="export-grid">
       <div class="exp-btn highlight" onclick="exportCSV('all')"><span class="exp-icon">📊</span><span class="exp-name">全データ</span><span class="exp-desc">全店舗・全期間</span></div>
