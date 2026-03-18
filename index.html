@@ -2197,6 +2197,51 @@ async function _saveConfig(config) {
   } catch(e) { console.warn('config save failed:', e); throw e; }
 }
 
+// ===== ユーザーデータ (brew_users) の読み書き =====
+// usersは専用テーブルで管理。brew_dataとは完全に分離。
+
+async function _loadAllUsers() {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?select=*', {
+      headers: _supaHeaders()
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    return rows.map(r => ({
+      name: r.name,
+      id: r.id,
+      pass: r.pass,
+      role: r.role,
+      store: r.store || '',
+      photo: r.photo || null
+    }));
+  } catch(e) {
+    console.warn('users load failed:', e);
+    return null;
+  }
+}
+
+async function _upsertUser(user) {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?on_conflict=id', {
+      method: 'POST',
+      headers: Object.assign(_supaHeaders(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify([{ id: user.id || user.name, name: user.name, pass: user.pass, role: user.role, store: user.store || '', photo: user.photo || null }])
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + await res.text());
+  } catch(e) { console.warn('user upsert failed:', e); throw e; }
+}
+
+async function _deleteUser(userId) {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?id=eq.' + encodeURIComponent(userId), {
+      method: 'DELETE',
+      headers: _supaHeaders()
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+  } catch(e) { console.warn('user delete failed:', e); }
+}
+
 // ===== レコードデータ (brew_records) の読み書き =====
 // 1レコード = 1行。サイズ上限問題を根本解決する
 
@@ -2271,28 +2316,28 @@ async function _deleteRecord(recordId) {
 
 async function loadDBFromSupabase() {
   try {
-    const [config, records] = await Promise.all([_loadConfig(), _loadAllRecords()]);
+    const [config, records, users] = await Promise.all([_loadConfig(), _loadAllRecords(), _loadAllUsers()]);
     const db = config || {};
     db.records = records || db.records || [];
-    // ローカルキャッシュ更新（設定のみ、容量節約のためrecordsは除く）
+    db.users = users || db.users || [];
+    // ローカルキャッシュ更新（usersとrecordsは除く）
     try {
       const cacheObj = Object.assign({}, db);
       delete cacheObj.records;
+      delete cacheObj.users;
       localStorage.setItem(SK, JSON.stringify(cacheObj));
-      localStorage.setItem(SK + '_records_count', String(db.records.length));
     } catch(e) {}
     _db_cache = db;
     return db;
   } catch(e) {
     console.warn('Supabase load failed, using local cache:', e);
   }
-  // フォールバック: ローカルキャッシュ（usersは絶対にdefaultDBで上書きしない）
+  // フォールバック: ローカルキャッシュ
   try {
     const local = JSON.parse(localStorage.getItem(SK));
-    if (local) { local.records = local.records || []; return local; }
+    if (local) { local.records = local.records || []; local.users = local.users || []; return local; }
   } catch {}
-  // ローカルキャッシュもない場合は管理者のみの空DBを返す（サンプルユーザーは入れない）
-  return { users: [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }], records: [] };
+  return { users: [], records: [] };
 }
 
 function loadDB() {
@@ -2440,7 +2485,7 @@ function switchLoginTab(mode) {
   document.getElementById('loginPanelOwner').style.display    = mode === 'owner'     ? 'block' : 'none';
   document.getElementById('loginPanelOwnerNew').style.display = mode === 'owner-new' ? 'block' : 'none';
 }
-function doCreateOwnerAccount() {
+async function doCreateOwnerAccount() {
   const name = document.getElementById('newOwnerName').value.trim();
   const pass = document.getElementById('newOwnerPass').value;
   const pass2 = document.getElementById('newOwnerPass2').value;
@@ -2448,13 +2493,20 @@ function doCreateOwnerAccount() {
   if (!name) { showToast('管理者名を入力してください'); return; }
   if (pass.length < 4) { showToast('パスワードは4文字以上にしてください'); return; }
   if (pass !== pass2) { showToast('パスワードが一致しません'); return; }
-  const db = getDB();
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  _db_cache = db;
+  showLoadingOverlay(false);
   const SETUP_CODE = db.ownerSetupCode || 'brew-setup-2025';
   if (code !== SETUP_CODE) { showToast('セットアップコードが違います'); return; }
-  if (db.users.find(u => u.name === name || u.id === name)) { showToast('その名前はすでに使われています'); return; }
+  if (db.users && db.users.find(u => u.name === name || u.id === name)) { showToast('その名前はすでに使われています'); return; }
   const newOwner = { name, id: name, pass, role: 'owner', photo: null };
+  showLoadingOverlay(true);
+  await _upsertUser(newOwner);
+  showLoadingOverlay(false);
+  if (!db.users) db.users = [];
   db.users.push(newOwner);
-  saveDB(db);
+  _db_cache = db;
   showToast(`管理者アカウント「${name}」を作成しました ✅`);
   document.getElementById('newOwnerName').value = '';
   document.getElementById('newOwnerPass').value = '';
@@ -2548,7 +2600,7 @@ async function doOwnerLogin() {
   renderHeaderAvatar(user);
   checkReportGate();
 }
-function doCreateAccount() {
+async function doCreateAccount() {
   const name = document.getElementById('newName').value.trim();
   const store = document.getElementById('newStore').value;
   const pass = document.getElementById('newPass').value;
@@ -2557,12 +2609,19 @@ function doCreateAccount() {
   if (!name) { showToast('名前を入力してください'); return; }
   if (pass.length < 4) { showToast('パスワードは4文字以上にしてください'); return; }
   if (pass !== pass2) { showToast('パスワードが一致しません'); return; }
-  const db = getDB();
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  _db_cache = db;
+  showLoadingOverlay(false);
   if (code !== (db.registerCode || REGISTER_CODE)) { showToast('承認コードが違います。管理者に確認してください'); return; }
-  if (db.users.find(u => u.name === name)) { showToast('その名前はすでに使われています'); return; }
+  if (db.users && db.users.find(u => u.name === name)) { showToast('その名前はすでに使われています'); return; }
   const newUser = { name, id: name, pass, role: 'staff', store, photo: pendingPhotoDataUrl || null };
+  showLoadingOverlay(true);
+  await _upsertUser(newUser);
+  showLoadingOverlay(false);
+  if (!db.users) db.users = [];
   db.users.push(newUser);
-  saveDB(db);
+  _db_cache = db;
   showToast(`${name} さんのアカウントを作成しました！`);
   currentUser = newUser;
   document.getElementById('hdrName').textContent = newUser.name;
