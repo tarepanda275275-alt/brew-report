@@ -2880,6 +2880,7 @@ function setupNav() {
       <button class="nav-btn" id="nb-goals" onclick="switchTab('goals')"><span class="nav-icon">🎯</span><span class="nav-label">目標管理</span></button>
       <button class="nav-btn" id="nb-comments" onclick="switchTab('comments')"><span class="nav-icon">💬</span><span class="nav-label">コメント</span></button>
       <button class="nav-btn" id="nb-timeline-owner" onclick="switchTab('timeline-owner')"><span class="nav-icon">📱</span><span class="nav-label">TL</span></button>
+      <button class="nav-btn" id="nb-export" onclick="switchTab('export')"><span class="nav-icon">📤</span><span class="nav-label">出力</span></button>
       <button class="nav-btn" id="nb-monthly" onclick="switchTab('monthly')"><span class="nav-icon">📅</span><span class="nav-label">月別分析</span></button>
       <button class="nav-btn" id="nb-stock" onclick="switchTab('stock')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>`;
   } else {
@@ -5080,12 +5081,7 @@ function renderExport() {
         <button class="qbtn" onclick="addStockItem()" style="white-space:nowrap;padding:10px 16px;">追加</button>
       </div>
     </div>
-    <div class="sec-title">🔧 データ管理</div>
-    <div class="card">
-      <div style="font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:14px;">テストデータを追加してグラフや集計を確認できます</div>
-      <button class="btn-s" onclick="addSampleData()">🧪 サンプルデータを追加</button>
-      <button class="btn-s" onclick="clearAllData()" style="margin-top:8px;color:var(--danger);border-color:rgba(208,80,80,0.3);">🗑️ 全データを削除</button>
-    </div>
+
     <div class="sec-title">💾 バックアップ・復元</div>
     <div class="card">
       <div style="font-size:12px;color:var(--text3);line-height:1.8;margin-bottom:14px;">
