@@ -2155,6 +2155,37 @@ function _supaHeaders() {
   };
 }
 
+// ===== ユーザーデータ (brew_users) の読み書き =====
+async function _loadUsers() {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?select=*', { headers: _supaHeaders() });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows.map(r => r.data);
+  } catch(e) { return null; }
+}
+
+async function _saveUsers(users) {
+  if (!users || users.length === 0) return;
+  const payload = users.map(u => ({ id: u.id || u.name, data: u, updated_at: new Date().toISOString() }));
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?on_conflict=id', {
+      method: 'POST',
+      headers: Object.assign(_supaHeaders(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+  } catch(e) { console.warn('users save failed:', e); throw e; }
+}
+
+async function _deleteUser(userId) {
+  try {
+    await fetch(SUPA_URL + '/rest/v1/brew_users?id=eq.' + encodeURIComponent(userId), {
+      method: 'DELETE', headers: _supaHeaders()
+    });
+  } catch(e) { console.warn('user delete failed:', e); }
+}
+
 // ===== 設定データ (brew_data) の読み書き =====
 // brew_data には records を含まない軽量な設定情報のみ保存する
 
@@ -2273,9 +2304,10 @@ async function _deleteRecord(recordId) {
 
 async function loadDBFromSupabase() {
   try {
-    const [config, records] = await Promise.all([_loadConfig(), _loadAllRecords()]);
+    const [config, records, users] = await Promise.all([_loadConfig(), _loadAllRecords(), _loadUsers()]);
     const db = config || {};
     db.records = records || db.records || [];
+    if (users && users.length > 0) db.users = users;
     // ローカルキャッシュ更新（設定のみ、容量節約のためrecordsは除く）
     try {
       const cacheObj = Object.assign({}, db);
@@ -2318,8 +2350,12 @@ async function saveDBToSupabase(db, retryCount = 0) {
   } catch(e) {}
 
   try {
-    // 1. 設定を保存（recordsを除いた軽量データ）
-    await _saveConfig(db);
+    // 1. 設定＆ユーザーを並行保存
+    const users = db.users || [];
+    await Promise.all([
+      _saveConfig(db),
+      users.length > 0 ? _saveUsers(users) : Promise.resolve()
+    ]);
 
     // 2. recordsを差分upsert（新規・更新のみ、一括送信）
     const records = db.records || [];
@@ -2379,9 +2415,19 @@ async function initData() {
   if (!_db_cache.users || _db_cache.users.length === 0) {
     const fresh = defaultDB();
     fresh.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
-    fresh.records = db.records || []; // 既存レコードは引き継ぐ
+    fresh.records = db.records || [];
     await saveDBToSupabase(fresh);
     _db_cache = fresh;
+  } else {
+    // brew_usersテーブルへの移行（初回のみ：既存usersをbrew_usersに書き込む）
+    try {
+      const res = await fetch(SUPA_URL + '/rest/v1/brew_users?select=id&limit=1', { headers: _supaHeaders() });
+      const rows = await res.json();
+      if (!rows || rows.length === 0) {
+        // まだbrew_usersが空なので既存usersを移行
+        await _saveUsers(_db_cache.users);
+      }
+    } catch(e) {}
   }
 
   // 起動時にrecordのIDセットを初期化（差分保存用）
