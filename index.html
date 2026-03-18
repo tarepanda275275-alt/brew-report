@@ -281,6 +281,154 @@
   global.Chart = ChartFactory;
 })(window);
 
+
+// ================================================================
+// CSVインポート
+// ================================================================
+function handleImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const tryParse = function(text) {
+    try {
+      const rows = parseCSVImport(text);
+      showImportPreview(rows, file.name);
+    } catch(err) {
+      showToast('ファイルの読み込みに失敗しました: ' + err.message);
+    }
+  };
+  const r1 = new FileReader();
+  r1.onload = function(e) { tryParse(e.target.result); };
+  r1.readAsText(file, 'Shift_JIS');
+  input.value = '';
+}
+
+function normalizeStoreName(name) {
+  if (!name) return '';
+  if (name.includes('1号店') || name.includes('大曲')) return '1号店大曲';
+  if (name.includes('2号店') || name.includes('秋田')) return '2号店秋田';
+  if (name.includes('3号店') || name.includes('横手')) return '3号店横手';
+  return name;
+}
+
+function parseCSVImport(text) {
+  text = text.replace(/^\uFEFF/, '');
+  const lines = text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+  return lines.slice(1).map(function(line) {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; }
+      else if (line[i] === ',' && !inQ) { vals.push(cur); cur = ''; }
+      else { cur += line[i]; }
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach(function(h, i){ obj[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
+    return obj;
+  });
+}
+
+const COL_MAP = {
+  date:   ['日付','date','Date','日時'],
+  store:  ['店舗','store','Store','店舗名'],
+  staff:  ['スタッフ','staff','Staff','担当者','名前'],
+  sales:  ['売上金額','sales','Sales','売上','金額'],
+  topItem:['トップ商品','topItem','商品名'],
+  topItemCount:['商品数','topItemCount','数量'],
+  customers: ['客数','customers'],
+  weather: ['天気','weather'],
+  episode:['気づきメモ','episode','エピソード','メモ'],
+  achievement:['できたこと','achievement'],
+  improvement:['改善点・明日の目標','improvement','改善点'],
+};
+
+function mapCol(row, key) {
+  for (let i = 0; i < (COL_MAP[key]||[]).length; i++) {
+    const alias = COL_MAP[key][i];
+    if (row[alias] !== undefined) return row[alias];
+  }
+  return '';
+}
+
+let pendingImportRows = [];
+
+function showImportPreview(rows, filename) {
+  const preview = document.getElementById('importPreview');
+  if (!preview) return;
+  if (!rows.length) {
+    preview.innerHTML = '<div style="color:var(--danger);font-size:13px;">データが見つかりませんでした</div>';
+    return;
+  }
+  const mapped = rows.map(function(r) {
+    return {
+      date: mapCol(r,'date'),
+      store: normalizeStoreName(mapCol(r,'store')),
+      staff: mapCol(r,'staff') || '',
+      sales: parseInt((mapCol(r,'sales')||'0').toString().replace(/[¥,%]/g,'').replace(/,/g,'')) || 0,
+      topItem: mapCol(r,'topItem') || '',
+      topItemCount: parseInt(mapCol(r,'topItemCount')) || 0,
+      customers: parseInt(mapCol(r,'customers')) || 0,
+      weather: mapCol(r,'weather') || '',
+      episode: mapCol(r,'episode') || '',
+      achievement: mapCol(r,'achievement') || '',
+      improvement: mapCol(r,'improvement') || '',
+    };
+  }).filter(function(r){ return r.date && r.store; });
+
+  pendingImportRows = mapped;
+
+  const sample = mapped.slice(0,3).map(function(r){
+    return '<div style="font-size:11px;padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">'
+      + r.date + ' / ' + r.store + ' / ' + r.staff + ' / ¥' + r.sales.toLocaleString()
+      + '</div>';
+  }).join('');
+
+  const moreText = mapped.length > 3
+    ? '<div style="font-size:11px;color:var(--text3);padding-top:6px;">... 他 ' + (mapped.length-3) + '件</div>'
+    : '';
+
+  preview.innerHTML = '<div style="background:rgba(93,184,122,0.1);border:1px solid rgba(93,184,122,0.25);border-radius:12px;padding:14px;">'
+    + '<div style="font-size:13px;font-weight:700;color:var(--success);margin-bottom:8px;">📄 ' + filename + ' — ' + mapped.length + '件のデータを検出</div>'
+    + sample + moreText
+    + '<div style="display:flex;gap:8px;margin-top:14px;">'
+    + '<button onclick="executeImport()" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--caramel),var(--gold));border:none;border-radius:12px;color:var(--bg);font-size:14px;font-weight:700;cursor:pointer;">✅ ' + mapped.length + '件を取り込む</button>'
+    + '<button onclick="document.getElementById(\'importPreview\').innerHTML=\'\'" style="padding:12px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text3);font-size:14px;cursor:pointer;">キャンセル</button>'
+    + '</div></div>';
+}
+
+function executeImport() {
+  if (!pendingImportRows.length) return;
+  const db = getDB();
+  let added = 0, updated = 0;
+  pendingImportRows.forEach(function(r) {
+    const idx = db.records.findIndex(function(ex){ return ex.date === r.date && ex.store === r.store; });
+    if (idx >= 0) {
+      db.records[idx] = Object.assign({}, db.records[idx], {
+        sales: r.sales || db.records[idx].sales,
+        customers: r.customers || db.records[idx].customers,
+        weather: r.weather || db.records[idx].weather,
+      });
+      updated++;
+    } else {
+      db.records.push(Object.assign({
+        id: Date.now() + Math.random(),
+        staffPhoto: null, lossItem:'', lossCount:0, lossGram:0,
+        stockNote:'', reviewDone:'', reviewComment:'',
+        createdAt: new Date().toISOString()
+      }, r));
+      added++;
+    }
+  });
+  saveDB(db);
+  pendingImportRows = [];
+  const msg = '✅ 新規' + added + '件追加' + (updated ? '・' + updated + '件上書き' : '');
+  showToast(msg);
+  document.getElementById('importPreview').innerHTML =
+    '<div style="color:var(--success);font-weight:700;font-size:13px;padding:8px 0;">' + msg + '</div>';
+}
+
 // ================================================================
 // バックアップ・復元（元のアプリから移植）
 // ================================================================
@@ -2324,6 +2472,21 @@ function renderExport() {
         <textarea id="backupPasteArea" placeholder="ここにバックアップデータを貼り付け..." style="width:100%;height:100px;background:var(--surface3);border:1px dashed var(--border);border-radius:10px;padding:10px;font-size:11px;color:var(--text2);font-family:monospace;resize:none;box-sizing:border-box;" oninput="previewPastedBackup(this.value)"></textarea>
         <div id="backupRestorePreview" style="margin-top:10px;"></div>
       </div>
+    </div>
+    <div class="sec-title" style="margin-top:24px;">📥 データを取り込む</div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text2);font-weight:700;margin-bottom:6px;">CSVファイルから読み込む</div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;">
+        以前出力したCSVや、Excelで作成した売上データを取り込めます。<br>
+        <b style="color:var(--caramel2)">必要な列：</b> 日付, 店舗, スタッフ, 売上金額
+      </div>
+      <div class="import-drop-zone" id="importDropZone" onclick="document.getElementById('importFileInput').click()">
+        <div style="font-size:28px;margin-bottom:8px;">📂</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text2);">タップしてファイルを選ぶ</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv 対応（Shift-JIS / UTF-8）</div>
+        <input type="file" id="importFileInput" accept=".csv,.txt" style="display:none" onchange="handleImportFile(this)">
+      </div>
+      <div id="importPreview" style="margin-top:12px;"></div>
     </div>
     <div class="sec-title">📤 データ出力</div>
     <div class="export-grid">
