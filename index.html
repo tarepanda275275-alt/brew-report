@@ -2286,12 +2286,13 @@ async function loadDBFromSupabase() {
   } catch(e) {
     console.warn('Supabase load failed, using local cache:', e);
   }
-  // フォールバック: ローカルキャッシュ
+  // フォールバック: ローカルキャッシュ（usersは絶対にdefaultDBで上書きしない）
   try {
-    const local = JSON.parse(localStorage.getItem(SK)) || defaultDB();
-    local.records = local.records || [];
-    return local;
-  } catch { return defaultDB(); }
+    const local = JSON.parse(localStorage.getItem(SK));
+    if (local) { local.records = local.records || []; return local; }
+  } catch {}
+  // ローカルキャッシュもない場合は管理者のみの空DBを返す（サンプルユーザーは入れない）
+  return { users: [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }], records: [] };
 }
 
 function loadDB() {
@@ -2373,13 +2374,11 @@ async function initData() {
   const db = await loadDBFromSupabase();
   _db_cache = db;
 
-  // 初回起動時のみ初期化
+  // usersは絶対に上書きしない。Supabaseからのロードが失敗・空でも既存usersを保持する。
   if (!_db_cache.users || _db_cache.users.length === 0) {
-    const fresh = defaultDB();
-    fresh.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
-    fresh.records = db.records || []; // 既存レコードは引き継ぐ
-    await saveDBToSupabase(fresh);
-    _db_cache = fresh;
+    // usersが空の場合のみ管理者1名を入れる（既存アカウントは消さない）
+    _db_cache.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
+    await saveDBToSupabase(_db_cache);
   }
 
   // 起動時にrecordのIDセットを初期化（差分保存用）
@@ -2568,8 +2567,7 @@ function doCreateAccount() {
   currentUser = newUser;
   document.getElementById('hdrName').textContent = newUser.name;
   renderHeaderAvatar(newUser);
-  initData();
-buildLoginChips();
+  buildLoginChips();
   checkReportGate();
 }
 function updateProfilePhoto(input) {
@@ -2584,8 +2582,7 @@ function updateProfilePhoto(input) {
       currentUser.photo = e.target.result;
       saveDB(db);
       renderHeaderAvatar(currentUser);
-      initData();
-buildLoginChips();
+      buildLoginChips();
       renderMyData();
       showToast('プロフィール写真を更新しました！');
     }
@@ -3484,6 +3481,9 @@ function submitRecord() {
   // グラフを即時反映
   try { renderMyData(); } catch(e) {}
   try { renderDashboardStaff(); } catch(e) {}
+  // タイムラインを即時反映
+  try { renderTimeline('timeline'); } catch(e) {}
+  try { renderTimeline('timeline-owner'); } catch(e) {}
   nextStep();
 }
 
