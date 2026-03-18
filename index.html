@@ -2170,32 +2170,28 @@ async function _loadConfig() {
 }
 
 async function _saveConfig(config) {
-  // まず現在のbrew_dataを取得してusersを保護
-  let existingUsers = null;
-  try {
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', {
-      headers: _supaHeaders()
-    });
-    const rows = await res.json();
-    if (rows && rows.length > 0 && rows[0].data && rows[0].data.users && rows[0].data.users.length > 0) {
-      existingUsers = rows[0].data.users;
-    }
-  } catch(e) { console.warn('config fetch failed:', e); }
-
-  // records を除いた設定だけ保存
+  // usersとrecordsを除いた設定だけ保存
+  // usersは絶対に上書きしない（専用のsaveUsers関数を使う）
   const payload = Object.assign({}, config);
   delete payload.records;
-
-  // usersが空・未定義の場合は既存のusersを使う（絶対に上書きしない）
-  if (existingUsers && (!payload.users || payload.users.length === 0)) {
-    payload.users = existingUsers;
-  }
+  delete payload.users; // usersは絶対に触らない
 
   try {
+    // まず現在のデータを取得
+    const getRes = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', {
+      headers: _supaHeaders()
+    });
+    const rows = await getRes.json();
+    const existing = (rows && rows.length > 0 && rows[0].data) ? rows[0].data : {};
+
+    // 既存データにusersを保持しつつ設定を上書き
+    const merged = Object.assign({}, existing, payload);
+    merged.users = existing.users || []; // usersは既存のものを必ず使う
+
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data?on_conflict=id', {
       method: 'POST',
       headers: Object.assign(_supaHeaders(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
-      body: JSON.stringify({ id: 'main', data: payload })
+      body: JSON.stringify({ id: 'main', data: merged })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
   } catch(e) { console.warn('config save failed:', e); throw e; }
