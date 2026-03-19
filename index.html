@@ -2161,7 +2161,7 @@ function _supaHeaders() {
 // brew_users テーブルは {id, data} 形式（brew_dataと同じ構造）
 async function _loadUsersFromSupabase() {
   try {
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?select=*', { headers: _headers() });
+    const res = await fetch(SUPA_URL + '/rest/v1/brew_users?select=*', { headers: _supaHeaders() });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const rows = await res.json();
     if (!Array.isArray(rows)) return null;
@@ -2198,7 +2198,7 @@ async function _upsertUserToSupabase(user) {
   }];
   const res = await fetch(SUPA_URL + '/rest/v1/brew_users?on_conflict=id', {
     method: 'POST',
-    headers: Object.assign(_headers(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+    headers: Object.assign(_supaHeaders(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -2211,7 +2211,7 @@ async function _deleteUserFromSupabase(userId) {
   try {
     const res = await fetch(
       SUPA_URL + '/rest/v1/brew_users?id=eq.' + encodeURIComponent(String(userId)),
-      { method: 'DELETE', headers: _headers() }
+      { method: 'DELETE', headers: _supaHeaders() }
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
   } catch(e) {
