@@ -5172,8 +5172,7 @@ function renderExport() {
     <div class="sec-title">🔧 データ管理</div>
     <div class="card">
       <div style="font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:14px;">テストデータを追加してグラフや集計を確認できます</div>
-      <button class="btn-s" onclick="addSampleData()">🧪 サンプルデータを追加</button>
-      <button class="btn-s" onclick="clearAllData()" style="margin-top:8px;color:var(--danger);border-color:rgba(208,80,80,0.3);">🗑️ 全データを削除</button>
+
     </div>
     <div class="sec-title">💾 バックアップ・復元</div>
     <div class="card">
@@ -5369,7 +5368,10 @@ function showImportPreview(rows, filename) {
 }
 async function executeImport() {
   if (!pendingImportRows.length) return;
-  const db = getDB();
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  _db_cache = db;
+  showLoadingOverlay(false);
   let added = 0, updated = 0;
   pendingImportRows.forEach(r => {
     // 日付＋店舗が同じレコードを全て探す
@@ -5650,11 +5652,8 @@ function addSampleData() {
   }, { icon: '🧪', okLabel: '追加する' });
 }
 function clearAllData() {
-  showConfirm('全データを削除しますか？\nこの操作は取り消せません。', () => {
-    saveDB(defaultDB());
-    showToast('データを削除しました');
-    renderExport();
-  }, { icon: '🗑️', okLabel: '削除する', danger: true });
+  // 誤操作防止のため無効化
+  showToast('この操作は無効化されています');
 }
 
 function downloadBackup() {
