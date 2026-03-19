@@ -2195,16 +2195,14 @@ async function _loadUsersFromSupabase() {
 
 async function _upsertUserToSupabase(user) {
   const uid = user.id || user.name;
+  // テーブルは {id, name, pass, role, store, photo} の直接カラム形式
   const payload = [{
-    id: uid,
-    data: {
-      id:    uid,
-      name:  user.name,
-      pass:  user.pass,
-      role:  user.role,
-      store: user.store || '',
-      photo: user.photo || null,
-    }
+    id:    uid,
+    name:  user.name,
+    pass:  user.pass,
+    role:  user.role,
+    store: user.store || '',
+    photo: user.photo || null,
   }];
   const res = await fetch(SUPA_URL + '/rest/v1/brew_users?on_conflict=id', {
     method: 'POST',
