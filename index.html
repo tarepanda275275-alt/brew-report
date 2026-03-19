@@ -2166,25 +2166,14 @@ async function _loadUsersFromSupabase() {
     const rows = await res.json();
     if (!Array.isArray(rows)) return null;
     return rows.map(r => {
-      // {id, data:{...}} 形式
-      if (r.data && typeof r.data === 'object') {
-        return {
-          id:    r.data.id    || r.id,
-          name:  r.data.name  || r.id,
-          pass:  r.data.pass  || '',
-          role:  r.data.role  || 'staff',
-          store: r.data.store || '',
-          photo: r.data.photo || null,
-        };
-      }
-      // {id, name, pass, role, store, photo} 形式（直接カラム）
+      const d = r.data || {};
       return {
-        id:    r.id,
-        name:  r.name  || r.id,
-        pass:  r.pass  || '',
-        role:  r.role  || 'staff',
-        store: r.store || '',
-        photo: r.photo || null,
+        id:    d.id    || r.id,
+        name:  d.name  || r.id,
+        pass:  d.pass  || '',
+        role:  d.role  || 'staff',
+        store: d.store || '',
+        photo: d.photo || null,
       };
     });
   } catch(e) {
@@ -2195,14 +2184,17 @@ async function _loadUsersFromSupabase() {
 
 async function _upsertUserToSupabase(user) {
   const uid = user.id || user.name;
-  // テーブルは {id, name, pass, role, store, photo} の直接カラム形式
+  // テーブルは {id, data:{...}} 形式
   const payload = [{
-    id:    uid,
-    name:  user.name,
-    pass:  user.pass,
-    role:  user.role,
-    store: user.store || '',
-    photo: user.photo || null,
+    id: uid,
+    data: {
+      id:    uid,
+      name:  user.name,
+      pass:  user.pass,
+      role:  user.role,
+      store: user.store || '',
+      photo: user.photo || null,
+    }
   }];
   const res = await fetch(SUPA_URL + '/rest/v1/brew_users?on_conflict=id', {
     method: 'POST',
