@@ -3151,9 +3151,9 @@ function buildStepHTML(step) {
       return `<div class="bean-entry-row">
         <div style="flex:1;font-size:13px;font-weight:700;color:var(--text1);padding:2px 0;">${item}</div>
         <div class="bean-entry-qty">
-          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" onchange="updateMasterEntry('${item}','gram',this.value)" style="width:72px;">
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" oninput="updateMasterEntry('${item}','gram',this.value)" style="width:72px;">
           <span class="stock-unit">g</span>
-          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" onchange="updateMasterEntry('${item}','bag',this.value)" style="width:56px;margin-left:8px;">
+          <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.bag||''}" oninput="updateMasterEntry('${item}','bag',this.value)" style="width:56px;margin-left:8px;">
           <span class="stock-unit">個/袋</span>
         </div>
       </div>`;
