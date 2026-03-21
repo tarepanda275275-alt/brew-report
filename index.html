@@ -3148,7 +3148,7 @@ function buildStepHTML(step) {
     (formData.beanEntries || []).forEach(e => { if (e.name) saved[e.name] = e; });
     const masterRows = items.map((item, i) => {
       const e = saved[item] || {};
-      return `<div class="bean-entry-row">
+      return `<div class="bean-entry-row" data-item-name="${item}">
         <div style="flex:1;font-size:13px;font-weight:700;color:var(--text1);padding:2px 0;">${item}</div>
         <div class="bean-entry-qty">
           <input type="number" class="stock-inp" placeholder="0" inputmode="numeric" value="${e.gram||''}" oninput="updateMasterEntry('${item}','gram',this.value)" style="width:72px;">
@@ -3470,11 +3470,27 @@ function fromRegister() {
 function fromStock() {
   formData.stockNote = document.getElementById('iSNote')?.value || '';
   if (!formData.beanEntries) formData.beanEntries = [];
-  // マスタ入力欄の値を再収集（input要素から直接読む）
-  document.querySelectorAll('.bean-entry-row').forEach(row => {
-    const nameEl = row.querySelector('[data-item-name]');
-    if (nameEl) { /* マスタ行は updateMasterEntry で処理済み */ }
+
+  // ★ 「次へ」押下時にDOMから直接値を再収集（保険）
+  document.querySelectorAll('.bean-entry-row[data-item-name]').forEach(row => {
+    const itemName = row.dataset.itemName;
+    const inputs = row.querySelectorAll('input[type="number"]');
+    if (!itemName || inputs.length < 2) return;
+    const gram = inputs[0].value;
+    const bag  = inputs[1].value;
+    if (gram === '' && bag === '') return;
+    let entry = formData.beanEntries.find(e => e.name === itemName);
+    if (!entry) {
+      entry = { name: itemName, gram: '', bag: '' };
+      formData.beanEntries.push(entry);
+    }
+    if (gram !== '') entry.gram = gram;
+    if (bag  !== '') entry.bag  = bag;
   });
+
+  // 空nameのエントリを除去
+  formData.beanEntries = formData.beanEntries.filter(e => e.name);
+
   formData.stockBeanGram = formData.beanEntries.reduce((s, e) => s + (parseInt(e.gram)||0), 0);
   formData.stockBeanBag  = formData.beanEntries.reduce((s, e) => s + (parseInt(e.bag)||0), 0);
   nextStep();
