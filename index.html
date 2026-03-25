@@ -2273,9 +2273,11 @@ async function _loadAllRecords() {
     let offset = 0;
     const pageSize = 1000;
     while (true) {
+      const rangeStart = offset;
+      const rangeEnd = offset + pageSize - 1;
       const res = await fetch(
-        SUPA_URL + '/rest/v1/brew_records?select=*&order=created_at.asc&limit=' + pageSize + '&offset=' + offset,
-        { headers: Object.assign(_supaHeaders(), { 'Range-Unit': 'items', 'Range': offset + '-' + (offset + pageSize - 1), 'Prefer': 'count=none' }) }
+        SUPA_URL + '/rest/v1/brew_records?select=*&order=created_at.asc',
+        { headers: Object.assign(_supaHeaders(), { 'Range-Unit': 'items', 'Range': rangeStart + '-' + rangeEnd, 'Prefer': 'count=none' }) }
       );
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = await res.json();
