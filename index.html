@@ -2251,8 +2251,8 @@ select.bean-name-inp option {
 /* 大きなアラートバナー */
 .big-alert-banner {
   margin:0 16px 12px;
-  background:rgba(208,80,80,0.15);
-  border:2px solid rgba(208,80,80,0.5);
+  background:#FFF0EE;
+  border:2px solid #E74C3C;
   border-radius:16px;
   padding:14px 16px;
   display:flex;
@@ -2262,15 +2262,16 @@ select.bean-name-inp option {
 .big-alert-icon { font-size:28px; flex-shrink:0; }
 .big-alert-body { flex:1; }
 .big-alert-title {
-  font-size:15px; font-weight:900; color:#ff6b6b;
+  font-size:15px; font-weight:900; color:#C0392B;
   margin-bottom:8px;
 }
 .big-alert-item {
-  font-size:12px; color:#ffaaaa;
-  line-height:1.8; border-bottom:1px solid rgba(208,80,80,0.2);
+  font-size:13px; color:#922B21;
+  line-height:1.8; border-bottom:1px solid rgba(192,57,43,0.15);
   padding-bottom:3px; margin-bottom:3px;
 }
 .big-alert-item:last-child { border-bottom:none; margin-bottom:0; }
+.big-alert-item b { color:#C0392B; }
 
 .ok-banner {
   margin:0 16px 12px;
@@ -2290,8 +2291,8 @@ select.bean-name-inp option {
   padding:14px;
 }
 .stock-view-card--alert {
-  background:rgba(208,80,80,0.08);
-  border-color:rgba(208,80,80,0.45);
+  background:#FFF5F4;
+  border-color:#E74C3C;
 }
 .stock-view-row {
   display:flex; align-items:center;
@@ -2299,7 +2300,7 @@ select.bean-name-inp option {
 }
 .stock-view-name { font-size:14px; font-weight:900; color:var(--text); }
 .stock-view-qty { font-size:18px; font-weight:900; color:var(--gold2); }
-.stock-view-qty.qty-alert { color:#ff6b6b; }
+.stock-view-qty.qty-alert { color:#C0392B; }
 .stock-view-unit { font-size:12px; font-weight:400; color:var(--text3); }
 .stock-bags-row {
   font-size:12px; color:var(--caramel); margin-bottom:8px;
@@ -2317,116 +2318,209 @@ select.bean-name-inp option {
 }
 .stock-thr-label { font-size:10px; color:var(--text3); white-space:nowrap; }
 .stock-alert-row {
-  font-size:11px; font-weight:900; color:#ff6b6b;
+  font-size:11px; font-weight:900; color:#C0392B;
   margin-top:4px;
 }
 
-/* ===== カレンダーUI ===== */
+/* ===== カレンダーUI（クラフトペーパー風） ===== */
+.cal-outer {
+  margin: 12px 16px;
+  background: #F5EDD8;
+  border-radius: 18px;
+  padding: 16px 14px 12px;
+  box-shadow: 0 2px 16px rgba(100,60,10,0.12);
+  border: 1px solid rgba(160,110,50,0.18);
+}
 .cal-page-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:12px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 8px;
+}
+.cal-month-info {
+  flex: 1;
 }
 .cal-month-label {
-  font-size:16px; font-weight:900; color:var(--gold2);
-  letter-spacing:0.05em;
+  font-size: 22px;
+  font-weight: 900;
+  color: #3D2000;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.cal-month-en {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9A7040;
+  letter-spacing: 0.15em;
+  margin-top: 2px;
 }
 .cal-nav-btn {
-  width:36px; height:36px; border-radius:50%;
-  background:var(--surface2); border:1px solid var(--border2);
-  color:var(--text); font-size:20px; font-weight:700;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  font-family:inherit; transition:background 0.15s;
-  -webkit-tap-highlight-color:transparent;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(160,110,50,0.25);
+  color: #6B4020;
+  font-size: 18px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.cal-nav-btn:active { background:var(--surface3); }
+.cal-nav-btn:active { background: rgba(255,255,255,0.95); }
 
+/* グリッド：枠線スタイル */
 .cal-grid {
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:2px;
-  padding:0 10px 12px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-left: 1px solid rgba(160,110,50,0.2);
+  border-top: 1px solid rgba(160,110,50,0.2);
+  border-radius: 10px;
+  overflow: hidden;
 }
 .cal-dow {
-  text-align:center; font-size:10px; font-weight:700;
-  color:var(--text3); padding:6px 0 4px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #9A7040;
+  padding: 6px 0;
+  border-right: 1px solid rgba(160,110,50,0.2);
+  border-bottom: 1px solid rgba(160,110,50,0.2);
+  background: rgba(255,255,255,0.45);
+  letter-spacing: 0.05em;
 }
-.cal-dow-sun { color:#ff7070; }
-.cal-dow-sat { color:var(--info); }
+.cal-dow-sun { color: #C0392B; background: rgba(255,240,238,0.6); }
+.cal-dow-sat { color: #2471A3; background: rgba(235,245,255,0.6); }
 
 .cal-cell {
-  aspect-ratio:1;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  border-radius:10px;
-  cursor:pointer;
-  transition:background 0.12s;
-  gap:2px;
-  position:relative;
-  -webkit-tap-highlight-color:transparent;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 5px;
+  border-right: 1px solid rgba(160,110,50,0.2);
+  border-bottom: 1px solid rgba(160,110,50,0.2);
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+  background: rgba(255,255,255,0.35);
+  gap: 2px;
+  -webkit-tap-highlight-color: transparent;
 }
-.cal-cell--empty { cursor:default; }
-.cal-cell:not(.cal-cell--empty):active { background:var(--surface2); }
+.cal-cell--empty {
+  cursor: default;
+  background: rgba(240,228,205,0.4);
+}
+.cal-cell:not(.cal-cell--empty):active { background: rgba(255,255,255,0.7); }
+
 .cal-day-num {
-  font-size:13px; font-weight:700; color:var(--text2); line-height:1;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3D2000;
+  line-height: 1;
 }
-.cal-cell--sun .cal-day-num { color:#ff7070; }
-.cal-cell--sat .cal-day-num { color:var(--info); }
+.cal-cell--sun .cal-day-num { color: #C0392B; }
+.cal-cell--sat .cal-day-num { color: #2471A3; }
+
 .cal-cell--today {
-  background:rgba(200,131,58,0.12);
-  border:1px solid rgba(200,131,58,0.35);
+  background: rgba(181,105,42,0.1);
 }
-.cal-cell--today .cal-day-num { color:var(--caramel); font-weight:900; }
+.cal-cell--today .cal-day-num {
+  background: var(--caramel);
+  color: #fff;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
 .cal-cell--sel {
-  background:var(--caramel) !important;
-  border:none;
+  background: rgba(181,105,42,0.18) !important;
 }
-.cal-cell--sel .cal-day-num { color:#fff; }
+.cal-cell--sel .cal-day-num {
+  background: var(--caramel) !important;
+  color: #fff !important;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
 .cal-cell--mine {
-  background:rgba(200,131,58,0.08);
+  background: rgba(181,105,42,0.06);
 }
+
+/* 日誌ドット（セル下部に色バー風） */
 .cal-dots {
-  display:flex; gap:2px; align-items:center; justify-content:center;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
 }
 .cal-dot {
-  width:5px; height:5px; border-radius:50%;
-  flex-shrink:0; display:inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
 }
 
 /* カレンダー: 詳細エリア */
 .cal-detail-header {
-  padding:12px 16px 8px;
-  border-top:1px solid var(--border);
+  padding: 14px 0 8px;
 }
 .cal-detail-date {
-  font-size:15px; font-weight:900; color:var(--gold2);
-  margin-bottom:8px;
+  font-size: 15px; font-weight: 900; color: var(--text);
+  margin-bottom: 10px;
 }
 .cal-detail-store-filter {
-  display:flex; gap:6px; flex-wrap:wrap;
+  display: flex; gap: 6px; flex-wrap: wrap;
 }
 .cal-store-pill {
-  padding:5px 12px; border-radius:20px;
-  border:1px solid var(--border2); background:var(--surface2);
-  color:var(--text3); font-size:11px; font-weight:700;
-  font-family:inherit; cursor:pointer; transition:all 0.15s;
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text3); font-size: 11px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
 }
 .cal-store-pill.active {
-  background:var(--caramel); border-color:var(--caramel); color:#fff;
+  background: var(--caramel); border-color: var(--caramel); color: #fff;
 }
 .cal-detail-empty {
-  padding:24px 16px; text-align:center;
-  color:var(--text3); font-size:13px;
+  padding: 24px 0; text-align: center;
+  color: var(--text3); font-size: 13px;
 }
 
 /* カレンダー: ヒント */
 .cal-hint {
-  padding:24px 16px; text-align:center;
+  padding: 20px 0 8px; text-align: center;
 }
-.cal-hint-icon { font-size:32px; margin-bottom:8px; }
-.cal-hint-text { font-size:13px; color:var(--text3); margin-bottom:16px; }
+.cal-hint-icon { font-size: 28px; margin-bottom: 6px; }
+.cal-hint-text { font-size: 12px; color: var(--text3); margin-bottom: 12px; }
+
 .cal-store-legend {
-  display:flex; gap:14px; justify-content:center;
-  flex-wrap:wrap;
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+}
+.cal-store-legend-row {
+  display: flex; gap: 12px; justify-content: center;
+  flex-wrap: wrap; padding: 0 0 10px;
+}
+.cal-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--text3); font-weight: 700;
+}
+
+/* 日誌入力モード切替ボタン */
+.diary-mode-btn {
+  padding: 7px 12px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text2); font-size: 11px; font-weight: 700;
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.diary-mode-btn:active { background: var(--surface3); }
+
 }
 .cal-store-legend-row {
   display:flex; gap:12px; justify-content:center;
@@ -2687,7 +2781,7 @@ select.bean-name-inp option {
 .prog-bar { flex:1; height:5px; background:var(--surface3); border-radius:3px; overflow:hidden; }
 .prog-fill { height:100%; background:linear-gradient(90deg,var(--caramel),var(--gold2)); transition:width 0.5s ease; border-radius:3px; }
 
-.inv-alert-block { margin:0 16px 12px; background:rgba(208,80,80,0.08); border:1px solid rgba(208,80,80,0.25); border-radius:12px; padding:12px 14px; }
+.inv-alert-block { margin:0 16px 12px; background:#FFF5F4; border:1px solid rgba(231,76,60,0.4); border-radius:12px; padding:12px 14px; }
 .inv-alert-title { font-size:12px; font-weight:900; color:var(--danger); margin-bottom:8px; }
 .inv-alert-row { font-size:11px; color:var(--text2); padding:3px 0; border-bottom:1px solid rgba(208,80,80,0.15); }
 .inv-alert-row:last-child { border-bottom:none; }
@@ -2695,6 +2789,161 @@ select.bean-name-inp option {
 .owner-diary-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); margin-bottom:8px; }
 .owner-diary-title { font-size:18px; font-weight:900; color:var(--gold2); }
 .owner-diary-sub { font-size:12px; color:var(--text3); margin-top:3px; }
+
+/* ===== タイムライン ===== */
+.tl-wrap { padding: 0 16px; }
+.tl-empty {
+  padding: 60px 20px; text-align: center;
+  color: var(--text3); font-size: 14px; line-height: 2;
+}
+.tl-date-sep {
+  font-size: 11px; font-weight: 900; color: var(--text3);
+  letter-spacing: 0.1em; padding: 16px 0 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.tl-item {
+  display: flex; gap: 10px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+.tl-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 6px;
+}
+.tl-body {
+  flex: 1; min-width: 0;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.tl-meta {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 6px; flex-wrap: wrap;
+}
+.tl-store { font-size: 11px; font-weight: 900; }
+.tl-staff { font-size: 11px; color: var(--text3); }
+.tl-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; background: rgba(181,105,42,0.12); color: var(--caramel);
+}
+.tl-badge-diary { background: rgba(181,105,42,0.12); color: var(--caramel); }
+.tl-section {
+  display: flex; gap: 6px; align-items: flex-start;
+  margin-bottom: 4px;
+}
+.tl-section-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.tl-section-text {
+  font-size: 12px; color: var(--text); line-height: 1.6;
+  overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.tl-more { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.tl-stock-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.tl-stock-name { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
+.tl-stock-qty { font-size: 13px; font-weight: 900; }
+.tl-stock-time { font-size: 11px; color: var(--text3); }
+.tl-note { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* ===== ボード ===== */
+.board-section-title {
+  font-size: 12px; font-weight: 900; color: var(--caramel);
+  letter-spacing: 0.08em; padding: 12px 16px 6px;
+}
+.board-card {
+  margin: 0 16px 10px;
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  transition: opacity 0.2s;
+}
+.board-card--done { opacity: 0.55; }
+.board-card-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px; flex-wrap: wrap;
+}
+.board-card-store {
+  font-size: 10px; font-weight: 900;
+  padding: 2px 8px; border-radius: 20px;
+  white-space: nowrap;
+}
+.board-card-meta { font-size: 11px; color: var(--text3); }
+.board-card-due {
+  font-size: 11px; color: var(--caramel);
+  font-weight: 700; white-space: nowrap;
+}
+.board-done-btn {
+  padding: 5px 12px; border-radius: 20px; white-space: nowrap;
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text3); font-size: 11px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+  flex-shrink: 0;
+}
+.board-done-btn.done {
+  background: rgba(46,125,79,0.12);
+  border-color: rgba(46,125,79,0.3);
+  color: var(--success);
+}
+.board-card-body { padding: 10px 12px; }
+.board-card-pintitle {
+  font-size: 14px; font-weight: 900; color: var(--text);
+  margin-bottom: 8px;
+}
+.board-card-row {
+  display: flex; gap: 6px; align-items: flex-start;
+  margin-bottom: 6px; font-size: 12px; color: var(--text);
+  line-height: 1.6;
+}
+.board-card-icon { font-size: 13px; flex-shrink: 0; }
+
+/* ===== ボードピントグル ===== */
+.board-pin-card {
+  margin: 8px 16px 4px;
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid rgba(181,105,42,0.25);
+  padding: 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.board-pin-header {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+}
+.board-pin-icon { font-size: 22px; }
+.board-pin-title { font-size: 13px; font-weight: 900; color: var(--text); }
+.board-pin-hint { font-size: 11px; color: var(--text3); margin-top: 2px; line-height: 1.5; }
+.board-pin-toggle {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+}
+.board-pin-toggle input[type=checkbox] { display: none; }
+.board-pin-slider {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  position: relative; flex-shrink: 0; transition: background 0.2s;
+}
+.board-pin-slider::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.board-pin-toggle input:checked + .board-pin-slider {
+  background: var(--caramel);
+  border-color: var(--caramel);
+}
+.board-pin-toggle input:checked + .board-pin-slider::after {
+  transform: translateX(20px);
+}
+.board-pin-label { font-size: 13px; font-weight: 700; color: var(--text2); }
 
 </style>
 </head>
@@ -2898,6 +3147,9 @@ select.bean-name-inp option {
     <div class="tab-content active" id="tab-diary"><div id="diaryInputContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-input"><div id="stockInputContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-mydata"><div id="myStockContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-tl-staff"><div id="tlStaffContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-board-staff"><div id="boardStaffContent" class="page-pad"></div></div>
+    <!-- 旧タブ互換 -->
     <div class="tab-content" id="tab-dashboard-staff"><div id="compareStaffContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-goals-staff"><div id="historyStaffContent"></div></div>
     <div class="tab-content" id="tab-episodes"><div id="episodesContent"></div></div>
@@ -2913,9 +3165,12 @@ select.bean-name-inp option {
   <!-- ======== OWNER TABS ======== -->
   <div id="ownerTabs" style="display:none;">
     <div class="tab-content active" id="tab-diary-owner"><div id="diaryOwnerContent" class="page-pad"></div></div>
-    <div class="tab-content" id="tab-dashboard"><div id="dashboardContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-board-owner"><div id="boardOwnerContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-tl-owner"><div id="tlOwnerContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-export"><div id="exportContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-goals"><div id="goalsContent" class="page-pad"></div></div>
+    <!-- 旧タブ互換 -->
+    <div class="tab-content" id="tab-dashboard"><div id="dashboardContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-comments"><div id="commentsContent"></div></div>
   </div>
   </div><!-- /app-body -->
@@ -3639,11 +3894,20 @@ async function submitInvTransaction() {
 
   if (updated === 0) { showToast('数量を入力してください'); return; }
   if (db.invHistory.length > 2000) db.invHistory = db.invHistory.slice(0, 2000);
-  saveDB(db);
-  await saveInvToSupabase(db);
+
+  // ローカルに即反映
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+
   const label = {in:'入庫', use:'使用', adjust:'修正'}[type];
   showToast(`✅ ${label}を登録しました（${updated}品目）`);
   renderStockInput();
+
+  // バックグラウンドでSupabaseに同期
+  saveInvToSupabase(db).catch(e => {
+    showToast('⚠️ クラウド同期に失敗しました');
+    console.warn('submitInv Supabase error:', e);
+  });
 }
 
 function selectIType(type) {
@@ -3664,7 +3928,7 @@ function renderMyStock() {
 
   // アプリヘッダーの背景を変える
   const hdr = document.getElementById('appHeader');
-  if (hdr) hdr.style.background = alerts.length > 0 ? 'rgba(208,80,80,0.18)' : '';
+  if (hdr) hdr.style.background = alerts.length > 0 ? 'rgba(231,76,60,0.12)' : '';
 
   let html = `
   <div class="page-top-bar" style="border-bottom:3px solid ${storeColor};">
@@ -3835,8 +4099,10 @@ function renderDiaryInput() {
   if (mode === 'calendar') { renderDiaryStaffCalendar(el); return; }
 
   const today = todayStr();
-  const diary = getInvDiary();
-  const existing = diary.find(d => d.staff === currentUser.name && d.date === today);
+  // 全件から検索（90日フィルタをかけない）
+  const allDiary = getDB().invDiary || [];
+  const existing = allDiary.find(d => d.staff === currentUser.name && d.date === today);
+  const diary = getInvDiary(); // 90日分（カレンダー等に使用）
   const v = existing || {};
   const store = currentUser.store || '';
   const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
@@ -3895,6 +4161,39 @@ function renderDiaryInput() {
       <textarea class="diary-textarea short" id="d-stockNote" placeholder="例）エチオピア豆 残り少なめ。カップ (M) 補充済み。">${v.stockNote || ''}</textarea>
     </div>
   </div>
+
+  <div class="board-pin-card">
+    <div class="board-pin-header">
+      <span class="board-pin-icon">🎯</span>
+      <div>
+        <div class="board-pin-title">ボードに載せる</div>
+        <div class="board-pin-hint">タスク・改善点・引き継ぎ事項をボードに固定表示</div>
+      </div>
+    </div>
+    <label class="board-pin-toggle">
+      <input type="checkbox" id="d-pin" ${v.pinToBoard ? 'checked' : ''}>
+      <span class="board-pin-slider"></span>
+      <span class="board-pin-label" id="d-pin-label">${v.pinToBoard ? 'ボードに表示中' : 'ボードに載せない'}</span>
+    </label>
+    <div id="board-pin-extra" style="display:${v.pinToBoard ? 'block' : 'none'}; margin-top:12px;">
+      <div class="diary-form-hint" style="margin-bottom:6px;">ボードに表示するタイトル（省略可）</div>
+      <input type="text" class="memo-input" id="d-pin-title" placeholder="例）カップ補充の件、ラテ提供フロー改善…" value="${escHtml(v.pinTitle || '')}">
+      <div class="diary-form-hint" style="margin-top:8px;margin-bottom:6px;">担当・期限（省略可）</div>
+      <input type="text" class="memo-input" id="d-pin-due" placeholder="例）〜3/31 / かえで担当" value="${escHtml(v.pinDue || '')}">
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const cb = document.getElementById('d-pin');
+      const extra = document.getElementById('board-pin-extra');
+      const lbl = document.getElementById('d-pin-label');
+      if(cb) cb.addEventListener('change', function(){
+        extra.style.display = this.checked ? 'block' : 'none';
+        lbl.textContent = this.checked ? 'ボードに表示中' : 'ボードに載せない';
+      });
+    })();
+  </script>
 
   <div class="submit-area">
     <button class="big-submit-btn" onclick="saveDiary()">📓 日誌を保存する</button>
@@ -3977,20 +4276,32 @@ function renderDiaryStaffCalendar(el) {
     </button>
   </div>
 
-  <div class="cal-page-header">
-    <button class="cal-nav-btn" onclick="staffMoveDiaryMonth(-1)">‹</button>
-    <div class="cal-month-label">${year}年 ${month}月</div>
-    <button class="cal-nav-btn" onclick="staffMoveDiaryMonth(1)">›</button>
+  <div class="cal-outer" style="margin-top:8px;">
+    <div class="cal-page-header">
+      <div class="cal-month-info">
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <div class="cal-month-label">${month}</div>
+          <div style="font-size:13px;font-weight:900;color:#6B4020;">${year}</div>
+        </div>
+        <div class="cal-month-en">${['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'][month-1]}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="cal-nav-btn" onclick="staffMoveDiaryMonth(-1)">‹</button>
+        <button class="cal-nav-btn" onclick="staffMoveDiaryMonth(1)">›</button>
+      </div>
+    </div>
+
+    <div class="cal-grid">${calCells}</div>
+
+    <div style="padding-top:8px;">
+      <div class="cal-store-legend-row">
+        ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:8px;height:8px;"></span>${s.replace('号店','')}</span>`).join('')}
+        <span class="cal-legend-item" style="color:var(--caramel);">● 自分</span>
+      </div>
+    </div>
   </div>
 
-  <div class="cal-store-legend-row">
-    ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:9px;height:9px;"></span>${s.replace('号店','')}</span>`).join('')}
-    <span class="cal-legend-item"><span style="width:9px;height:9px;border-radius:50%;border:2px solid var(--caramel);display:inline-block;"></span>自分</span>
-  </div>
-
-  <div class="cal-grid">${calCells}</div>
-
-  ${selDate ? dayDetail : `<div class="cal-hint"><div class="cal-hint-icon">👆</div><div class="cal-hint-text">日付をタップしてその日の日誌を確認</div></div>`}
+  ${selDate ? `<div style="padding:0 4px;">${dayDetail}</div>` : `<div class="cal-hint"><div class="cal-hint-icon">👆</div><div class="cal-hint-text">日付をタップしてその日の日誌を確認</div></div>`}
 
   <div style="height:60px;"></div>`;
 }
@@ -4024,46 +4335,61 @@ function staffSelectDiaryDate(dateStr) {
 
 
 async function saveDiary() {
-  const episode = document.getElementById('d-episode')?.value.trim() || '';
+  const episode     = document.getElementById('d-episode')?.value.trim()     || '';
   const achievement = document.getElementById('d-achievement')?.value.trim() || '';
   const improvement = document.getElementById('d-improvement')?.value.trim() || '';
-  const handover = document.getElementById('d-handover')?.value.trim() || '';
-  const stockNote = document.getElementById('d-stockNote')?.value.trim() || '';
+  const handover    = document.getElementById('d-handover')?.value.trim()    || '';
+  const stockNote   = document.getElementById('d-stockNote')?.value.trim()   || '';
+  const pinToBoard  = document.getElementById('d-pin')?.checked || false;
+  const pinTitle    = document.getElementById('d-pin-title')?.value.trim()   || '';
+  const pinDue      = document.getElementById('d-pin-due')?.value.trim()     || '';
 
   if (!episode && !achievement && !improvement && !handover && !stockNote) {
     showToast('何か入力してから保存してください'); return;
   }
+
+  const btn = document.querySelector('.big-submit-btn');
+  if (btn) { btn.textContent = '⏳ 保存中…'; btn.disabled = true; }
 
   const today = todayStr();
   const db = getDB();
   if (!db.invDiary) db.invDiary = [];
 
   const idx = db.invDiary.findIndex(d => d.staff === currentUser.name && d.date === today);
+  const existing = idx >= 0 ? db.invDiary[idx] : null;
+
   const entry = {
     id: `diary_${currentUser.name}_${today}`,
     date: today,
     store: currentUser.store || '',
     staff: currentUser.name,
     episode, achievement, improvement, handover, stockNote,
-    updatedAt: new Date().toISOString()
+    pinToBoard, pinTitle, pinDue,
+    pinDone: existing?.pinDone || false,  // 完了フラグを引き継ぐ
+    reactions: existing?.reactions || {},
+    comments:  existing?.comments  || [],
+    updatedAt: new Date().toISOString(),
   };
 
   if (idx >= 0) db.invDiary[idx] = entry;
   else db.invDiary.unshift(entry);
 
-  // 最大500件保持
-  // 日付降順ソートして上限トリム（軽量化）
   db.invDiary.sort((a, b) => b.date.localeCompare(a.date));
   if (db.invDiary.length > DIARY_MAX_SUPABASE) db.invDiary = db.invDiary.slice(0, DIARY_MAX_SUPABASE);
 
-  saveDB(db);
-  try {
-    await saveInvToSupabase(db);
-    showToast('✅ 日誌を保存しました');
-    renderDiaryInput();
-  } catch(e) {
-    showToast('保存に失敗しました');
-  }
+  // ローカルに即保存（キャッシュ更新）
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+
+  // トーストをすぐ出して画面を再描画（Supabase通信を待たない）
+  showToast('✅ 日誌を保存しました');
+  renderDiaryInput();
+
+  // バックグラウンドでSupabaseに保存
+  saveInvToSupabase(db).catch(e => {
+    showToast('⚠️ クラウド同期に失敗しました');
+    console.warn('saveDiary Supabase error:', e);
+  });
 }
 
 function renderDiaryOwner() {
@@ -4140,23 +4466,40 @@ function renderDiaryOwner() {
       : dayEntries.map(d => renderDiaryCard(d)).join('')}`;
   }
 
+  const EN_MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+
   el.innerHTML = `
-  <div class="cal-page-header">
-    <button class="cal-nav-btn" onclick="moveDiaryMonth(-1)">‹</button>
-    <div class="cal-month-label">${year}年 ${month}月</div>
-    <button class="cal-nav-btn" onclick="moveDiaryMonth(1)">›</button>
-  </div>
+  <div style="padding:12px 0 0;">
+    <div class="cal-outer">
+      <div class="cal-page-header">
+        <div class="cal-month-info">
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <div class="cal-month-label">${month}</div>
+            <div style="font-size:13px;font-weight:900;color:#6B4020;">${year}</div>
+          </div>
+          <div class="cal-month-en">${EN_MONTHS[month-1]}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="cal-nav-btn" onclick="moveDiaryMonth(-1)">‹</button>
+          <button class="cal-nav-btn" onclick="moveDiaryMonth(1)">›</button>
+        </div>
+      </div>
 
-  <div class="cal-grid">${calCells}</div>
+      <div class="cal-grid">${calCells}</div>
 
-  ${selDate ? dayDetail : `
+      <div style="padding-top:8px;">
+        <div class="cal-store-legend-row">
+          ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:8px;height:8px;"></span>${s.replace('号店','')}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    ${selDate ? `<div style="padding:0 4px;">${dayDetail}</div>` : `
     <div class="cal-hint">
       <div class="cal-hint-icon">👆</div>
       <div class="cal-hint-text">日付をタップするとその日の日誌を確認できます</div>
-      <div class="cal-store-legend">
-        ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:10px;height:10px;"></span>${s.replace('号店','')}</span>`).join('')}
-      </div>
     </div>`}
+  </div>
 
   <div style="height:40px;"></div>`;
 }
@@ -4198,7 +4541,7 @@ function renderDiaryCard(d, opts = {}) {
 
   // 自分の日誌かどうか
   const isMine = currentUser && d.staff === currentUser.name && d.date === todayStr();
-  // 修正可能かどうか（自分の今日の日誌、またはオーナーが任意の日誌）
+  // 修正可能かどうか（自分の日誌はいつでも、オーナーは全員分）
   const canEdit = currentUser && (
     (d.staff === currentUser.name) ||
     (currentUser.role === 'owner')
@@ -4245,6 +4588,8 @@ function renderDiaryCard(d, opts = {}) {
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="diary-card-staff">${d.staff}</div>
         ${canEdit ? `<button class="diary-edit-btn" onclick="editDiary('${d.id}')">✏️ 修正</button>` : ''}
+        ${currentUser.role === 'owner' && !d.pinToBoard ? `<button class="diary-edit-btn" style="color:var(--caramel);border-color:var(--caramel);" onclick="ownerPinToDashboard('${d.id}')">🎯 ボードへ</button>` : ''}
+        ${d.pinToBoard ? `<span style="font-size:10px;font-weight:900;color:var(--caramel);padding:3px 8px;background:rgba(181,105,42,0.1);border-radius:10px;border:1px solid rgba(181,105,42,0.25);">🎯 ボード掲載中</span>` : ''}
       </div>
     </div>
     <div class="diary-card-body">
@@ -5173,7 +5518,8 @@ function setupNav() {
   if (currentUser.role === 'owner') {
     nav.innerHTML = `
       <button class="nav-btn active" id="nb-diary-owner" onclick="switchTab('diary-owner')"><span class="nav-icon">📖</span><span class="nav-label">日誌</span></button>
-      <button class="nav-btn" id="nb-dashboard" onclick="switchTab('dashboard')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>
+      <button class="nav-btn" id="nb-board-owner" onclick="switchTab('board-owner')"><span class="nav-icon">🎯</span><span class="nav-label">ボード</span></button>
+      <button class="nav-btn" id="nb-tl-owner" onclick="switchTab('tl-owner')"><span class="nav-icon">📰</span><span class="nav-label">TL</span></button>
       <button class="nav-btn" id="nb-export" onclick="switchTab('export')"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></button>
       <button class="nav-btn" id="nb-goals" onclick="switchTab('goals')"><span class="nav-icon">👥</span><span class="nav-label">アカウント</span></button>`;
   } else {
@@ -5181,7 +5527,8 @@ function setupNav() {
       <button class="nav-btn active" id="nb-diary" onclick="switchTab('diary')"><span class="nav-icon">📓</span><span class="nav-label">日誌</span></button>
       <button class="nav-btn" id="nb-input" onclick="switchTab('input')"><span class="nav-icon">📦</span><span class="nav-label">在庫入力</span></button>
       <button class="nav-btn" id="nb-mydata" onclick="switchTab('mydata')"><span class="nav-icon">📋</span><span class="nav-label">在庫一覧</span></button>
-      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">🗓️</span><span class="nav-label">全店カレンダー</span></button>`;
+      <button class="nav-btn" id="nb-tl-staff" onclick="switchTab('tl-staff')"><span class="nav-icon">📰</span><span class="nav-label">TL</span></button>
+      <button class="nav-btn" id="nb-board-staff" onclick="switchTab('board-staff')"><span class="nav-icon">🎯</span><span class="nav-label">ボード</span></button>`;
   }
 }
 function switchTab(tab) {
@@ -5194,14 +5541,19 @@ function switchTab(tab) {
   if (nb) nb.classList.add('active');
   const body = document.getElementById('appBody');
   if (body) body.scrollTop = 0;
-  if (tab === 'diary') renderDiaryInput();
-  if (tab === 'input') { renderStockInput(); updateHeaderAlert(); }
-  if (tab === 'mydata') renderMyStock();
-  if (tab === 'dashboard-staff') renderStaffAllCalendar();
-  if (tab === 'diary-owner') renderDiaryOwner();
-  if (tab === 'dashboard') renderOwnerDashboard();
-  if (tab === 'export') renderItemSettings();
-  if (tab === 'goals') renderAccountSettings();
+  if (tab === 'diary')        renderDiaryInput();
+  if (tab === 'input')        { renderStockInput(); updateHeaderAlert(); }
+  if (tab === 'mydata')       renderMyStock();
+  if (tab === 'tl-staff')     renderTimeline('staff');
+  if (tab === 'board-staff')  renderBoard('staff');
+  if (tab === 'diary-owner')  renderDiaryOwner();
+  if (tab === 'board-owner')  renderBoard('owner');
+  if (tab === 'tl-owner')     renderTimeline('owner');
+  if (tab === 'export')       renderItemSettings();
+  if (tab === 'goals')        renderAccountSettings();
+  // 旧タブ互換
+  if (tab === 'dashboard')         renderOwnerDashboard();
+  if (tab === 'dashboard-staff')   renderStaffAllCalendar();
 }
 function renderStaffAllCalendar() {
   const el = document.getElementById('compareStaffContent');
@@ -5276,32 +5628,50 @@ function renderStaffAllCalendar() {
   const items = getInvItems();
   const myAlerts = items.filter(i => isLowStock(store, i.id));
 
+  const EN_MONTHS2 = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+
   el.innerHTML = `
-  <div class="cal-page-header" style="padding-top:16px;">
-    <button class="cal-nav-btn" onclick="staffAllMoveMonth(-1)">‹</button>
-    <div>
-      <div class="cal-month-label">${year}年 ${month}月</div>
-      <div style="font-size:11px;color:var(--text3);text-align:center;">全店カレンダー</div>
+  <div style="padding:12px 0 0;">
+
+    ${myAlerts.length > 0 ? `
+    <div class="big-alert-banner">
+      <div class="big-alert-icon">🚨</div>
+      <div class="big-alert-body">
+        <div class="big-alert-title">${store} 発注アラート ${myAlerts.length}品目</div>
+        ${myAlerts.map(i => `<div class="big-alert-item">• ${i.name} 残り <b>${getStockQty(store, i.id)} ${i.unit}</b></div>`).join('')}
+      </div>
+    </div>` : `<div class="ok-banner">✅ ${store} — 在庫アラートなし</div>`}
+
+    <div class="cal-outer">
+      <div class="cal-page-header">
+        <div class="cal-month-info">
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <div class="cal-month-label">${month}</div>
+            <div style="font-size:13px;font-weight:900;color:#6B4020;">${year}</div>
+          </div>
+          <div class="cal-month-en">${EN_MONTHS2[month-1]}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="cal-nav-btn" onclick="staffAllMoveMonth(-1)">‹</button>
+          <button class="cal-nav-btn" onclick="staffAllMoveMonth(1)">›</button>
+        </div>
+      </div>
+
+      <div class="cal-grid">${calCells}</div>
+
+      <div style="padding-top:8px;">
+        <div class="cal-store-legend-row">
+          ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:8px;height:8px;"></span>${s.replace('号店','')}</span>`).join('')}
+        </div>
+      </div>
     </div>
-    <button class="cal-nav-btn" onclick="staffAllMoveMonth(1)">›</button>
+
+    ${selDate ? `<div style="padding:0 4px;">${dayDetail}</div>` : `
+    <div class="cal-hint">
+      <div class="cal-hint-icon">👆</div>
+      <div class="cal-hint-text">日付をタップしてその日の日誌を確認</div>
+    </div>`}
   </div>
-
-  ${myAlerts.length > 0 ? `
-  <div class="big-alert-banner" style="margin:0 16px 8px;">
-    <div class="big-alert-icon">🚨</div>
-    <div class="big-alert-body">
-      <div class="big-alert-title">${store} 発注アラート ${myAlerts.length}品目</div>
-      ${myAlerts.map(i => `<div class="big-alert-item">• ${i.name} 残り <b>${getStockQty(store, i.id)} ${i.unit}</b></div>`).join('')}
-    </div>
-  </div>` : `<div class="ok-banner" style="margin:0 16px 8px;">✅ ${store} — 在庫アラートなし</div>`}
-
-  <div class="cal-store-legend-row">
-    ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:9px;height:9px;"></span>${s.replace('号店','')}</span>`).join('')}
-  </div>
-
-  <div class="cal-grid">${calCells}</div>
-
-  ${selDate ? dayDetail : `<div class="cal-hint"><div class="cal-hint-icon">👆</div><div class="cal-hint-text">日付をタップしてその日の日誌を確認</div></div>`}
 
   <div style="height:60px;"></div>`;
 }
@@ -5333,6 +5703,237 @@ function staffAllSelectDate(dateStr) {
   }
 }
 
+// ===== タイムライン =====
+function renderTimeline(role) {
+  const elId = role === 'owner' ? 'tlOwnerContent' : 'tlStaffContent';
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  const diary  = getDB().invDiary  || [];
+  const hist   = getDB().invHistory || [];
+  const items  = getInvItems();
+
+  // 日誌エントリ → TLアイテム化
+  const diaryItems = diary.map(d => ({
+    type: 'diary', ts: d.updatedAt || (d.date + 'T00:00:00'),
+    date: d.date, store: d.store, staff: d.staff, data: d,
+  }));
+
+  // 在庫入出庫 → TLアイテム化
+  const stockItems = hist.slice(0, 300).map(h => ({
+    type: 'stock', ts: h.date + 'T' + (h.time || '00:00') + ':00',
+    date: h.date, store: h.store, staff: h.staff, data: h,
+  }));
+
+  // 合体・降順ソート・最新100件
+  const all = [...diaryItems, ...stockItems]
+    .sort((a, b) => b.ts.localeCompare(a.ts))
+    .slice(0, 100);
+
+  if (all.length === 0) {
+    el.innerHTML = `<div class="tl-empty"><div style="font-size:36px;">📰</div><div>まだ記録がありません</div></div>`;
+    return;
+  }
+
+  let lastDate = '';
+  let html = '<div class="tl-wrap">';
+
+  all.forEach(item => {
+    const storeIdx = STORES.indexOf(item.store);
+    const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
+
+    // 日付区切り
+    if (item.date !== lastDate) {
+      const dateObj = new Date(item.date + 'T00:00:00');
+      const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', weekday:'short' });
+      html += `<div class="tl-date-sep">${dateLabel}</div>`;
+      lastDate = item.date;
+    }
+
+    if (item.type === 'diary') {
+      const d = item.data;
+      const sections = [
+        { icon:'☕', label:'エピソード', val: d.episode },
+        { icon:'⭐', label:'できたこと', val: d.achievement },
+        { icon:'💡', label:'改善点', val: d.improvement },
+        { icon:'🔁', label:'引き継ぎ', val: d.handover },
+        { icon:'📦', label:'在庫メモ', val: d.stockNote },
+      ].filter(s => s.val);
+
+      html += `<div class="tl-item">
+        <div class="tl-dot" style="background:${col};"></div>
+        <div class="tl-body">
+          <div class="tl-meta">
+            <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
+            <span class="tl-staff">${item.staff}</span>
+            <span class="tl-badge tl-badge-diary">日誌</span>
+          </div>
+          ${sections.slice(0,2).map(s => `
+            <div class="tl-section">
+              <span class="tl-section-icon">${s.icon}</span>
+              <div class="tl-section-text">${escHtml(s.val).replace(/<br>/g,' ')}</div>
+            </div>`).join('')}
+          ${sections.length > 2 ? `<div class="tl-more">他 ${sections.length-2} 件…</div>` : ''}
+        </div>
+      </div>`;
+    } else {
+      const h = item.data;
+      const typeIcon  = {in:'📦', use:'📤', adjust:'🔧'}[h.type] || '?';
+      const typeLabel = {in:'入庫', use:'使用', adjust:'修正'}[h.type] || '';
+      const typeColor = {in:'var(--success)', use:'var(--warning)', adjust:'var(--info)'}[h.type];
+      const item2 = items.find(i => i.id === h.itemId);
+      html += `<div class="tl-item">
+        <div class="tl-dot" style="background:${col};"></div>
+        <div class="tl-body">
+          <div class="tl-meta">
+            <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
+            <span class="tl-staff">${item.staff}</span>
+            <span class="tl-badge" style="background:${typeColor}20;color:${typeColor};">${typeIcon} ${typeLabel}</span>
+          </div>
+          <div class="tl-stock-row">
+            <span class="tl-stock-name">${h.itemName}</span>
+            <span class="tl-stock-qty" style="color:${typeColor};">${h.type==='in'?'+':''}${h.type==='use'?'-':''}${h.qty} ${item2?.unit||''}</span>
+            <span class="tl-stock-time">${h.time || ''}</span>
+          </div>
+          ${h.note ? `<div class="tl-note">📝 ${escHtml(h.note)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+  });
+
+  html += '</div><div style="height:60px;"></div>';
+  el.innerHTML = `
+    <div class="page-top-bar" style="border-bottom:2px solid var(--caramel);">
+      <div class="page-top-left">
+        <div class="page-top-date-badge" style="background:var(--caramel);">
+          <span class="page-top-day">📰</span>
+          <span class="page-top-month">タイムライン</span>
+        </div>
+        <div>
+          <div class="page-top-store" style="color:var(--caramel);">全店舗</div>
+          <div class="page-top-staff">最新100件</div>
+        </div>
+      </div>
+    </div>
+    ${html}`;
+}
+
+// ===== ボード（タスク・改善点ダッシュボード） =====
+function renderBoard(role) {
+  const elId = role === 'owner' ? 'boardOwnerContent' : 'boardStaffContent';
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  const db = getDB();
+  const diary = db.invDiary || [];
+
+  // ボードに載せる設定の日誌を抽出
+  const pinned = diary.filter(d => d.pinToBoard);
+
+  // 店舗フィルター
+  const selStore = el.dataset.store || '全店舗';
+  const filtered = pinned.filter(d => selStore === '全店舗' || d.store === selStore);
+
+  const todo    = filtered.filter(d => !d.pinDone);
+  const done    = filtered.filter(d => d.pinDone);
+
+  let html = `
+  <div class="page-top-bar" style="border-bottom:2px solid var(--caramel);">
+    <div class="page-top-left">
+      <div class="page-top-date-badge" style="background:var(--caramel);">
+        <span class="page-top-day">🎯</span>
+        <span class="page-top-month">ボード</span>
+      </div>
+      <div>
+        <div class="page-top-store" style="color:var(--caramel);">タスク・改善点</div>
+        <div class="page-top-staff">${todo.length}件 未完了</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-store-row" style="padding-top:12px;">
+    ${['全店舗', ...STORES].map(s => `
+      <button class="sel-pill ${selStore===s?'active':''}"
+        onclick="document.getElementById('${elId}').dataset.store='${s}';renderBoard('${role}');">
+        ${s.replace('号店','')}
+      </button>`).join('')}
+  </div>`;
+
+  if (todo.length === 0 && done.length === 0) {
+    html += `<div class="tl-empty">
+      <div style="font-size:36px;">🎯</div>
+      <div>日誌で「ボードに載せる」をONにすると<br>ここに表示されます</div>
+    </div>`;
+  } else {
+    if (todo.length > 0) {
+      html += `<div class="board-section-title">📌 未完了 (${todo.length})</div>`;
+      todo.forEach(d => { html += renderBoardCard(d, role); });
+    }
+    if (done.length > 0) {
+      html += `<div class="board-section-title" style="color:var(--text3);">✅ 完了済み (${done.length})</div>`;
+      done.forEach(d => { html += renderBoardCard(d, role); });
+    }
+  }
+
+  html += '<div style="height:80px;"></div>';
+  el.innerHTML = html;
+}
+
+function renderBoardCard(d, role) {
+  const storeIdx = STORES.indexOf(d.store);
+  const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
+  const dateObj = new Date(d.date + 'T00:00:00');
+  const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric' });
+  const elId = role === 'owner' ? 'boardOwnerContent' : 'boardStaffContent';
+
+  const body = [
+    d.pinTitle ? `<div class="board-card-pintitle">${escHtml(d.pinTitle)}</div>` : '',
+    d.improvement ? `<div class="board-card-row"><span class="board-card-icon">💡</span><span>${escHtml(d.improvement).replace(/<br>/g,' ')}</span></div>` : '',
+    d.handover    ? `<div class="board-card-row"><span class="board-card-icon">🔁</span><span>${escHtml(d.handover).replace(/<br>/g,' ')}</span></div>` : '',
+    d.episode     ? `<div class="board-card-row"><span class="board-card-icon">☕</span><span>${escHtml(d.episode).replace(/<br>/g,' ')}</span></div>` : '',
+  ].filter(Boolean).join('');
+
+  return `<div class="board-card ${d.pinDone ? 'board-card--done' : ''}">
+    <div class="board-card-header">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+        <span class="board-card-store" style="background:${col}18;color:${col};border:1px solid ${col}30;">${d.store.replace('号店','')}</span>
+        <span class="board-card-meta">${d.staff} · ${dateLabel}</span>
+        ${d.pinDue ? `<span class="board-card-due">📅 ${escHtml(d.pinDue)}</span>` : ''}
+      </div>
+      <button class="board-done-btn ${d.pinDone ? 'done' : ''}"
+        onclick="toggleBoardDone('${d.id}','${role}')">
+        ${d.pinDone ? '✅ 完了' : '○ 完了にする'}
+      </button>
+    </div>
+    <div class="board-card-body">${body || '<span style="color:var(--text3);font-size:12px;">内容なし</span>'}</div>
+  </div>`;
+}
+
+async function toggleBoardDone(diaryId, role) {
+  const db = getDB();
+  const entry = (db.invDiary || []).find(d => d.id === diaryId);
+  if (!entry) return;
+  entry.pinDone = !entry.pinDone;
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  renderBoard(role);
+  saveInvToSupabase(db).catch(e => console.warn(e));
+}
+
+// オーナーがダッシュボードへピックアップする
+async function ownerPinToDashboard(diaryId) {
+  const db = getDB();
+  const entry = (db.invDiary || []).find(d => d.id === diaryId);
+  if (!entry) return;
+  entry.pinToBoard = true;
+  entry.pinDone = false;
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  showToast('✅ ボードに追加しました');
+  saveInvToSupabase(db).catch(e => console.warn(e));
+  renderDiaryOwner();
+}
+
 function updateHeaderAlert() {
   const store = currentUser ? currentUser.store || '' : '';
   const items = getInvItems();
@@ -5340,8 +5941,8 @@ function updateHeaderAlert() {
   const hdr = document.getElementById('appHeader');
   if (!hdr) return;
   if (hasAlert) {
-    hdr.style.background = 'rgba(208,80,80,0.18)';
-    hdr.style.borderBottomColor = 'rgba(208,80,80,0.4)';
+    hdr.style.background = 'rgba(231,76,60,0.12)';
+    hdr.style.borderBottomColor = 'rgba(231,76,60,0.5)';
   } else {
     hdr.style.background = '';
     hdr.style.borderBottomColor = '';
