@@ -3353,8 +3353,8 @@ const STORE_COLORS = ['#C8833A', '#4A90C8', '#5DB87A'];
 const STORE_CLS = ['s1', 's2', 's3'];
 const REGISTER_CODE = 'brew2025';
 // ===== Supabase設定 =====
-const SUPA_URL = 'https://wbuuexguzlufalgqfyqn.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndidXVleGd1emx1ZmFsZ3FmeXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjgzMjUsImV4cCI6MjA4ODgwNDMyNX0.Ol6TRUn7x1GHPKxuiWIXTNYHay-bq7cSVp83XDOSQzM';
+const SUPA_URL = 'https://ddzqgbinmmqboucxdhog.supabase.co';
+const SUPA_KEY = 'sb_publishable_1iogYBnzkKXxZXtmSPbRaQ_MVsCL1dJ';
 let _db_cache = null; // メモリキャッシュ
 
 // ===== ヘルパー =====
@@ -3651,7 +3651,32 @@ async function initData() {
   }, 10000);
 
   try {
-    const db = await loadDBFromSupabase();
+    // ★ 修正: 起動時はrecords全件取得しない → config + usersのみ取得してEgress削減
+    // recordsはログイン後、実際に必要な画面（日報・集計）で初めて取得する
+    let config = null, users = null;
+    try { config = await _loadConfig(); } catch(e) { console.warn('config load failed:', e); }
+    try { users = await _loadUsersFromSupabase(); } catch(e) { console.warn('users load failed:', e); }
+
+    // ローカルキャッシュからrecordsを引き継ぐ（通信なし）
+    let cachedRecords = [];
+    try {
+      const local = JSON.parse(localStorage.getItem(SK));
+      cachedRecords = (local && local.records) ? local.records : [];
+    } catch {}
+
+    const db = config || {};
+    delete db.users;
+    db.records = cachedRecords; // ★ 起動時はローカルキャッシュのrecordsを使う
+
+    if (users && users.length > 0) {
+      db.users = users;
+    } else {
+      try {
+        const local = JSON.parse(localStorage.getItem(SK));
+        db.users = (local && local.users && local.users.length > 0) ? local.users : [];
+      } catch { db.users = []; }
+    }
+    db._brewUsers = db.users;
     _db_cache = db;
 
     // usersが空の場合のみ管理者1名を追加
@@ -3668,6 +3693,13 @@ async function initData() {
       try { await saveInvToSupabase(_db_cache); } catch(e) { console.warn('init inv save failed:', e); }
     }
 
+    // ローカルキャッシュに設定を保存（recordsは除く）
+    try {
+      const cacheObj = Object.assign({}, _db_cache);
+      delete cacheObj.records;
+      localStorage.setItem(SK, JSON.stringify(cacheObj));
+    } catch {}
+
     _lastSavedRecordIds = new Set((_db_cache.records || []).map(r => String(r.id)));
   } catch(e) {
     console.warn('initData error:', e);
@@ -3682,6 +3714,21 @@ async function initData() {
     showLoadingOverlay(false);
     buildLoginChips();
   }
+}
+
+// ★ 追加: ログイン後にrecordsを遅延取得する関数（必要な画面で呼ぶ）
+let _recordsLoaded = false;
+async function ensureRecordsLoaded() {
+  if (_recordsLoaded) return;
+  if (!_db_cache) return;
+  try {
+    const records = await _loadAllRecords();
+    if (records) {
+      _db_cache.records = records;
+      _lastSavedRecordIds = new Set(records.map(r => String(r.id)));
+      _recordsLoaded = true;
+    }
+  } catch(e) { console.warn('ensureRecordsLoaded failed:', e); }
 }
 // ===== ユーティリティ関数 =====
 function showConfirm(msg, onOk, opts = {}) {
@@ -5475,12 +5522,16 @@ async function doLogin() {
   if (!pass) { showToast('パスワードを入力してください'); return; }
   showLoadingOverlay(true);
   try {
-    const db = await loadDBFromSupabase();
-    _db_cache = db;
-    const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
-    const seen = new Set();
-    const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
-    const user = merged.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
+    // ★ 修正: ログイン認証にレコード全件取得は不要 → usersのみ取得してEgress削減
+    let users = null;
+    try { users = await _loadUsersFromSupabase(); } catch(e) {}
+    // フォールバック：キャッシュのusers
+    if (!users || users.length === 0) {
+      const cached = _db_cache || (() => { try { return JSON.parse(localStorage.getItem(SK)); } catch { return null; } })();
+      users = (cached && cached.users && cached.users.length > 0) ? cached.users : [];
+    }
+    if (_db_cache) { _db_cache.users = users; _db_cache._brewUsers = users; }
+    const user = users.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
     if (!user) { showToast('名前またはパスワードが違います'); return; }
     currentUser = user;
     document.getElementById('hdrName').textContent = user.name;
@@ -5499,12 +5550,16 @@ async function doOwnerLogin() {
   if (!id || !pass) { showToast('IDとパスワードを入力してください'); return; }
   showLoadingOverlay(true);
   try {
-    const db = await loadDBFromSupabase();
-    _db_cache = db;
-    const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
-    const seen = new Set();
-    const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
-    const user = merged.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
+    // ★ 修正: ログイン認証にレコード全件取得は不要 → usersのみ取得してEgress削減
+    let users = null;
+    try { users = await _loadUsersFromSupabase(); } catch(e) {}
+    // フォールバック：キャッシュのusers
+    if (!users || users.length === 0) {
+      const cached = _db_cache || (() => { try { return JSON.parse(localStorage.getItem(SK)); } catch { return null; } })();
+      users = (cached && cached.users && cached.users.length > 0) ? cached.users : [];
+    }
+    if (_db_cache) { _db_cache.users = users; _db_cache._brewUsers = users; }
+    const user = users.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
     if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
     currentUser = user;
     document.getElementById('hdrName').textContent = user.name;
@@ -5598,6 +5653,7 @@ function confirmLogout() {
   currentUser = null;
   formData = {};
   stepIdx = 0;
+  _recordsLoaded = false; // ★ ログアウト時にリセット
   document.getElementById('mainApp').classList.remove('active');
   document.getElementById('reportGate').classList.remove('active');
   document.getElementById('loginScreen').classList.add('active');
@@ -5828,6 +5884,16 @@ function enterApp() {
   document.getElementById('reportGate').classList.remove('active');
   document.getElementById('mainApp').classList.add('active');
   setupNav();
+  // ★ ログイン後にrecordsを非同期で取得（Egress削減のため起動時は取得しない）
+  _recordsLoaded = false;
+  ensureRecordsLoaded().then(() => {
+    // records取得完了後に現在の画面を再描画
+    if (currentUser.role === 'owner') {
+      renderDiaryOwner();
+    } else {
+      renderDiaryInput();
+    }
+  }).catch(() => {});
   if (currentUser.role === 'owner') {
     document.getElementById('staffTabs').style.display = 'none';
     document.getElementById('ownerTabs').style.display = 'block';
