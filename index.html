@@ -3443,26 +3443,11 @@ async function _loadConfig() {
 }
 
 async function _saveConfig(config) {
-  // まず現在のbrew_dataを取得してusersを保護
-  let existingUsers = null;
-  try {
-    const res = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', {
-      headers: _supaHeaders()
-    });
-    const rows = await res.json();
-    if (rows && rows.length > 0 && rows[0].data && rows[0].data.users && rows[0].data.users.length > 0) {
-      existingUsers = rows[0].data.users;
-    }
-  } catch(e) { console.warn('config fetch failed:', e); }
-
-  // records を除いた設定だけ保存
+  // records と users を除いた設定だけ保存（usersはbrew_usersテーブルが正）
   const payload = Object.assign({}, config);
   delete payload.records;
-
-  // usersが空・未定義の場合は既存のusersを使う（絶対に上書きしない）
-  if (existingUsers && (!payload.users || payload.users.length === 0)) {
-    payload.users = existingUsers;
-  }
+  delete payload.users;      // brew_dataにusersは書かない
+  delete payload._brewUsers; // 内部管理用フィールドも除外
 
   try {
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data?on_conflict=id', {
@@ -3547,30 +3532,38 @@ async function _deleteRecord(recordId) {
 // ===== 統合ロード / セーブ =====
 
 async function loadDBFromSupabase() {
-  try {
-    const [config, records, users] = await Promise.all([_loadConfig(), _loadAllRecords(), _loadUsersFromSupabase()]);
-    const db = config || {};
-    db.records = records || db.records || [];
-    db.users = (users && users.length > 0) ? users : (db.users || []);
-    db._brewUsers = db.users; // 互換用に保持
+  // 各ソースを独立して取得（1つ失敗しても他は継続）
+  let config = null, records = [], users = null;
+
+  try { config = await _loadConfig(); } catch(e) { console.warn('config load failed:', e); }
+  try { records = await _loadAllRecords() || []; } catch(e) { console.warn('records load failed:', e); }
+  try { users = await _loadUsersFromSupabase(); } catch(e) { console.warn('users load failed:', e); }
+
+  const db = config || {};
+  // brew_dataのusersは無視（brew_usersテーブルを正とする）
+  delete db.users;
+  db.records = records;
+  // brew_usersテーブルの結果を優先、なければローカルキャッシュのusers
+  if (users && users.length > 0) {
+    db.users = users;
+  } else {
+    // フォールバック：ローカルキャッシュのusers
     try {
-      const cacheObj = Object.assign({}, db);
-      delete cacheObj.records;
-      // usersはキャッシュに残す（アカウント表示に必要）
-      localStorage.setItem(SK, JSON.stringify(cacheObj));
-      localStorage.setItem(SK + '_records_count', String(db.records.length));
-    } catch(e) {}
-    _db_cache = db;
-    return db;
-  } catch(e) {
-    console.warn('Supabase load failed, using local cache:', e);
+      const local = JSON.parse(localStorage.getItem(SK));
+      db.users = (local && local.users && local.users.length > 0) ? local.users : [];
+    } catch { db.users = []; }
+    console.warn('brew_users fetch returned empty, using local cache');
   }
-  // フォールバック: ローカルキャッシュ
+  db._brewUsers = db.users;
+
   try {
-    const local = JSON.parse(localStorage.getItem(SK));
-    if (local) { local.records = local.records || []; local.users = local.users || []; return local; }
-  } catch {}
-  return { users: [], records: [] };
+    const cacheObj = Object.assign({}, db);
+    delete cacheObj.records;
+    localStorage.setItem(SK, JSON.stringify(cacheObj));
+  } catch(e) {}
+
+  _db_cache = db;
+  return db;
 }
 
 function loadDB() {
@@ -3822,10 +3815,13 @@ async function saveInvToSupabase(db) {
     diary.sort((a, b) => b.date.localeCompare(a.date));
     const diaryTrimmed = diary.slice(0, DIARY_MAX_SUPABASE);
 
+    // usersとrecordsは別テーブルで管理するので含めない
+    const { users: _u, records: _r, _brewUsers: _b, ...existingClean } = existing;
+
     const payload = {
       id: 'main',
       data: {
-        ...existing,
+        ...existingClean,
         invStock: db.invStock || {},
         invHistory: (db.invHistory || []).slice(0, 2000),
         invItems: db.invItems || defaultDB().invItems,
@@ -3833,7 +3829,6 @@ async function saveInvToSupabase(db) {
         boardTodos: (db.boardTodos || []).slice(0, 500),
       }
     };
-    if (existing.users) payload.data.users = existing.users;
     await fetch(SUPA_URL + '/rest/v1/brew_data?on_conflict=id', {
       method: 'POST',
       headers: { ...(_supaHeaders()), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -5417,16 +5412,21 @@ function avatarHtml(user, size = 36) {
 }
 function buildLoginChips() {
   const db = getDB();
-  // brew_usersテーブル取得分と brew_data内users の両方をマージ
   const brewUsers = (_db_cache && _db_cache._brewUsers) || [];
   const dbUsers   = db.users || [];
   const merged = [...brewUsers];
   dbUsers.forEach(u => { if (!merged.find(x => (x.id||x.name) === (u.id||u.name))) merged.push(u); });
   const staff = merged.filter(u => u.role === 'staff');
+
   const el = document.getElementById('staffChips');
   if (!el) return;
+
   if (staff.length === 0) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">スタッフアカウントがまだありません</div>';
+    el.innerHTML = `
+      <div style="font-size:12px;color:var(--text3);padding:4px 0 8px;">スタッフアカウントが見つかりません</div>
+      <button onclick="retryLoadUsers()" style="padding:8px 16px;border-radius:10px;background:var(--caramel);border:none;color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">
+        🔄 再読み込み
+      </button>`;
   } else {
     el.innerHTML = staff.map(u => `
       <div class="user-chip" onclick="quickLogin('${u.name}')">
@@ -5438,6 +5438,18 @@ function buildLoginChips() {
   pendingPhotoDataUrl = null;
   const circle = document.getElementById('photoPreview');
   if (circle) circle.innerHTML = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="7" fill="#7A5A3A" opacity="0.6"/><path d="M6 34 Q6 26 20 26 Q34 26 34 34" fill="#7A5A3A" opacity="0.6"/></svg><div class="photo-upload-hint">タップして写真を選ぶ</div>`;
+}
+
+async function retryLoadUsers() {
+  const el = document.getElementById('staffChips');
+  if (el) el.innerHTML = '<div style="font-size:12px;color:var(--text3);">読み込み中…</div>';
+  try {
+    const users = await _loadUsersFromSupabase();
+    if (users && users.length > 0) {
+      if (_db_cache) { _db_cache.users = users; _db_cache._brewUsers = users; }
+    }
+  } catch(e) { console.warn('retryLoadUsers failed:', e); }
+  buildLoginChips();
 }
 function quickLogin(name) {
   document.getElementById('nameInput').value = name;
