@@ -2096,7 +2096,358 @@ select.bean-name-inp option {
 }
 .inv-item-qty.low { color: var(--danger); font-weight: 900; }
 
-/* ===== 在庫管理共通CSS ===== */
+/* ===== 在庫入力 新UI ===== */
+.inv-page-header {
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.inv-page-title { font-size: 18px; font-weight: 900; color: var(--gold2); }
+.inv-page-store { font-size: 13px; font-weight: 700; }
+
+/* 入出庫タイプボタン（スマホ最適化） */
+.itype-row { display:flex; gap:10px; padding:12px 16px; }
+.itype-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  gap:4px; padding:14px 8px; border-radius:14px; border:2px solid transparent;
+  cursor:pointer; font-family:inherit; transition:all 0.15s;
+  opacity:0.5;
+}
+.itype-btn.itype-in   { background:rgba(93,184,122,0.12); border-color:rgba(93,184,122,0.25); }
+.itype-btn.itype-use  { background:rgba(224,154,74,0.12); border-color:rgba(224,154,74,0.25); }
+.itype-btn.itype-adj  { background:rgba(74,144,200,0.12); border-color:rgba(74,144,200,0.25); }
+.itype-btn.active-itype {
+  opacity:1;
+  box-shadow:0 3px 16px rgba(0,0,0,0.3);
+  transform:translateY(-2px);
+}
+.itype-btn.itype-in.active-itype   { border-color:var(--success); }
+.itype-btn.itype-use.active-itype  { border-color:var(--warning); }
+.itype-btn.itype-adj.active-itype  { border-color:var(--info); }
+.itype-icon { font-size:24px; line-height:1; }
+.itype-label {
+  font-size:11px; font-weight:900; letter-spacing:0.05em;
+  color:var(--text2);
+}
+.itype-btn.itype-in.active-itype .itype-label { color:var(--success); }
+.itype-btn.itype-use.active-itype .itype-label { color:var(--warning); }
+.itype-btn.itype-adj.active-itype .itype-label { color:var(--info); }
+
+/* カテゴリラベル */
+.inv-cat-label {
+  font-size:11px; font-weight:900; letter-spacing:0.12em;
+  text-transform:uppercase; padding:10px 16px 6px;
+}
+
+/* 商品カード */
+.inv-item-card {
+  margin:0 16px 10px;
+  background:var(--surface);
+  border-radius:16px;
+  border:1px solid var(--border);
+  overflow:hidden;
+  transition:border-color 0.2s;
+}
+.inv-item-card--alert {
+  border-color:rgba(208,80,80,0.5);
+  background:rgba(208,80,80,0.06);
+}
+.inv-item-card-header { padding:12px 14px 8px; }
+.inv-item-card-name { font-size:15px; font-weight:900; color:var(--text); }
+.inv-item-card-stock { font-size:12px; color:var(--text3); margin-top:3px; }
+.stock-low { color:var(--danger) !important; font-weight:700; }
+
+/* 焙煎度タブ */
+.roast-row { padding:0 14px 10px; }
+.roast-label { font-size:11px; color:var(--text3); font-weight:700; margin-bottom:6px; }
+.roast-tabs { display:flex; gap:6px; }
+.roast-tab {
+  flex:1; padding:9px 4px; border-radius:10px;
+  border:1px solid var(--border2); background:var(--surface2);
+  color:var(--text3); font-size:12px; font-weight:700;
+  font-family:inherit; cursor:pointer; transition:all 0.15s;
+}
+.roast-tab.active-roast {
+  background:var(--caramel); border-color:var(--caramel);
+  color:#fff; box-shadow:0 2px 10px rgba(200,131,58,0.4);
+}
+
+/* 単位タブ */
+.qty-block { padding:0 14px 10px; }
+.unit-tabs { display:flex; gap:6px; margin-bottom:10px; }
+.unit-tab {
+  padding:8px 14px; border-radius:20px;
+  border:1px solid var(--border2); background:var(--surface2);
+  color:var(--text3); font-size:13px; font-weight:700;
+  font-family:inherit; cursor:pointer; transition:all 0.15s;
+}
+.unit-tab.active-utab {
+  background:var(--caramel); border-color:var(--caramel); color:#fff;
+}
+
+/* 数量入力行（スマホ最適化） */
+.qty-input-row {
+  display:flex; align-items:center; gap:8px;
+}
+.qty-stepper {
+  width:44px; height:44px; border-radius:12px;
+  background:var(--surface2); border:1px solid var(--border2);
+  color:var(--text); font-size:22px; font-weight:900;
+  font-family:inherit; cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  flex-shrink:0; transition:background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.qty-stepper:active { background:var(--surface3); }
+.qty-num-input {
+  flex:1; min-width:0; height:44px;
+  background:var(--bg); border:1px solid var(--border2);
+  border-radius:12px; padding:0 12px;
+  color:var(--text); font-size:20px; font-weight:900;
+  text-align:center; font-family:inherit; outline:none;
+  transition:border-color 0.2s;
+}
+.qty-num-input:focus { border-color:var(--caramel); }
+.qty-unit-display {
+  font-size:13px; color:var(--text2); font-weight:700;
+  min-width:24px; text-align:left;
+}
+
+/* 未開封袋数 */
+.bags-block {
+  padding:0 14px 14px;
+  border-top:1px solid var(--border);
+  padding-top:10px;
+}
+.bags-label { font-size:11px; color:var(--text3); font-weight:700; margin-bottom:8px; }
+
+/* メモ欄 */
+.memo-label { font-size:12px; color:var(--text3); font-weight:700; margin-bottom:6px; }
+.memo-input {
+  width:100%; height:44px; background:var(--surface);
+  border:1px solid var(--border2); border-radius:12px;
+  padding:0 14px; color:var(--text); font-size:14px;
+  font-family:inherit; outline:none;
+}
+.memo-input:focus { border-color:var(--caramel); }
+
+/* 登録ボタン */
+.submit-area { padding:12px 16px; }
+.big-submit-btn {
+  width:100%; height:54px; border-radius:16px;
+  background:linear-gradient(135deg, var(--caramel), var(--gold));
+  border:none; color:var(--bg); font-family:inherit;
+  font-size:16px; font-weight:900; cursor:pointer;
+  letter-spacing:0.05em;
+  box-shadow:0 4px 20px rgba(200,131,58,0.4);
+  transition:transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.big-submit-btn:active { transform:scale(0.98); }
+
+/* 大きなアラートバナー */
+.big-alert-banner {
+  margin:0 16px 12px;
+  background:rgba(208,80,80,0.15);
+  border:2px solid rgba(208,80,80,0.5);
+  border-radius:16px;
+  padding:14px 16px;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+.big-alert-icon { font-size:28px; flex-shrink:0; }
+.big-alert-body { flex:1; }
+.big-alert-title {
+  font-size:15px; font-weight:900; color:#ff6b6b;
+  margin-bottom:8px;
+}
+.big-alert-item {
+  font-size:12px; color:#ffaaaa;
+  line-height:1.8; border-bottom:1px solid rgba(208,80,80,0.2);
+  padding-bottom:3px; margin-bottom:3px;
+}
+.big-alert-item:last-child { border-bottom:none; margin-bottom:0; }
+
+.ok-banner {
+  margin:0 16px 12px;
+  padding:12px 16px;
+  background:rgba(93,184,122,0.1);
+  border:1px solid rgba(93,184,122,0.3);
+  border-radius:12px;
+  font-size:13px; font-weight:700; color:var(--success);
+}
+
+/* 在庫一覧カード */
+.stock-view-card {
+  margin:0 16px 10px;
+  background:var(--surface);
+  border-radius:14px;
+  border:1px solid var(--border);
+  padding:14px;
+}
+.stock-view-card--alert {
+  background:rgba(208,80,80,0.08);
+  border-color:rgba(208,80,80,0.45);
+}
+.stock-view-row {
+  display:flex; align-items:center;
+  justify-content:space-between; margin-bottom:8px;
+}
+.stock-view-name { font-size:14px; font-weight:900; color:var(--text); }
+.stock-view-qty { font-size:18px; font-weight:900; color:var(--gold2); }
+.stock-view-qty.qty-alert { color:#ff6b6b; }
+.stock-view-unit { font-size:12px; font-weight:400; color:var(--text3); }
+.stock-bags-row {
+  font-size:12px; color:var(--caramel); margin-bottom:8px;
+}
+.stock-bar-row {
+  display:flex; align-items:center; gap:10px; margin-bottom:4px;
+}
+.stock-prog-bar {
+  flex:1; height:6px; background:var(--surface3);
+  border-radius:3px; overflow:hidden;
+}
+.stock-prog-fill {
+  height:100%; border-radius:3px;
+  transition:width 0.4s ease;
+}
+.stock-thr-label { font-size:10px; color:var(--text3); white-space:nowrap; }
+.stock-alert-row {
+  font-size:11px; font-weight:900; color:#ff6b6b;
+  margin-top:4px;
+}
+
+/* ===== カレンダーUI ===== */
+.cal-page-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px 8px;
+}
+.cal-month-label {
+  font-size:16px; font-weight:900; color:var(--gold2);
+  letter-spacing:0.05em;
+}
+.cal-nav-btn {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--surface2); border:1px solid var(--border2);
+  color:var(--text); font-size:20px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-family:inherit; transition:background 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.cal-nav-btn:active { background:var(--surface3); }
+
+.cal-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:2px;
+  padding:0 10px 12px;
+}
+.cal-dow {
+  text-align:center; font-size:10px; font-weight:700;
+  color:var(--text3); padding:6px 0 4px;
+}
+.cal-dow-sun { color:#ff7070; }
+.cal-dow-sat { color:var(--info); }
+
+.cal-cell {
+  aspect-ratio:1;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  border-radius:10px;
+  cursor:pointer;
+  transition:background 0.12s;
+  gap:2px;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.cal-cell--empty { cursor:default; }
+.cal-cell:not(.cal-cell--empty):active { background:var(--surface2); }
+.cal-day-num {
+  font-size:13px; font-weight:700; color:var(--text2); line-height:1;
+}
+.cal-cell--sun .cal-day-num { color:#ff7070; }
+.cal-cell--sat .cal-day-num { color:var(--info); }
+.cal-cell--today {
+  background:rgba(200,131,58,0.12);
+  border:1px solid rgba(200,131,58,0.35);
+}
+.cal-cell--today .cal-day-num { color:var(--caramel); font-weight:900; }
+.cal-cell--sel {
+  background:var(--caramel) !important;
+  border:none;
+}
+.cal-cell--sel .cal-day-num { color:#fff; }
+.cal-cell--mine {
+  background:rgba(200,131,58,0.08);
+}
+.cal-dots {
+  display:flex; gap:2px; align-items:center; justify-content:center;
+}
+.cal-dot {
+  width:5px; height:5px; border-radius:50%;
+  flex-shrink:0; display:inline-block;
+}
+
+/* カレンダー: 詳細エリア */
+.cal-detail-header {
+  padding:12px 16px 8px;
+  border-top:1px solid var(--border);
+}
+.cal-detail-date {
+  font-size:15px; font-weight:900; color:var(--gold2);
+  margin-bottom:8px;
+}
+.cal-detail-store-filter {
+  display:flex; gap:6px; flex-wrap:wrap;
+}
+.cal-store-pill {
+  padding:5px 12px; border-radius:20px;
+  border:1px solid var(--border2); background:var(--surface2);
+  color:var(--text3); font-size:11px; font-weight:700;
+  font-family:inherit; cursor:pointer; transition:all 0.15s;
+}
+.cal-store-pill.active {
+  background:var(--caramel); border-color:var(--caramel); color:#fff;
+}
+.cal-detail-empty {
+  padding:24px 16px; text-align:center;
+  color:var(--text3); font-size:13px;
+}
+
+/* カレンダー: ヒント */
+.cal-hint {
+  padding:24px 16px; text-align:center;
+}
+.cal-hint-icon { font-size:32px; margin-bottom:8px; }
+.cal-hint-text { font-size:13px; color:var(--text3); margin-bottom:16px; }
+.cal-store-legend {
+  display:flex; gap:14px; justify-content:center;
+  flex-wrap:wrap;
+}
+.cal-store-legend-row {
+  display:flex; gap:12px; justify-content:center;
+  flex-wrap:wrap; padding:0 16px 10px;
+}
+.cal-legend-item {
+  display:flex; align-items:center; gap:5px;
+  font-size:11px; color:var(--text3); font-weight:700;
+}
+
+/* 日誌入力ヘッダーの「過去ログ」ボタン */
+.diary-mode-btn {
+  padding:7px 12px; border-radius:10px;
+  background:var(--surface2); border:1px solid var(--border2);
+  color:var(--text2); font-size:11px; font-weight:700;
+  font-family:inherit; cursor:pointer; white-space:nowrap;
+  transition:background 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.diary-mode-btn:active { background:var(--surface3); }
+
+</style>
 .trans-btn { flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
 .trans-btn.receive { background:rgba(93,184,122,0.15); border:1px solid rgba(93,184,122,0.35); color:var(--success); }
 .trans-btn.use { background:rgba(224,154,74,0.15); border:1px solid rgba(224,154,74,0.35); color:var(--warning); }
@@ -2322,7 +2673,7 @@ select.bean-name-inp option {
 </div>
 <!-- ==================== MAIN APP ==================== -->
 <div id="mainApp">
-  <div class="app-header">
+  <div class="app-header" id="appHeader">
     <div class="header-brand">☕ STOCK</div>
     <div class="header-user" onclick="doLogout()">
       <div class="avatar" id="hdrAvatar">?</div>
@@ -2846,58 +3197,158 @@ function renderStockInput() {
   const store = currentUser.store || '';
   const items = getInvItems();
   const cats = [...new Set(items.map(i => i.category))];
-  let html = `<div style="padding:12px 16px 4px;font-size:18px;font-weight:900;color:var(--gold2);">📝 入出庫入力</div>
-  <div style="padding:0 16px 8px;font-size:12px;color:var(--text3);">${store} の在庫を更新します</div>`;
-  // 入出庫タイプ選択
-  html += `<div style="display:flex;gap:8px;padding:0 16px 12px;">
-    <button id="itype-in" class="trans-btn receive active-btn" onclick="selectIType('in')">📦 入庫</button>
-    <button id="itype-use" class="trans-btn use" onclick="selectIType('use')">📤 使用</button>
-    <button id="itype-adjust" class="trans-btn" style="background:rgba(74,144,200,0.15);border:1px solid rgba(74,144,200,0.3);color:var(--info);flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;" onclick="selectIType('adjust')">🔧 在庫修正</button>
+  const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
+
+  // アラート確認
+  const alerts = items.filter(i => isLowStock(store, i.id));
+  const hasAlert = alerts.length > 0;
+
+  let html = `
+  <div class="inv-page-header" style="border-bottom:3px solid ${storeColor};">
+    <div class="inv-page-title">📝 入出庫入力</div>
+    <div class="inv-page-store" style="color:${storeColor};">${store}</div>
   </div>`;
-  // 商品選択
+
+  // アラートバナー（目立つデザイン）
+  if (hasAlert) {
+    html += `<div class="big-alert-banner">
+      <div class="big-alert-icon">🚨</div>
+      <div class="big-alert-body">
+        <div class="big-alert-title">発注アラート ${alerts.length}品目</div>
+        ${alerts.map(i => `<div class="big-alert-item">• ${i.name} 残り <b>${getStockQty(store, i.id)} ${i.unit}</b></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // 入出庫タイプ選択（大きめボタン）
+  html += `<div class="itype-row">
+    <button id="itype-in"     class="itype-btn itype-in active-itype"  onclick="selectIType('in')">
+      <span class="itype-icon">📦</span><span class="itype-label">入庫</span>
+    </button>
+    <button id="itype-use"    class="itype-btn itype-use"   onclick="selectIType('use')">
+      <span class="itype-icon">📤</span><span class="itype-label">使用</span>
+    </button>
+    <button id="itype-adjust" class="itype-btn itype-adj"   onclick="selectIType('adjust')">
+      <span class="itype-icon">🔧</span><span class="itype-label">修正</span>
+    </button>
+  </div>`;
+
+  // 商品リスト
   cats.forEach(cat => {
     const catItems = items.filter(i => i.category === cat);
-    html += `<div class="sec-title" style="color:${getCatColor(cat)};">${getCatLabel(cat)}</div><div class="card" style="padding:8px 12px;">`;
+    html += `<div class="inv-cat-label" style="color:${getCatColor(cat)};">${getCatLabel(cat)}</div>`;
     catItems.forEach(item => {
       const qty = getStockQty(store, item.id);
+      const bags = getStockBags(store, item.id);
       const low = isLowStock(store, item.id);
-      html += `<div style="display:flex;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border);">
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--text);">${item.name}</div>
-          <div style="font-size:11px;color:${low?'var(--danger)':'var(--text3)'};">現在: <b>${qty} ${item.unit}</b>${low?' ⚠️ 残り少':''}</div>
+      const isCoffee = item.category === 'coffee' && item.name.includes('豆');
+      const defaultUnit = item.unit || 'g';
+
+      // 単位タブ選択肢決定
+      let unitOptions = ['g', '袋', '個'];
+      if (defaultUnit === '個') unitOptions = ['個', '袋'];
+      else if (defaultUnit === 'ml') unitOptions = ['ml', '袋'];
+      else unitOptions = ['g', '袋', '個'];
+
+      html += `<div class="inv-item-card ${low ? 'inv-item-card--alert' : ''}">
+        <div class="inv-item-card-header">
+          <div>
+            <div class="inv-item-card-name">${item.name}</div>
+            <div class="inv-item-card-stock ${low ? 'stock-low' : ''}">
+              現在 <b>${qty} ${item.unit}</b>${bags > 0 ? ` + 未開封 <b>${bags} 袋</b>` : ''}${low ? ' 🚨' : ''}
+            </div>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" id="qty_${item.id}" min="0" inputmode="decimal" placeholder="0"
-            style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px;color:var(--text);font-size:15px;font-weight:700;text-align:center;outline:none;">
-          <span style="font-size:11px;color:var(--text3);">${item.unit}</span>
+
+        ${isCoffee ? `
+        <div class="roast-row">
+          <div class="roast-label">焙煎度</div>
+          <div class="roast-tabs" id="roast_${item.id}">
+            <button class="roast-tab active-roast" onclick="selRoast(this,'${item.id}','浅煎り')">浅煎り</button>
+            <button class="roast-tab" onclick="selRoast(this,'${item.id}','中煎り')">中煎り</button>
+            <button class="roast-tab" onclick="selRoast(this,'${item.id}','中深煎り')">中深煎り</button>
+          </div>
+        </div>` : ''}
+
+        <div class="qty-block">
+          <div class="unit-tabs" id="utab_${item.id}">
+            ${unitOptions.map((u,i) => `<button class="unit-tab ${i===0?'active-utab':''}" onclick="selUnit(this,'${item.id}')" data-unit="${u}">${u}</button>`).join('')}
+          </div>
+          <div class="qty-input-row">
+            <button class="qty-stepper" onclick="stepQty('qty_${item.id}',-1)">－</button>
+            <input type="number" id="qty_${item.id}" min="0" inputmode="decimal"
+              placeholder="0" class="qty-num-input">
+            <button class="qty-stepper" onclick="stepQty('qty_${item.id}',1)">＋</button>
+            <span class="qty-unit-display" id="unit_${item.id}">${unitOptions[0]}</span>
+          </div>
+        </div>
+
+        <div class="bags-block">
+          <label class="bags-label">未開封の袋数（入庫した場合など）</label>
+          <div class="qty-input-row">
+            <button class="qty-stepper" onclick="stepQty('bags_${item.id}',-1)">－</button>
+            <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
+              placeholder="0" class="qty-num-input">
+            <button class="qty-stepper" onclick="stepQty('bags_${item.id}',1)">＋</button>
+            <span class="qty-unit-display">袋</span>
+          </div>
         </div>
       </div>`;
     });
-    html += `</div>`;
   });
+
   // メモ欄
-  html += `<div class="card"><div class="form-group" style="margin:0;">
-    <label class="form-label">メモ（任意）</label>
-    <input type="text" class="finput" id="invNote" placeholder="例：納品確認、発注済みなど">
-  </div></div>`;
-  html += `<div style="padding:0 16px 100px;">
-    <button class="btn-p" onclick="submitInvTransaction()">✅ 登録する</button>
+  html += `<div style="padding:0 16px 8px;">
+    <div class="memo-label">📝 メモ（任意）</div>
+    <input type="text" class="memo-input" id="invNote" placeholder="例：納品確認済み、発注済みなど">
   </div>`;
+
+  html += `<div class="submit-area">
+    <button class="big-submit-btn" onclick="submitInvTransaction()">✅ 登録する</button>
+  </div>
+  <div style="height:40px;"></div>`;
+
   el.innerHTML = html;
   window._currentIType = 'in';
-}
-function selectIType(type) {
-  window._currentIType = type;
-  ['in','use','adjust'].forEach(t => {
-    const btn = document.getElementById(`itype-${t}`);
-    if (!btn) return;
-    btn.classList.remove('active-btn');
-    btn.style.background = '';
-    btn.style.borderColor = '';
-    btn.style.color = '';
+  window._roastMap = {};
+  window._unitMap = {};
+  // 初期単位セット
+  items.forEach(item => {
+    const u = item.unit || 'g';
+    let init = ['ml','ml'].includes(u) ? u : (u === '個' ? '個' : 'g');
+    window._unitMap[item.id] = init;
   });
-  const active = document.getElementById(`itype-${type}`);
-  if (active) active.classList.add('active-btn');
+}
+
+function selRoast(btn, itemId, roast) {
+  btn.closest('.roast-tabs').querySelectorAll('.roast-tab').forEach(b => b.classList.remove('active-roast'));
+  btn.classList.add('active-roast');
+  window._roastMap = window._roastMap || {};
+  window._roastMap[itemId] = roast;
+}
+
+function selUnit(btn, itemId) {
+  btn.closest('.unit-tabs').querySelectorAll('.unit-tab').forEach(b => b.classList.remove('active-utab'));
+  btn.classList.add('active-utab');
+  const unit = btn.dataset.unit;
+  window._unitMap = window._unitMap || {};
+  window._unitMap[itemId] = unit;
+  const disp = document.getElementById(`unit_${itemId}`);
+  if (disp) disp.textContent = unit;
+}
+
+function stepQty(inputId, delta) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const cur = parseFloat(el.value || '0') || 0;
+  el.value = Math.max(0, cur + delta);
+}
+
+// 未開封袋数の取得
+function getStockBags(store, itemId) {
+  const s = getInvStock();
+  const key = itemId + '__bags';
+  return (s[store] && s[store][key] != null) ? s[store][key] : 0;
 }
 async function submitInvTransaction() {
   const store = currentUser.store || '';
@@ -2912,35 +3363,69 @@ async function submitInvTransaction() {
   if (!db.invStock[store]) db.invStock[store] = {};
   if (!db.invHistory) db.invHistory = [];
   let updated = 0;
+
   items.forEach(item => {
     const input = document.getElementById(`qty_${item.id}`);
+    const bagsInput = document.getElementById(`bags_${item.id}`);
     const rawVal = parseFloat(input?.value || '0') || 0;
-    if (rawVal <= 0) return;
+    const bagsVal = parseFloat(bagsInput?.value || '0') || 0;
+    const unit = (window._unitMap && window._unitMap[item.id]) || item.unit || 'g';
+    const roast = (window._roastMap && window._roastMap[item.id]) || '';
+    const bagsKey = item.id + '__bags';
+
+    if (rawVal <= 0 && bagsVal <= 0) return;
+
+    // 単位がgでなく袋の場合、1袋を既定量に換算（仮：1袋=200g、ユーザーがメモで管理）
+    let qtyInUnit = rawVal;
+
     const cur = db.invStock[store][item.id] || 0;
-    if (type === 'in') db.invStock[store][item.id] = cur + rawVal;
-    else if (type === 'use') db.invStock[store][item.id] = Math.max(0, cur - rawVal);
-    else db.invStock[store][item.id] = rawVal; // adjust: 直接セット
+    const curBags = db.invStock[store][bagsKey] || 0;
+
+    if (rawVal > 0) {
+      if (type === 'in') db.invStock[store][item.id] = cur + qtyInUnit;
+      else if (type === 'use') db.invStock[store][item.id] = Math.max(0, cur - qtyInUnit);
+      else db.invStock[store][item.id] = qtyInUnit;
+    }
+
+    if (bagsVal > 0) {
+      if (type === 'in') db.invStock[store][bagsKey] = curBags + bagsVal;
+      else if (type === 'use') db.invStock[store][bagsKey] = Math.max(0, curBags - bagsVal);
+      else db.invStock[store][bagsKey] = bagsVal;
+    }
+
     const histEntry = {
       id: Date.now() + '_' + item.id,
       date, time, store,
       staff: currentUser.name,
       itemId: item.id,
       itemName: item.name,
-      type, qty: rawVal,
+      type,
+      qty: rawVal,
+      bags: bagsVal,
+      unit,
+      roast,
       afterQty: db.invStock[store][item.id],
+      afterBags: db.invStock[store][bagsKey] || 0,
       note
     };
     db.invHistory.unshift(histEntry);
     updated++;
   });
+
   if (updated === 0) { showToast('数量を入力してください'); return; }
-  // 履歴は最大2000件
   if (db.invHistory.length > 2000) db.invHistory = db.invHistory.slice(0, 2000);
   saveDB(db);
   await saveInvToSupabase(db);
   const label = {in:'入庫', use:'使用', adjust:'修正'}[type];
   showToast(`✅ ${label}を登録しました（${updated}品目）`);
   renderStockInput();
+}
+
+function selectIType(type) {
+  window._currentIType = type;
+  document.querySelectorAll('.itype-btn').forEach(b => b.classList.remove('active-itype'));
+  const active = document.getElementById(`itype-${type}`);
+  if (active) active.classList.add('active-itype');
 }
 // ===== 在庫一覧（自店） =====
 function renderMyStock() {
@@ -2949,41 +3434,64 @@ function renderMyStock() {
   const store = currentUser.store || '';
   const items = getInvItems();
   const cats = [...new Set(items.map(i => i.category))];
-  // アラート集計
   const alerts = items.filter(i => isLowStock(store, i.id));
-  let html = `<div style="padding:12px 16px 4px;font-size:18px;font-weight:900;color:var(--gold2);">📦 在庫一覧</div>
-  <div style="padding:0 16px 8px;font-size:12px;color:var(--text3);">${store}</div>`;
+  const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
+
+  // アプリヘッダーの背景を変える
+  const hdr = document.getElementById('appHeader');
+  if (hdr) hdr.style.background = alerts.length > 0 ? 'rgba(208,80,80,0.18)' : '';
+
+  let html = `
+  <div class="inv-page-header" style="border-bottom:3px solid ${storeColor};">
+    <div class="inv-page-title">📦 在庫一覧</div>
+    <div class="inv-page-store" style="color:${storeColor};">${store}</div>
+  </div>`;
+
+  // 目立つアラートバナー
   if (alerts.length > 0) {
-    html += `<div class="alert-banner"><div class="alert-banner-title">⚠️ 発注アラート (${alerts.length}品目)</div>`;
-    alerts.forEach(i => {
-      html += `<div class="alert-banner-item">・${i.name}：現在 ${getStockQty(store, i.id)} ${i.unit}（しきい値: ${i.alertThreshold[store]} ${i.unit}）</div>`;
-    });
-    html += `</div>`;
+    html += `<div class="big-alert-banner">
+      <div class="big-alert-icon">🚨</div>
+      <div class="big-alert-body">
+        <div class="big-alert-title">発注アラート ${alerts.length}品目！</div>
+        ${alerts.map(i => {
+          const qty = getStockQty(store, i.id);
+          const bags = getStockBags(store, i.id);
+          const thr = i.alertThreshold && i.alertThreshold[store];
+          return `<div class="big-alert-item">• ${i.name}: <b>${qty} ${i.unit}</b>${bags>0?` + 未開封${bags}袋`:''}（アラート: ${thr}${i.unit}）</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="ok-banner">✅ 発注アラートなし — 在庫は十分です</div>`;
   }
+
   cats.forEach(cat => {
     const catItems = items.filter(i => i.category === cat);
-    html += `<div class="sec-title" style="color:${getCatColor(cat)};">${getCatLabel(cat)}</div><div class="card" style="padding:8px 12px;">`;
+    html += `<div class="inv-cat-label" style="color:${getCatColor(cat)};">${getCatLabel(cat)}</div>`;
     catItems.forEach(item => {
       const qty = getStockQty(store, item.id);
+      const bags = getStockBags(store, item.id);
       const low = isLowStock(store, item.id);
       const thr = item.alertThreshold && item.alertThreshold[store];
       const pct = thr > 0 ? Math.min(100, Math.round((qty / (thr * 3)) * 100)) : 50;
-      const barColor = low ? 'var(--danger)' : (pct < 60 ? 'var(--warning)' : 'var(--success)');
-      html += `<div style="padding:10px 4px;border-bottom:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span style="font-size:13px;font-weight:700;color:var(--text);">${item.name}</span>
-          <span style="font-size:15px;font-weight:900;color:${low?'var(--danger)':'var(--gold2)'};">${qty} <span style="font-size:11px;font-weight:400;">${item.unit}</span></span>
+      const barColor = low ? '#D05050' : (pct < 50 ? 'var(--warning)' : 'var(--success)');
+
+      html += `<div class="stock-view-card ${low ? 'stock-view-card--alert' : ''}">
+        <div class="stock-view-row">
+          <div class="stock-view-name">${item.name}</div>
+          <div class="stock-view-qty ${low ? 'qty-alert' : ''}">${qty} <span class="stock-view-unit">${item.unit}</span></div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="prog-bar" style="flex:1;height:5px;"><div class="prog-fill" style="width:${pct}%;background:${barColor};"></div></div>
-          <span style="font-size:10px;color:var(--text3);">アラート: ${thr ?? '-'} ${item.unit}</span>
+        ${bags > 0 ? `<div class="stock-bags-row">＋ 未開封 <b>${bags}</b> 袋</div>` : ''}
+        <div class="stock-bar-row">
+          <div class="stock-prog-bar"><div class="stock-prog-fill" style="width:${pct}%;background:${barColor};"></div></div>
+          <span class="stock-thr-label">アラート: ${thr ?? '-'} ${item.unit}</span>
         </div>
-        ${low ? '<div style="font-size:10px;color:var(--danger);margin-top:4px;font-weight:700;">⚠️ 発注が必要です</div>' : ''}
+        ${low ? '<div class="stock-alert-row">🚨 発注が必要です</div>' : ''}
       </div>`;
     });
-    html += `</div>`;
   });
-  html += `<div style="padding:0 16px 100px;"><button class="btn-s" onclick="switchTab('goals-staff')">📋 入出庫履歴を見る</button></div>`;
+
+  html += `<div style="padding:0 16px 100px;"></div>`;
   el.innerHTML = html;
 }
 // ===== 入出庫履歴（スタッフ） =====
@@ -3072,6 +3580,15 @@ function getInvDiary() { return getDB().invDiary || []; }
 function renderDiaryInput() {
   const el = document.getElementById('diaryInputContent');
   if (!el) return;
+
+  // モード切り替え: 'write' or 'calendar'
+  const mode = el.dataset.mode || 'write';
+
+  if (mode === 'calendar') {
+    renderDiaryStaffCalendar(el);
+    return;
+  }
+
   const today = todayStr();
   const diary = getInvDiary();
   const existing = diary.find(d => d.staff === currentUser.name && d.date === today);
@@ -3085,10 +3602,13 @@ function renderDiaryInput() {
         <span class="diary-date-day">${new Date().getDate()}</span>
         <span class="diary-date-month">${new Date().toLocaleDateString('ja-JP',{month:'long'})}</span>
       </div>
-      <div>
+      <div style="flex:1;">
         <div class="diary-store-name" style="color:${storeColor}">${store}</div>
         <div class="diary-staff-name">${currentUser.name}</div>
       </div>
+      <button class="diary-mode-btn" onclick="document.getElementById('diaryInputContent').dataset.mode='calendar';renderDiaryInput();">
+        📅 過去ログ
+      </button>
     </div>
 
     ${existing ? `<div class="diary-saved-badge">✅ 本日の日誌は保存済みです — 上書きできます</div>` : ''}
@@ -3135,6 +3655,127 @@ function renderDiaryInput() {
   `;
 }
 
+function renderDiaryStaffCalendar(el) {
+  if (!el.dataset.calYear) {
+    const now = new Date();
+    el.dataset.calYear  = String(now.getFullYear());
+    el.dataset.calMonth = String(now.getMonth() + 1);
+  }
+  const year  = parseInt(el.dataset.calYear);
+  const month = parseInt(el.dataset.calMonth);
+  const selDate  = el.dataset.calSeldate || '';
+  const store    = currentUser.store || '';
+  const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
+  const today = todayStr();
+  const diary = getInvDiary();
+
+  // その月の日誌インデックス（自店のみ）
+  const monthDiaries = {};
+  diary.forEach(d => {
+    const prefix = `${year}-${String(month).padStart(2,'0')}`;
+    if (d.date.startsWith(prefix)) {
+      if (!monthDiaries[d.date]) monthDiaries[d.date] = [];
+      monthDiaries[d.date].push(d);
+    }
+  });
+
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const DOW = ['日','月','火','水','木','金','土'];
+
+  let calCells = DOW.map((d,i) => `<div class="cal-dow ${i===0?'cal-dow-sun':i===6?'cal-dow-sat':''}">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) calCells += `<div class="cal-cell cal-cell--empty"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const entries = monthDiaries[dateStr] || [];
+    // 自分の日誌があるか
+    const myEntry = entries.find(d => d.staff === currentUser.name);
+    // 他店含む全店
+    const storeColors = [...new Set(entries.map(d => STORE_COLORS[STORES.indexOf(d.store)]).filter(Boolean))];
+    const isToday = dateStr === today;
+    const isSel   = dateStr === selDate;
+    const dow = new Date(year, month-1, day).getDay();
+
+    calCells += `<div class="cal-cell ${isToday?'cal-cell--today':''} ${isSel?'cal-cell--sel':''} ${dow===0?'cal-cell--sun':''} ${dow===6?'cal-cell--sat':''} ${myEntry?'cal-cell--mine':''}"
+      onclick="staffSelectDiaryDate('${dateStr}')">
+      <span class="cal-day-num">${day}</span>
+      ${entries.length > 0 ? `<div class="cal-dots">${storeColors.slice(0,3).map(c=>`<span class="cal-dot" style="background:${c};"></span>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  // 選択日の日誌
+  let dayDetail = '';
+  if (selDate) {
+    const dayEntries = monthDiaries[selDate] || [];
+    const dateObj = new Date(selDate + 'T00:00:00');
+    const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
+    dayDetail = `
+    <div class="cal-detail-header">
+      <div class="cal-detail-date">${dateLabel} の日誌</div>
+    </div>
+    ${dayEntries.length === 0
+      ? `<div class="cal-detail-empty">この日の日誌はありません</div>`
+      : dayEntries.map(d => renderDiaryCard(d)).join('')}`;
+  }
+
+  el.innerHTML = `
+  <div class="diary-header" style="border-bottom:1px solid var(--border);">
+    <div style="flex:1;">
+      <div class="diary-store-name" style="color:${storeColor};">📅 過去の日誌</div>
+      <div class="diary-staff-name">カレンダーから確認</div>
+    </div>
+    <button class="diary-mode-btn" onclick="document.getElementById('diaryInputContent').dataset.mode='write';document.getElementById('diaryInputContent').dataset.calSeldate='';renderDiaryInput();">
+      ✏️ 今日を書く
+    </button>
+  </div>
+
+  <div class="cal-page-header">
+    <button class="cal-nav-btn" onclick="staffMoveDiaryMonth(-1)">‹</button>
+    <div class="cal-month-label">${year}年 ${month}月</div>
+    <button class="cal-nav-btn" onclick="staffMoveDiaryMonth(1)">›</button>
+  </div>
+
+  <div class="cal-store-legend-row">
+    ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:9px;height:9px;"></span>${s.replace('号店','')}</span>`).join('')}
+    <span class="cal-legend-item"><span style="width:9px;height:9px;border-radius:50%;border:2px solid var(--caramel);display:inline-block;"></span>自分</span>
+  </div>
+
+  <div class="cal-grid">${calCells}</div>
+
+  ${selDate ? dayDetail : `<div class="cal-hint"><div class="cal-hint-icon">👆</div><div class="cal-hint-text">日付をタップしてその日の日誌を確認</div></div>`}
+
+  <div style="height:60px;"></div>`;
+}
+
+function staffMoveDiaryMonth(delta) {
+  const el = document.getElementById('diaryInputContent');
+  if (!el) return;
+  let year  = parseInt(el.dataset.calYear  || new Date().getFullYear());
+  let month = parseInt(el.dataset.calMonth || (new Date().getMonth()+1));
+  month += delta;
+  if (month > 12) { month = 1; year++; }
+  if (month < 1)  { month = 12; year--; }
+  el.dataset.calYear  = String(year);
+  el.dataset.calMonth = String(month);
+  el.dataset.calSeldate = '';
+  renderDiaryInput();
+}
+
+function staffSelectDiaryDate(dateStr) {
+  const el = document.getElementById('diaryInputContent');
+  if (!el) return;
+  el.dataset.calSeldate = el.dataset.calSeldate === dateStr ? '' : dateStr;
+  renderDiaryInput();
+  if (el.dataset.calSeldate) {
+    setTimeout(() => {
+      const detail = el.querySelector('.cal-detail-header');
+      if (detail) detail.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 50);
+  }
+}
+
+
 async function saveDiary() {
   const episode = document.getElementById('d-episode')?.value.trim() || '';
   const achievement = document.getElementById('d-achievement')?.value.trim() || '';
@@ -3179,54 +3820,126 @@ async function saveDiary() {
 function renderDiaryOwner() {
   const el = document.getElementById('diaryOwnerContent');
   if (!el) return;
+
+  // 状態管理
+  if (!el.dataset.year) {
+    const now = new Date();
+    el.dataset.year  = String(now.getFullYear());
+    el.dataset.month = String(now.getMonth() + 1);
+  }
+  const year  = parseInt(el.dataset.year);
+  const month = parseInt(el.dataset.month);
+  const selDate   = el.dataset.seldate  || '';
+  const selStore  = el.dataset.selstore || '全店舗';
+
   const diary = getInvDiary();
-  let selStore = el.dataset.store || '全店舗';
 
-  const filtered = diary.filter(d => selStore === '全店舗' || d.store === selStore)
-    .sort((a,b) => b.date.localeCompare(a.date));
-
-  // 在庫アラート取得
-  const items = getInvItems();
-  const alerts = [];
-  STORES.forEach(store => {
-    items.forEach(item => {
-      if (isLowStock(store, item.id)) alerts.push({ store, item });
-    });
+  // その月の日誌をインデックス化
+  const monthDiaries = {};
+  diary.forEach(d => {
+    if (d.date.startsWith(`${year}-${String(month).padStart(2,'0')}`)) {
+      if (!monthDiaries[d.date]) monthDiaries[d.date] = [];
+      monthDiaries[d.date].push(d);
+    }
   });
 
+  // カレンダー生成
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const today = todayStr();
+
+  let calCells = '';
+  const DOW = ['日','月','火','水','木','金','土'];
+  calCells += DOW.map((d,i) => `<div class="cal-dow ${i===0?'cal-dow-sun':i===6?'cal-dow-sat':''}">${d}</div>`).join('');
+
+  for (let i = 0; i < firstDay; i++) calCells += `<div class="cal-cell cal-cell--empty"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const entries = monthDiaries[dateStr] || [];
+    const storeColors = [...new Set(entries.map(d => STORE_COLORS[STORES.indexOf(d.store)]).filter(Boolean))];
+    const isToday    = dateStr === today;
+    const isSel      = dateStr === selDate;
+    const dow        = new Date(year, month-1, day).getDay();
+
+    calCells += `<div class="cal-cell ${isToday?'cal-cell--today':''} ${isSel?'cal-cell--sel':''} ${dow===0?'cal-cell--sun':''} ${dow===6?'cal-cell--sat':''}"
+      onclick="selectDiaryDate('${dateStr}')">
+      <span class="cal-day-num">${day}</span>
+      ${entries.length > 0 ? `<div class="cal-dots">${storeColors.slice(0,3).map(c=>`<span class="cal-dot" style="background:${c};"></span>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  // 選択日の日誌
+  let dayDetail = '';
+  if (selDate) {
+    const dayEntries = (monthDiaries[selDate] || []).filter(d => selStore === '全店舗' || d.store === selStore);
+    const dateObj = new Date(selDate + 'T00:00:00');
+    const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
+    dayDetail = `
+    <div class="cal-detail-header">
+      <div class="cal-detail-date">${dateLabel}</div>
+      <div class="cal-detail-store-filter">
+        ${['全店舗', ...STORES].map(s => `
+          <button class="cal-store-pill ${selStore===s?'active':''}"
+            onclick="document.getElementById('diaryOwnerContent').dataset.selstore='${s}';renderDiaryOwner();">
+            ${s.replace('号店','')}
+          </button>`).join('')}
+      </div>
+    </div>
+    ${dayEntries.length === 0
+      ? `<div class="cal-detail-empty">この日の日誌はありません</div>`
+      : dayEntries.map(d => renderDiaryCard(d)).join('')}`;
+  }
+
   el.innerHTML = `
-    <div class="owner-diary-header">
-      <div class="owner-diary-title">📖 スタッフ日誌</div>
-      <div class="owner-diary-sub">全店舗の定性情報をまとめて確認</div>
-    </div>
+  <div class="cal-page-header">
+    <button class="cal-nav-btn" onclick="moveDiaryMonth(-1)">‹</button>
+    <div class="cal-month-label">${year}年 ${month}月</div>
+    <button class="cal-nav-btn" onclick="moveDiaryMonth(1)">›</button>
+  </div>
 
-    ${alerts.length > 0 ? `
-    <div class="inv-alert-block">
-      <div class="inv-alert-title">⚠️ 在庫アラート ${alerts.length}件</div>
-      ${alerts.slice(0,5).map(a => {
-        const col = STORE_COLORS[STORES.indexOf(a.store)] || 'var(--caramel)';
-        return `<div class="inv-alert-row"><span style="color:${col};font-weight:700;">${a.store.replace('号店','')}</span> ${a.item.name} が少なくなっています</div>`;
-      }).join('')}
-      ${alerts.length > 5 ? `<div class="inv-alert-row">... 他${alerts.length-5}件</div>` : ''}
-    </div>` : ''}
+  <div class="cal-grid">${calCells}</div>
 
-    <div class="filter-store-row">
-      ${['全店舗', ...STORES].map(s => `
-        <button class="sel-pill${selStore===s?' active':''}" onclick="
-          document.getElementById('diaryOwnerContent').dataset.store='${s}';
-          renderDiaryOwner();
-        ">${s.replace('号店','')}</button>`).join('')}
-    </div>
+  ${selDate ? dayDetail : `
+    <div class="cal-hint">
+      <div class="cal-hint-icon">👆</div>
+      <div class="cal-hint-text">日付をタップするとその日の日誌を確認できます</div>
+      <div class="cal-store-legend">
+        ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:10px;height:10px;"></span>${s.replace('号店','')}</span>`).join('')}
+      </div>
+    </div>`}
 
-    ${filtered.length === 0 ? `
-      <div class="diary-empty">
-        <div style="font-size:40px;margin-bottom:12px;">📓</div>
-        <div style="color:var(--text3);font-size:14px;">まだ日誌がありません</div>
-      </div>` : filtered.map(d => renderDiaryCard(d)).join('')}
-
-    <div style="height:40px;"></div>
-  `;
+  <div style="height:40px;"></div>`;
 }
+
+function moveDiaryMonth(delta) {
+  const el = document.getElementById('diaryOwnerContent');
+  if (!el) return;
+  let year  = parseInt(el.dataset.year  || new Date().getFullYear());
+  let month = parseInt(el.dataset.month || (new Date().getMonth()+1));
+  month += delta;
+  if (month > 12) { month = 1; year++; }
+  if (month < 1)  { month = 12; year--; }
+  el.dataset.year  = String(year);
+  el.dataset.month = String(month);
+  el.dataset.seldate = '';
+  renderDiaryOwner();
+}
+
+function selectDiaryDate(dateStr) {
+  const el = document.getElementById('diaryOwnerContent');
+  if (!el) return;
+  el.dataset.seldate = el.dataset.seldate === dateStr ? '' : dateStr;
+  renderDiaryOwner();
+  // 選択後、詳細エリアまでスクロール
+  if (el.dataset.seldate) {
+    setTimeout(() => {
+      const detail = el.querySelector('.cal-detail-header');
+      if (detail) detail.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 50);
+  }
+}
+
 
 function renderDiaryCard(d) {
   const storeIdx = STORES.indexOf(d.store);
@@ -4028,13 +4741,27 @@ function switchTab(tab) {
   const body = document.getElementById('appBody');
   if (body) body.scrollTop = 0;
   if (tab === 'diary') renderDiaryInput();
-  if (tab === 'input') renderStockInput();
+  if (tab === 'input') { renderStockInput(); updateHeaderAlert(); }
   if (tab === 'mydata') renderMyStock();
   if (tab === 'dashboard-staff') renderCompareStores();
   if (tab === 'diary-owner') renderDiaryOwner();
   if (tab === 'dashboard') renderOwnerDashboard();
   if (tab === 'export') renderItemSettings();
   if (tab === 'goals') renderAccountSettings();
+}
+function updateHeaderAlert() {
+  const store = currentUser ? currentUser.store || '' : '';
+  const items = getInvItems();
+  const hasAlert = items.some(i => isLowStock(store, i.id));
+  const hdr = document.getElementById('appHeader');
+  if (!hdr) return;
+  if (hasAlert) {
+    hdr.style.background = 'rgba(208,80,80,0.18)';
+    hdr.style.borderBottomColor = 'rgba(208,80,80,0.4)';
+  } else {
+    hdr.style.background = '';
+    hdr.style.borderBottomColor = '';
+  }
 }
 const STEPS = ['store_date','sales','sales_chart','top_item','loss','stock','register','episode','complete'];
 function renderStep() {
