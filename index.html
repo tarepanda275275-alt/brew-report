@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>☕ BREW STOCK — つなぐ珈琲 在庫管理</title>
+<title> BREW STOCK — つなぐ珈琲 在庫管理</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script>
 (function(global){
@@ -289,29 +289,29 @@
 </script>
 <style>
 :root {
-  --bg: #1A0F08;
-  --bg2: #231408;
-  --surface: #2C1A10;
-  --surface2: #3A2218;
-  --surface3: #442A1E;
-  --border: rgba(255,255,255,0.08);
-  --border2: rgba(255,255,255,0.15);
-  --cream: #F5E6C8;
-  --cream2: #EDD5A3;
-  --caramel: #C8833A;
-  --caramel2: #E09A4A;
-  --gold: #D4A843;
-  --gold2: #F0C860;
-  --text: #F0E0C0;
-  --text2: #B8956A;
-  --text3: #7A5A3A;
-  --success: #5DB87A;
-  --warning: #E09A4A;
-  --danger: #D05050;
-  --info: #4A90C8;
-  --s1: #C8833A;
-  --s2: #4A90C8;
-  --s3: #5DB87A;
+  --bg: #F5F0E8;
+  --bg2: #EDE8DC;
+  --surface: #FFFFFF;
+  --surface2: #F0EBE0;
+  --surface3: #E8E0D0;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --cream: #7A5230;
+  --cream2: #5C3D1E;
+  --caramel: #B5692A;
+  --caramel2: #C8783A;
+  --gold: #A8842A;
+  --gold2: #8B6520;
+  --text: #2C1A08;
+  --text2: #5C3D20;
+  --text3: #8A6A48;
+  --success: #2E7D4F;
+  --warning: #B5692A;
+  --danger: #C0392B;
+  --info: #2471A3;
+  --s1: #B5692A;
+  --s2: #2471A3;
+  --s3: #2E7D4F;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -347,7 +347,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  background: #1a0e06;
+  background: #E8D5B8;
 }
 #loginScreen.active { display: flex; }
 .login-bg {
@@ -2447,6 +2447,128 @@ select.bean-name-inp option {
 }
 .diary-mode-btn:active { background:var(--surface3); }
 
+/* ===== ライトテーマ補正 ===== */
+.login-bg { background: linear-gradient(160deg, #EDD5A8 0%, #F5ECD8 50%, #E8D5B0 100%); }
+.app-header { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
+.bottom-nav { background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -1px 8px rgba(0,0,0,0.06); }
+.diary-card { box-shadow: 0 1px 8px rgba(0,0,0,0.07); }
+.inv-item-card { box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.stock-view-card { box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.big-alert-banner { box-shadow: 0 2px 12px rgba(192,57,43,0.15); }
+
+/* ===== リアクション ===== */
+.reaction-area {
+  padding: 10px 14px 8px;
+  border-top: 1px solid var(--border);
+}
+.reaction-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  font-size: 16px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.reaction-btn:active { transform: scale(0.95); }
+.reaction-btn.reacted {
+  background: rgba(181,105,42,0.12);
+  border-color: var(--caramel);
+}
+.reaction-count {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--text2);
+  line-height: 1;
+}
+.reaction-btn.reacted .reaction-count { color: var(--caramel); }
+
+/* ===== コメント ===== */
+.diary-comments-area {
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.diary-comment {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.diary-comment:last-child { border-bottom: none; }
+.diary-comment-name {
+  font-size: 11px;
+  font-weight: 900;
+}
+.diary-comment-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.diary-comment-time {
+  font-size: 10px;
+  color: var(--text3);
+}
+.diary-comment-input-area {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+.diary-comment-input {
+  flex: 1;
+  height: 38px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+.diary-comment-input:focus { border-color: var(--caramel); }
+.diary-comment-post-btn {
+  padding: 0 14px;
+  height: 38px;
+  border-radius: 20px;
+  background: var(--caramel);
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ===== 修正ボタン ===== */
+.diary-edit-btn {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.diary-edit-btn:active { background: var(--surface3); }
+
 /* ===== 共通コンポーネントCSS ===== */
 .trans-btn { flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
 .trans-btn.receive { background:rgba(93,184,122,0.15); border:1px solid rgba(93,184,122,0.35); color:var(--success); }
@@ -2505,15 +2627,15 @@ select.bean-name-inp option {
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
       <defs>
         <radialGradient id="bgGrad1" cx="25%" cy="15%" r="55%">
-          <stop offset="0%" stop-color="#3D1F08" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="#1a0e06" stop-opacity="0"/>
+          <stop offset="0%" stop-color="#C8956A" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#E8D5B8" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="bgGrad2" cx="80%" cy="85%" r="45%">
           <stop offset="0%" stop-color="#2A1500" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#1a0e06" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#E8D5B8" stop-opacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="100%" height="100%" fill="#1a0e06"/>
+      <rect width="100%" height="100%" fill="#E8D5B8"/>
       <rect width="100%" height="100%" fill="url(#bgGrad1)"/>
       <rect width="100%" height="100%" fill="url(#bgGrad2)"/>
       <!-- Subtle coffee ring stains -->
@@ -2524,15 +2646,15 @@ select.bean-name-inp option {
       <!-- Floating coffee beans -->
       <g class="float-bean" opacity="0.18">
         <ellipse cx="10%" cy="30%" rx="10" ry="14" fill="#C8833A" transform="rotate(-25,10%,30%)"/>
-        <line x1="10%" y1="16%" x2="10%" y2="44%" stroke="#1a0e06" stroke-width="1.5" transform="rotate(-25,10%,30%)"/>
+        <line x1="10%" y1="16%" x2="10%" y2="44%" stroke="#E8D5B8" stroke-width="1.5" transform="rotate(-25,10%,30%)"/>
       </g>
       <g class="float-bean" opacity="0.12">
         <ellipse cx="92%" cy="55%" rx="8" ry="11" fill="#D4A843" transform="rotate(20,92%,55%)"/>
-        <line x1="92%" y1="44%" x2="92%" y2="66%" stroke="#1a0e06" stroke-width="1.2" transform="rotate(20,92%,55%)"/>
+        <line x1="92%" y1="44%" x2="92%" y2="66%" stroke="#E8D5B8" stroke-width="1.2" transform="rotate(20,92%,55%)"/>
       </g>
       <g class="float-bean" opacity="0.10">
         <ellipse cx="78%" cy="78%" rx="9" ry="13" fill="#C8833A" transform="rotate(-10,78%,78%)"/>
-        <line x1="78%" y1="65%" x2="78%" y2="91%" stroke="#1a0e06" stroke-width="1.3" transform="rotate(-10,78%,78%)"/>
+        <line x1="78%" y1="65%" x2="78%" y2="91%" stroke="#E8D5B8" stroke-width="1.3" transform="rotate(-10,78%,78%)"/>
       </g>
     </svg>
   </div>
@@ -2547,7 +2669,7 @@ select.bean-name-inp option {
             <stop offset="100%" stop-color="#A06020"/>
           </linearGradient>
           <linearGradient id="coffeeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#3D1F08"/>
+            <stop offset="0%" stop-color="#C8956A"/>
             <stop offset="100%" stop-color="#1A0A02"/>
           </linearGradient>
           <linearGradient id="foamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -3500,7 +3622,11 @@ function renderMyStock() {
     });
   });
 
-  html += `<div style="padding:0 16px 100px;"></div>`;
+  html += `<div style="padding:8px 16px 100px;">
+    <button class="diary-edit-btn" style="width:100%;padding:12px;border-radius:12px;font-size:13px;" onclick="showAlertThresholdModal('${store}')">
+      ⚙️ 発注アラートのしきい値を設定
+    </button>
+  </div>`;
   el.innerHTML = html;
 }
 // ===== 入出庫履歴（スタッフ） =====
@@ -3950,28 +4076,62 @@ function selectDiaryDate(dateStr) {
 }
 
 
-function renderDiaryCard(d) {
+function renderDiaryCard(d, opts = {}) {
   const storeIdx = STORES.indexOf(d.store);
   const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
   const dateObj = new Date(d.date + 'T00:00:00');
   const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', weekday:'short' });
 
+  // 自分の日誌かどうか
+  const isMine = currentUser && d.staff === currentUser.name && d.date === todayStr();
+  // 修正可能かどうか（自分の今日の日誌、またはオーナーが任意の日誌）
+  const canEdit = currentUser && (
+    (d.staff === currentUser.name) ||
+    (currentUser.role === 'owner')
+  );
+
   const sections = [
-    { icon:'☕', label:'エピソード', val: d.episode },
-    { icon:'⭐', label:'できたこと', val: d.achievement },
-    { icon:'💡', label:'改善点', val: d.improvement },
-    { icon:'🔁', label:'引き継ぎ', val: d.handover },
-    { icon:'📦', label:'在庫メモ', val: d.stockNote },
+    { key:'episode',     icon:'☕', label:'エピソード',         val: d.episode },
+    { key:'achievement', icon:'⭐', label:'できたこと',         val: d.achievement },
+    { key:'improvement', icon:'💡', label:'改善点',            val: d.improvement },
+    { key:'handover',    icon:'🔁', label:'引き継ぎ',          val: d.handover },
+    { key:'stockNote',   icon:'📦', label:'在庫メモ',          val: d.stockNote },
   ].filter(s => s.val);
 
+  // リアクション集計
+  const reactions = d.reactions || {};
+  const STAMPS = ['⭐','👏','👀','💚','😂','🙏','💪','📌'];
+  const reactionHtml = STAMPS.map(s => {
+    const count = (reactions[s] || []).length;
+    const iReacted = currentUser && (reactions[s] || []).includes(currentUser.name);
+    return `<button class="reaction-btn ${iReacted ? 'reacted' : ''}"
+      onclick="toggleReaction('${d.id}','${s}')">
+      ${s}${count > 0 ? `<span class="reaction-count">${count}</span>` : ''}
+    </button>`;
+  }).join('');
+
+  // コメント
+  const comments = d.comments || [];
+  const commentsHtml = comments.map(c => `
+    <div class="diary-comment">
+      <span class="diary-comment-name" style="color:${STORE_COLORS[STORES.indexOf(c.store)] || 'var(--caramel)'};">${c.staff}</span>
+      <span class="diary-comment-text">${escHtml(c.text)}</span>
+      <span class="diary-comment-time">${c.date} ${c.time || ''}</span>
+    </div>`).join('');
+
+  const cardId = `diary-card-${d.id}`;
+
   return `
-  <div class="diary-card">
+  <div class="diary-card" id="${cardId}">
     <div class="diary-card-header">
       <div class="diary-card-meta">
         <span class="diary-card-date">${dateLabel}</span>
-        <span class="diary-card-store" style="background:${col}20;color:${col};">${d.store.replace('号店','')}</span>
+        <span class="diary-card-store" style="background:${col}18;color:${col};border:1px solid ${col}30;">${d.store.replace('号店','')}</span>
       </div>
-      <div class="diary-card-staff">${d.staff}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="diary-card-staff">${d.staff}</div>
+        ${canEdit ? `<button class="diary-edit-btn" onclick="editDiary('${d.id}')">✏️ 修正</button>` : ''}
+      </div>
     </div>
     <div class="diary-card-body">
       ${sections.map(s => `
@@ -3979,10 +4139,134 @@ function renderDiaryCard(d) {
           <div class="diary-card-section-label">${s.icon} ${s.label}</div>
           <div class="diary-card-section-text">${escHtml(s.val)}</div>
         </div>`).join('')}
-      ${sections.length === 0 ? '<div style="color:var(--text3);font-size:12px;">内容なし</div>' : ''}
+      ${sections.length === 0 ? '<div style="color:var(--text3);font-size:12px;padding:4px 0;">内容なし</div>' : ''}
+    </div>
+
+    <div class="reaction-area">
+      <div class="reaction-stamps">${reactionHtml}</div>
+    </div>
+
+    ${comments.length > 0 ? `<div class="diary-comments-area">${commentsHtml}</div>` : ''}
+
+    <div class="diary-comment-input-area">
+      <input type="text" class="diary-comment-input" id="ci-${d.id}"
+        placeholder="コメントを入力…" onkeydown="if(event.key==='Enter')postComment('${d.id}')">
+      <button class="diary-comment-post-btn" onclick="postComment('${d.id}')">送信</button>
     </div>
   </div>`;
 }
+
+async function toggleReaction(diaryId, stamp) {
+  const db = getDB();
+  if (!db.invDiary) return;
+  const entry = db.invDiary.find(d => d.id === diaryId);
+  if (!entry) return;
+  if (!entry.reactions) entry.reactions = {};
+  if (!entry.reactions[stamp]) entry.reactions[stamp] = [];
+  const name = currentUser.name;
+  const idx = entry.reactions[stamp].indexOf(name);
+  if (idx >= 0) entry.reactions[stamp].splice(idx, 1);
+  else entry.reactions[stamp].push(name);
+  saveDB(db);
+  try { await saveInvToSupabase(db); } catch(e) {}
+  // カードだけ再描画
+  const cardEl = document.getElementById(`diary-card-${diaryId}`);
+  if (cardEl) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderDiaryCard(entry);
+    cardEl.replaceWith(tmp.firstElementChild);
+  }
+}
+
+async function postComment(diaryId) {
+  const input = document.getElementById(`ci-${diaryId}`);
+  const text = (input?.value || '').trim();
+  if (!text) return;
+  const db = getDB();
+  if (!db.invDiary) return;
+  const entry = db.invDiary.find(d => d.id === diaryId);
+  if (!entry) return;
+  if (!entry.comments) entry.comments = [];
+  entry.comments.push({
+    staff: currentUser.name,
+    store: currentUser.store || '',
+    text,
+    date: todayStr(),
+    time: new Date().toTimeString().slice(0,5)
+  });
+  saveDB(db);
+  try { await saveInvToSupabase(db); } catch(e) {}
+  const cardEl = document.getElementById(`diary-card-${diaryId}`);
+  if (cardEl) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderDiaryCard(entry);
+    cardEl.replaceWith(tmp.firstElementChild);
+  }
+}
+
+function editDiary(diaryId) {
+  const db = getDB();
+  const entry = (db.invDiary || []).find(d => d.id === diaryId);
+  if (!entry) return;
+
+  // 編集モーダルを表示
+  const modal = document.createElement('div');
+  modal.id = 'editDiaryModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:15px;font-weight:900;color:var(--text);">✏️ 日誌を修正</div>
+        <button onclick="document.getElementById('editDiaryModal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">✕</button>
+      </div>
+      ${[
+        {id:'ee-episode',     label:'☕ エピソード',        val: entry.episode || ''},
+        {id:'ee-achievement', label:'⭐ できたこと',        val: entry.achievement || ''},
+        {id:'ee-improvement', label:'💡 改善点',           val: entry.improvement || ''},
+        {id:'ee-handover',    label:'🔁 引き継ぎ',         val: entry.handover || ''},
+        {id:'ee-stockNote',   label:'📦 在庫メモ',         val: entry.stockNote || ''},
+      ].map(f => `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">${f.label}</div>
+          <textarea id="${f.id}" style="width:100%;min-height:70px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:10px;font-family:inherit;font-size:13px;color:var(--text);resize:vertical;">${escHtml(f.val)}</textarea>
+        </div>`).join('')}
+      <button onclick="saveEditDiary('${diaryId}')" style="width:100%;height:48px;border-radius:12px;background:var(--caramel);border:none;color:#fff;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;margin-top:4px;">保存する</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function saveEditDiary(diaryId) {
+  const db = getDB();
+  const entry = (db.invDiary || []).find(d => d.id === diaryId);
+  if (!entry) return;
+
+  const get = id => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
+
+  entry.episode     = get('ee-episode');
+  entry.achievement = get('ee-achievement');
+  entry.improvement = get('ee-improvement');
+  entry.handover    = get('ee-handover');
+  entry.stockNote   = get('ee-stockNote');
+  entry.updatedAt   = new Date().toISOString();
+
+  saveDB(db);
+  try { await saveInvToSupabase(db); } catch(e) {}
+  document.getElementById('editDiaryModal')?.remove();
+
+  // カードを再描画
+  const cardEl = document.getElementById(`diary-card-${diaryId}`);
+  if (cardEl) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderDiaryCard(entry);
+    cardEl.replaceWith(tmp.firstElementChild);
+  }
+  showToast('✅ 修正しました');
+}
+
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
@@ -4218,6 +4502,53 @@ async function updateItemThreshold(itemId, store, val) {
   item.alertThreshold[store] = parseFloat(val) || 0;
   saveDB(db);
   await saveInvToSupabase(db);
+}
+
+function showAlertThresholdModal(store) {
+  const items = getInvItems();
+  const modal = document.createElement('div');
+  modal.id = 'alertThreshModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);display:flex;align-items:flex-end;justify-content:center;';
+
+  const rows = items.map(item => {
+    const thr = (item.alertThreshold && item.alertThreshold[store]) ?? '';
+    return `<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px;">
+      <div style="flex:1;font-size:13px;font-weight:700;color:var(--text);">${item.name}</div>
+      <input type="number" id="thr_${item.id}" value="${thr}" min="0" inputmode="numeric"
+        style="width:80px;height:36px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:14px;font-weight:700;color:var(--text);text-align:right;font-family:inherit;outline:none;">
+      <span style="font-size:12px;color:var(--text3);min-width:20px;">${item.unit}</span>
+    </div>`;
+  }).join('');
+
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:600px;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:15px;font-weight:900;color:var(--text);">⚙️ 発注アラートのしきい値</div>
+        <button onclick="document.getElementById('alertThreshModal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">✕</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">${store} — この数量を下回ったらアラートを表示</div>
+      ${rows}
+      <button onclick="saveAlertThresholds('${store}')" style="width:100%;height:48px;border-radius:12px;background:var(--caramel);border:none;color:#fff;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;margin-top:16px;">保存する</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function saveAlertThresholds(store) {
+  const db = getDB();
+  if (!db.invItems) return;
+  db.invItems.forEach(item => {
+    const el = document.getElementById(`thr_${item.id}`);
+    if (!el) return;
+    if (!item.alertThreshold) item.alertThreshold = {};
+    item.alertThreshold[store] = parseFloat(el.value) || 0;
+  });
+  saveDB(db);
+  await saveInvToSupabase(db);
+  document.getElementById('alertThreshModal')?.remove();
+  showToast('✅ しきい値を保存しました');
+  if (currentUser.role === 'owner') renderOwnerDashboard();
+  else renderMyStock();
 }
 // ===== アカウント管理（オーナー） =====
 function renderAccountSettings() {
@@ -4736,7 +5067,7 @@ function setupNav() {
       <button class="nav-btn active" id="nb-diary" onclick="switchTab('diary')"><span class="nav-icon">📓</span><span class="nav-label">日誌</span></button>
       <button class="nav-btn" id="nb-input" onclick="switchTab('input')"><span class="nav-icon">📦</span><span class="nav-label">在庫入力</span></button>
       <button class="nav-btn" id="nb-mydata" onclick="switchTab('mydata')"><span class="nav-icon">📋</span><span class="nav-label">在庫一覧</span></button>
-      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">🏪</span><span class="nav-label">全店</span></button>`;
+      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">🗓️</span><span class="nav-label">全店カレンダー</span></button>`;
   }
 }
 function switchTab(tab) {
@@ -4752,12 +5083,142 @@ function switchTab(tab) {
   if (tab === 'diary') renderDiaryInput();
   if (tab === 'input') { renderStockInput(); updateHeaderAlert(); }
   if (tab === 'mydata') renderMyStock();
-  if (tab === 'dashboard-staff') renderCompareStores();
+  if (tab === 'dashboard-staff') renderStaffAllCalendar();
   if (tab === 'diary-owner') renderDiaryOwner();
   if (tab === 'dashboard') renderOwnerDashboard();
   if (tab === 'export') renderItemSettings();
   if (tab === 'goals') renderAccountSettings();
 }
+function renderStaffAllCalendar() {
+  const el = document.getElementById('compareStaffContent');
+  if (!el) return;
+
+  if (!el.dataset.year) {
+    const now = new Date();
+    el.dataset.year  = String(now.getFullYear());
+    el.dataset.month = String(now.getMonth() + 1);
+  }
+  const year  = parseInt(el.dataset.year);
+  const month = parseInt(el.dataset.month);
+  const selDate  = el.dataset.seldate  || '';
+  const selStore = el.dataset.selstore || '全店舗';
+  const today = todayStr();
+  const diary = getInvDiary();
+
+  const monthDiaries = {};
+  diary.forEach(d => {
+    const prefix = `${year}-${String(month).padStart(2,'0')}`;
+    if (d.date.startsWith(prefix)) {
+      if (!monthDiaries[d.date]) monthDiaries[d.date] = [];
+      monthDiaries[d.date].push(d);
+    }
+  });
+
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const DOW = ['日','月','火','水','木','金','土'];
+
+  let calCells = DOW.map((d,i) => `<div class="cal-dow ${i===0?'cal-dow-sun':i===6?'cal-dow-sat':''}">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) calCells += `<div class="cal-cell cal-cell--empty"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const entries = monthDiaries[dateStr] || [];
+    const storeColors = [...new Set(entries.map(d => STORE_COLORS[STORES.indexOf(d.store)]).filter(Boolean))];
+    const isToday = dateStr === today;
+    const isSel   = dateStr === selDate;
+    const dow = new Date(year, month-1, day).getDay();
+
+    calCells += `<div class="cal-cell ${isToday?'cal-cell--today':''} ${isSel?'cal-cell--sel':''} ${dow===0?'cal-cell--sun':''} ${dow===6?'cal-cell--sat':''}"
+      onclick="staffAllSelectDate('${dateStr}')">
+      <span class="cal-day-num">${day}</span>
+      ${entries.length > 0 ? `<div class="cal-dots">${storeColors.slice(0,3).map(c=>`<span class="cal-dot" style="background:${c};"></span>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  let dayDetail = '';
+  if (selDate) {
+    const dayEntries = (monthDiaries[selDate] || []).filter(d => selStore === '全店舗' || d.store === selStore);
+    const dateObj = new Date(selDate + 'T00:00:00');
+    const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
+    dayDetail = `
+    <div class="cal-detail-header">
+      <div class="cal-detail-date">${dateLabel} の日誌</div>
+      <div class="cal-detail-store-filter">
+        ${['全店舗', ...STORES].map(s => `
+          <button class="cal-store-pill ${selStore===s?'active':''}"
+            onclick="document.getElementById('compareStaffContent').dataset.selstore='${s}';renderStaffAllCalendar();">
+            ${s.replace('号店','')}
+          </button>`).join('')}
+      </div>
+    </div>
+    ${dayEntries.length === 0
+      ? `<div class="cal-detail-empty">この日の日誌はありません</div>`
+      : dayEntries.map(d => renderDiaryCard(d)).join('')}`;
+  }
+
+  // 在庫アラート（スタッフ自店のみ）
+  const store = currentUser.store || '';
+  const items = getInvItems();
+  const myAlerts = items.filter(i => isLowStock(store, i.id));
+
+  el.innerHTML = `
+  <div class="cal-page-header" style="padding-top:16px;">
+    <button class="cal-nav-btn" onclick="staffAllMoveMonth(-1)">‹</button>
+    <div>
+      <div class="cal-month-label">${year}年 ${month}月</div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;">全店カレンダー</div>
+    </div>
+    <button class="cal-nav-btn" onclick="staffAllMoveMonth(1)">›</button>
+  </div>
+
+  ${myAlerts.length > 0 ? `
+  <div class="big-alert-banner" style="margin:0 16px 8px;">
+    <div class="big-alert-icon">🚨</div>
+    <div class="big-alert-body">
+      <div class="big-alert-title">${store} 発注アラート ${myAlerts.length}品目</div>
+      ${myAlerts.map(i => `<div class="big-alert-item">• ${i.name} 残り <b>${getStockQty(store, i.id)} ${i.unit}</b></div>`).join('')}
+    </div>
+  </div>` : `<div class="ok-banner" style="margin:0 16px 8px;">✅ ${store} — 在庫アラートなし</div>`}
+
+  <div class="cal-store-legend-row">
+    ${STORES.map((s,i) => `<span class="cal-legend-item"><span class="cal-dot" style="background:${STORE_COLORS[i]};width:9px;height:9px;"></span>${s.replace('号店','')}</span>`).join('')}
+  </div>
+
+  <div class="cal-grid">${calCells}</div>
+
+  ${selDate ? dayDetail : `<div class="cal-hint"><div class="cal-hint-icon">👆</div><div class="cal-hint-text">日付をタップしてその日の日誌を確認</div></div>`}
+
+  <div style="height:60px;"></div>`;
+}
+
+function staffAllMoveMonth(delta) {
+  const el = document.getElementById('compareStaffContent');
+  if (!el) return;
+  let year  = parseInt(el.dataset.year  || new Date().getFullYear());
+  let month = parseInt(el.dataset.month || (new Date().getMonth()+1));
+  month += delta;
+  if (month > 12) { month = 1; year++; }
+  if (month < 1)  { month = 12; year--; }
+  el.dataset.year = String(year);
+  el.dataset.month = String(month);
+  el.dataset.seldate = '';
+  renderStaffAllCalendar();
+}
+
+function staffAllSelectDate(dateStr) {
+  const el = document.getElementById('compareStaffContent');
+  if (!el) return;
+  el.dataset.seldate = el.dataset.seldate === dateStr ? '' : dateStr;
+  renderStaffAllCalendar();
+  if (el.dataset.seldate) {
+    setTimeout(() => {
+      const detail = el.querySelector('.cal-detail-header');
+      if (detail) detail.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 50);
+  }
+}
+
 function updateHeaderAlert() {
   const store = currentUser ? currentUser.store || '' : '';
   const items = getInvItems();
