@@ -2447,11 +2447,10 @@ select.bean-name-inp option {
 }
 .diary-mode-btn:active { background:var(--surface3); }
 
-</style>
+/* ===== 共通コンポーネントCSS ===== */
 .trans-btn { flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
 .trans-btn.receive { background:rgba(93,184,122,0.15); border:1px solid rgba(93,184,122,0.35); color:var(--success); }
 .trans-btn.use { background:rgba(224,154,74,0.15); border:1px solid rgba(224,154,74,0.35); color:var(--warning); }
-.trans-btn.adjust-type { background:rgba(74,144,200,0.15); border:1px solid rgba(74,144,200,0.35); color:var(--info); flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
 .trans-btn.active-btn { opacity:1; transform:scale(1.02); box-shadow:0 2px 14px rgba(0,0,0,0.35); }
 .trans-btn:not(.active-btn) { opacity:0.5; }
 
@@ -2482,8 +2481,18 @@ select.bean-name-inp option {
 .tag-staff { background:rgba(74,144,200,0.2); color:var(--info); }
 .del-btn { padding:6px 12px; border-radius:8px; border:1px solid var(--danger); background:transparent; color:var(--danger); font-size:12px; font-weight:700; font-family:inherit; cursor:pointer; }
 .del-btn:active { background:var(--danger); color:#fff; }
-.prog-bar { flex: 1; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
-.prog-fill { height: 100%; background: linear-gradient(90deg, var(--caramel), var(--gold2)); transition: width 0.5s ease; border-radius: 3px; }
+
+.prog-bar { flex:1; height:5px; background:var(--surface3); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--caramel),var(--gold2)); transition:width 0.5s ease; border-radius:3px; }
+
+.inv-alert-block { margin:0 16px 12px; background:rgba(208,80,80,0.08); border:1px solid rgba(208,80,80,0.25); border-radius:12px; padding:12px 14px; }
+.inv-alert-title { font-size:12px; font-weight:900; color:var(--danger); margin-bottom:8px; }
+.inv-alert-row { font-size:11px; color:var(--text2); padding:3px 0; border-bottom:1px solid rgba(208,80,80,0.15); }
+.inv-alert-row:last-child { border-bottom:none; }
+
+.owner-diary-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); margin-bottom:8px; }
+.owner-diary-title { font-size:18px; font-weight:900; color:var(--gold2); }
+.owner-diary-sub { font-size:12px; color:var(--text3); margin-top:3px; }
 
 </style>
 </head>
