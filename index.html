@@ -3649,27 +3649,46 @@ function saveDB(db) {
 
 async function initData() {
   showLoadingOverlay(true);
-  const db = await loadDBFromSupabase();
-  _db_cache = db;
 
-  // usersが空の場合のみ管理者1名を追加
-  if (!_db_cache.users || _db_cache.users.length === 0) {
-    _db_cache.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
-    await _upsertUserToSupabase(_db_cache.users[0]);
+  // タイムアウト保険（10秒経っても終わらなければ強制解除）
+  const timeoutId = setTimeout(() => {
+    showLoadingOverlay(false);
+    buildLoginChips();
+    console.warn('initData timeout: forced unlock');
+  }, 10000);
+
+  try {
+    const db = await loadDBFromSupabase();
+    _db_cache = db;
+
+    // usersが空の場合のみ管理者1名を追加
+    if (!_db_cache.users || _db_cache.users.length === 0) {
+      _db_cache.users = [{ name: '管理者', id: 'admin', pass: 'admin2025', role: 'owner', photo: null }];
+      try { await _upsertUserToSupabase(_db_cache.users[0]); } catch(e) { console.warn('upsert admin failed:', e); }
+    }
+
+    // 在庫データが存在しない場合のみ初期データを書き込む
+    if (!_db_cache.invItems || _db_cache.invItems.length === 0) {
+      _db_cache.invItems = defaultDB().invItems;
+      _db_cache.invStock = _db_cache.invStock || {};
+      _db_cache.invHistory = _db_cache.invHistory || [];
+      try { await saveInvToSupabase(_db_cache); } catch(e) { console.warn('init inv save failed:', e); }
+    }
+
+    _lastSavedRecordIds = new Set((_db_cache.records || []).map(r => String(r.id)));
+  } catch(e) {
+    console.warn('initData error:', e);
+    // ローカルキャッシュでフォールバック
+    try {
+      const local = JSON.parse(localStorage.getItem(SK));
+      if (local) { _db_cache = local; }
+    } catch {}
+    if (!_db_cache) _db_cache = defaultDB();
+  } finally {
+    clearTimeout(timeoutId);
+    showLoadingOverlay(false);
+    buildLoginChips();
   }
-
-  // 在庫データが存在しない場合のみ初期データを書き込む
-  if (!_db_cache.invItems || _db_cache.invItems.length === 0) {
-    _db_cache.invItems = defaultDB().invItems;
-    _db_cache.invStock = _db_cache.invStock || {};
-    _db_cache.invHistory = _db_cache.invHistory || [];
-    await saveInvToSupabase(_db_cache);
-  }
-
-  _lastSavedRecordIds = new Set((_db_cache.records || []).map(r => String(r.id)));
-
-  showLoadingOverlay(false);
-  buildLoginChips();
 }
 // ===== ユーティリティ関数 =====
 function showConfirm(msg, onOk, opts = {}) {
@@ -5443,37 +5462,48 @@ async function doLogin() {
   if (!name) { showToast('名前を入力してください'); return; }
   if (!pass) { showToast('パスワードを入力してください'); return; }
   showLoadingOverlay(true);
-  const db = await loadDBFromSupabase();
-  _db_cache = db;
-  showLoadingOverlay(false);
-  // brew_usersとdb.usersの両方からスタッフを検索
-  const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
-  const seen = new Set();
-  const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
-  const user = merged.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
-  if (!user) { showToast('名前またはパスワードが違います'); return; }
-  currentUser = user;
-  document.getElementById('hdrName').textContent = user.name;
-  renderHeaderAvatar(user);
-  checkReportGate();
+  try {
+    const db = await loadDBFromSupabase();
+    _db_cache = db;
+    const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
+    const seen = new Set();
+    const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
+    const user = merged.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
+    if (!user) { showToast('名前またはパスワードが違います'); return; }
+    currentUser = user;
+    document.getElementById('hdrName').textContent = user.name;
+    renderHeaderAvatar(user);
+    checkReportGate();
+  } catch(e) {
+    console.warn('doLogin error:', e);
+    showToast('ログインに失敗しました。再度お試しください');
+  } finally {
+    showLoadingOverlay(false);
+  }
 }
 async function doOwnerLogin() {
   const id = document.getElementById('ownerIdInput').value.trim();
   const pass = document.getElementById('ownerPassInput').value.trim();
   if (!id || !pass) { showToast('IDとパスワードを入力してください'); return; }
   showLoadingOverlay(true);
-  const db = await loadDBFromSupabase();
-  _db_cache = db;
-  showLoadingOverlay(false);
-  const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
-  const seen = new Set();
-  const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
-  const user = merged.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
-  if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
-  currentUser = user;
-  document.getElementById('hdrName').textContent = user.name;
-  renderHeaderAvatar(user);
-  checkReportGate();
+  try {
+    const db = await loadDBFromSupabase();
+    _db_cache = db;
+    const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
+    const seen = new Set();
+    const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
+    const user = merged.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
+    if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
+    currentUser = user;
+    document.getElementById('hdrName').textContent = user.name;
+    renderHeaderAvatar(user);
+    checkReportGate();
+  } catch(e) {
+    console.warn('doOwnerLogin error:', e);
+    showToast('ログインに失敗しました。再度お試しください');
+  } finally {
+    showLoadingOverlay(false);
+  }
 }
 async function doCreateAccount() {
   const name = document.getElementById('newName').value.trim();
