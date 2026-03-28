@@ -2945,6 +2945,121 @@ select.bean-name-inp option {
 }
 .board-pin-label { font-size: 13px; font-weight: 700; color: var(--text2); }
 
+/* ===== 日誌入力：店舗選択 ===== */
+.diary-store-selector {
+  padding: 10px 16px 4px;
+}
+.diary-store-label {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  margin-bottom: 7px;
+}
+.diary-store-btns {
+  display: flex; gap: 8px;
+}
+.store-sel-btn {
+  flex: 1; padding: 9px 4px; border-radius: 10px;
+  border: 1.5px solid var(--border2); background: var(--surface2);
+  color: var(--text2); font-size: 12px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.store-sel-btn:active { opacity: 0.8; }
+
+/* ===== 日誌入力：セクション別ミニトグル ===== */
+.diary-form-section-top {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 4px;
+}
+.mini-pin-toggle {
+  display: flex; align-items: center; gap: 5px;
+  cursor: pointer; flex-shrink: 0;
+}
+.mini-pin-toggle input[type=checkbox] { display: none; }
+.mini-pin-slider {
+  width: 34px; height: 18px; border-radius: 9px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  position: relative; transition: background 0.2s;
+}
+.mini-pin-slider::after {
+  content: ''; position: absolute;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.mini-pin-toggle input:checked + .mini-pin-slider {
+  background: var(--caramel); border-color: var(--caramel);
+}
+.mini-pin-toggle input:checked + .mini-pin-slider::after {
+  transform: translateX(16px);
+}
+.mini-pin-label {
+  font-size: 13px; min-width: 16px; text-align: center;
+}
+
+/* ===== ボード：ToDo直接追加 ===== */
+.board-add-card {
+  margin: 12px 16px 8px;
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1.5px dashed rgba(181,105,42,0.35);
+  padding: 14px;
+}
+.board-add-title {
+  font-size: 13px; font-weight: 900; color: var(--caramel);
+  margin-bottom: 10px;
+}
+.board-todo-select {
+  height: 38px; padding: 0 10px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; font-family: inherit; font-size: 12px;
+  color: var(--text); outline: none; cursor: pointer;
+}
+.board-add-btn {
+  height: 38px; padding: 0 16px; border-radius: 10px;
+  background: var(--caramel); border: none; color: #fff;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== ボード：店舗別グループ ===== */
+.board-store-group {
+  margin: 12px 16px 0;
+}
+.board-store-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 2px;
+}
+.board-store-name {
+  font-size: 13px; font-weight: 900;
+}
+.board-store-count {
+  font-size: 11px; color: var(--text3); font-weight: 700;
+}
+.board-store-empty {
+  font-size: 12px; color: var(--text3);
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: 0 0 10px 10px;
+  border: 1px solid var(--border);
+  border-top: none;
+  margin-bottom: 8px;
+}
+.board-store-group .board-card {
+  margin: 0 0 2px;
+  border-radius: 0;
+  border-top: none;
+}
+.board-store-group .board-card:last-child {
+  border-radius: 0 0 10px 10px;
+  margin-bottom: 8px;
+}
+
 </style>
 </head>
 <body>
@@ -3647,6 +3762,7 @@ async function saveInvToSupabase(db) {
         invHistory: (db.invHistory || []).slice(0, 2000),
         invItems: db.invItems || defaultDB().invItems,
         invDiary: diaryTrimmed,
+        boardTodos: (db.boardTodos || []).slice(0, 500),
       }
     };
     if (existing.users) payload.data.users = existing.users;
@@ -4100,103 +4216,92 @@ function renderDiaryInput() {
   if (mode === 'calendar') { renderDiaryStaffCalendar(el); return; }
 
   const today = todayStr();
-  // 全件から検索（90日フィルタをかけない）
   const allDiary = getDB().invDiary || [];
-  const existing = allDiary.find(d => d.staff === currentUser.name && d.date === today);
-  const diary = getInvDiary(); // 90日分（カレンダー等に使用）
+  // 店舗選択（スタッフは自分の店舗がデフォルト、変更可能）
+  const defaultStore = el.dataset.selstore || currentUser.store || STORES[0];
+  const existing = allDiary.find(d => d.staff === currentUser.name && d.date === today && d.store === defaultStore);
   const v = existing || {};
-  const store = currentUser.store || '';
-  const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
+  const pf = v.pinFields || {};  // セクション別ボードフラグ
+  const storeColor = STORE_COLORS[STORES.indexOf(defaultStore)] || 'var(--caramel)';
   const now = new Date();
-  const dayNum = now.getDate();
-  const monthLabel = now.toLocaleDateString('ja-JP', { month: 'long' });
-  const weekLabel = now.toLocaleDateString('ja-JP', { weekday: 'short' });
+
+  // セクション定義（デフォルトON/OFF設定付き）
+  const SECTIONS = [
+    { id:'episode',     icon:'☕', label:'お客さんとのエピソード', hint:'印象に残ったお客さまとのやり取りや出来事', ph:'例）常連のAさんが誕生日で、特別なカップでお出しすると喜んでくれた…', pinDefault: false },
+    { id:'achievement', icon:'⭐', label:'今日できたこと',         hint:'うまくいったこと・成長を感じたこと',     ph:'例）ラテアートが初めてきれいに描けた。混雑時でも落ち着いて対応できた。', pinDefault: false },
+    { id:'improvement', icon:'💡', label:'改善点・明日からやること', hint:'気づいた課題、次回試してみたいこと',     ph:'例）注文が重なったときの受付順が乱れた。次は声かけのタイミングを工夫したい。', pinDefault: true },
+    { id:'handover',    icon:'🔁', label:'翌営業日への引き継ぎ',   hint:'次のスタッフへ必ず伝えたいこと',       ph:'例）冷蔵庫のミルク残り1本。レジのロール紙を交換してください。', pinDefault: true },
+    { id:'stockNote',   icon:'📦', label:'在庫メモ',               hint:'気になる在庫状況など',               ph:'例）エチオピア豆 残り少なめ。カップ (M) 補充済み。', pinDefault: false },
+  ];
+
+  const storeSelector = STORES.map((s, i) => `
+    <button class="store-sel-btn ${s === defaultStore ? 'active' : ''}"
+      style="${s === defaultStore ? `background:${STORE_COLORS[i]};color:#fff;border-color:${STORE_COLORS[i]};` : ''}"
+      onclick="diarySelStore('${s}')">
+      ${s.replace('号店','号')}
+    </button>`).join('');
+
+  const sectionsHtml = SECTIONS.map(sec => {
+    const pinOn = sec.id in pf ? pf[sec.id] : sec.pinDefault;
+    return `
+    <div class="diary-form-section">
+      <div class="diary-form-section-top">
+        <div class="diary-form-label"><span class="diary-form-icon">${sec.icon}</span>${sec.label}</div>
+        <label class="mini-pin-toggle" title="ボードに載せる">
+          <input type="checkbox" class="mini-pin-cb" data-field="${sec.id}" ${pinOn ? 'checked' : ''}
+            onchange="updateMiniPinLabel(this)">
+          <span class="mini-pin-slider"></span>
+          <span class="mini-pin-label">${pinOn ? '🎯' : '—'}</span>
+        </label>
+      </div>
+      <div class="diary-form-hint">${sec.hint}</div>
+      <textarea class="diary-textarea${sec.id === 'stockNote' ? ' short' : ''}"
+        id="d-${sec.id}" placeholder="${sec.ph}">${escHtml(v[sec.id] || '')}</textarea>
+    </div>`;
+  }).join('');
 
   el.innerHTML = `
   <div class="page-top-bar" style="border-bottom:3px solid ${storeColor};">
     <div class="page-top-left">
       <div class="page-top-date-badge" style="background:${storeColor};">
-        <span class="page-top-day">${dayNum}</span>
-        <span class="page-top-month">${monthLabel}（${weekLabel}）</span>
+        <span class="page-top-day">${now.getDate()}</span>
+        <span class="page-top-month">${now.toLocaleDateString('ja-JP',{month:'long'})}（${now.toLocaleDateString('ja-JP',{weekday:'short'})}）</span>
       </div>
       <div>
-        <div class="page-top-store" style="color:${storeColor};">${store}</div>
-        <div class="page-top-staff">${currentUser.name}</div>
+        <div class="page-top-store" style="color:${storeColor};">${currentUser.name}</div>
+        <div class="page-top-staff">日誌を記録</div>
       </div>
     </div>
-    <button class="diary-mode-btn" onclick="document.getElementById('diaryInputContent').dataset.mode='calendar';renderDiaryInput();">
-      📅 過去ログ
-    </button>
+    <button class="diary-mode-btn" onclick="document.getElementById('diaryInputContent').dataset.mode='calendar';renderDiaryInput();">📅 過去ログ</button>
+  </div>
+
+  <div class="diary-store-selector">
+    <div class="diary-store-label">📍 入力する店舗</div>
+    <div class="diary-store-btns">${storeSelector}</div>
   </div>
 
   ${existing ? `<div class="diary-saved-badge">✅ 本日の日誌は保存済み — 上書きできます</div>` : `<div class="diary-new-badge">📝 今日の日誌を記録しましょう</div>`}
 
-  <div class="diary-form-card">
-    <div class="diary-form-section">
-      <div class="diary-form-label"><span class="diary-form-icon">☕</span>お客さんとのエピソード</div>
-      <div class="diary-form-hint">印象に残ったお客さまとのやり取りや出来事</div>
-      <textarea class="diary-textarea" id="d-episode" placeholder="例）常連のAさんが誕生日で、特別なカップでお出しすると喜んでくれた…">${v.episode || ''}</textarea>
-    </div>
-
-    <div class="diary-form-section">
-      <div class="diary-form-label"><span class="diary-form-icon">⭐</span>今日できたこと</div>
-      <div class="diary-form-hint">うまくいったこと・成長を感じたこと</div>
-      <textarea class="diary-textarea" id="d-achievement" placeholder="例）ラテアートが初めてきれいに描けた。混雑時でも落ち着いて対応できた。">${v.achievement || ''}</textarea>
-    </div>
-
-    <div class="diary-form-section">
-      <div class="diary-form-label"><span class="diary-form-icon">💡</span>改善点・明日からやること</div>
-      <div class="diary-form-hint">気づいた課題、次回試してみたいこと</div>
-      <textarea class="diary-textarea" id="d-improvement" placeholder="例）注文が重なったときの受付順が乱れた。次は声かけのタイミングを工夫したい。">${v.improvement || ''}</textarea>
-    </div>
-
-    <div class="diary-form-section">
-      <div class="diary-form-label"><span class="diary-form-icon">🔁</span>翌営業日への引き継ぎ</div>
-      <div class="diary-form-hint">次のスタッフへ必ず伝えたいこと</div>
-      <textarea class="diary-textarea" id="d-handover" placeholder="例）冷蔵庫のミルク残り1本。レジのロール紙を交換してください。">${v.handover || ''}</textarea>
-    </div>
-
-    <div class="diary-form-section" style="border-bottom:none;">
-      <div class="diary-form-label"><span class="diary-form-icon">📦</span>在庫メモ</div>
-      <div class="diary-form-hint">気になる在庫状況など</div>
-      <textarea class="diary-textarea short" id="d-stockNote" placeholder="例）エチオピア豆 残り少なめ。カップ (M) 補充済み。">${v.stockNote || ''}</textarea>
-    </div>
+  <div style="padding:0 16px 6px;display:flex;align-items:center;gap:6px;">
+    <span style="font-size:11px;color:var(--text3);">🎯 のトグルをONにした項目がボードに掲載されます</span>
   </div>
 
-  <div class="board-pin-card">
-    <div class="board-pin-header">
-      <span class="board-pin-icon">🎯</span>
-      <div>
-        <div class="board-pin-title">ボードに載せる</div>
-        <div class="board-pin-hint">タスク・改善点・引き継ぎ事項をボードに固定表示</div>
-      </div>
-    </div>
-    <label class="board-pin-toggle">
-      <input type="checkbox" id="d-pin" ${v.pinToBoard ? 'checked' : ''}>
-      <span class="board-pin-slider"></span>
-      <span class="board-pin-label" id="d-pin-label">${v.pinToBoard ? 'ボードに表示中' : 'ボードに載せない'}</span>
-    </label>
-    <div id="board-pin-extra" style="display:${v.pinToBoard ? 'block' : 'none'}; margin-top:12px;">
-      <div class="diary-form-hint" style="margin-bottom:6px;">ボードに表示するタイトル（省略可）</div>
-      <input type="text" class="memo-input" id="d-pin-title" placeholder="例）カップ補充の件、ラテ提供フロー改善…" value="${escHtml(v.pinTitle || '')}">
-      <div class="diary-form-hint" style="margin-top:8px;margin-bottom:6px;">担当・期限（省略可）</div>
-      <input type="text" class="memo-input" id="d-pin-due" placeholder="例）〜3/31 / かえで担当" value="${escHtml(v.pinDue || '')}">
-    </div>
-  </div>
+  <div class="diary-form-card">${sectionsHtml}</div>
 
   <div class="submit-area">
     <button class="big-submit-btn" onclick="saveDiary()">📓 日誌を保存する</button>
   </div>
   <div style="height:40px;"></div>`;
+}
 
-  // ボードピントグルのイベントをDOM追加後に設定
-  const cb = document.getElementById('d-pin');
-  const extra = document.getElementById('board-pin-extra');
-  const lbl = document.getElementById('d-pin-label');
-  if (cb) cb.addEventListener('change', function() {
-    extra.style.display = this.checked ? 'block' : 'none';
-    lbl.textContent = this.checked ? 'ボードに表示中' : 'ボードに載せない';
-  });
+function diarySelStore(store) {
+  const el = document.getElementById('diaryInputContent');
+  if (el) { el.dataset.selstore = store; renderDiaryInput(); }
+}
+
+function updateMiniPinLabel(cb) {
+  const lbl = cb.parentElement.querySelector('.mini-pin-label');
+  if (lbl) lbl.textContent = cb.checked ? '🎯' : '—';
 }
 
 function renderDiaryStaffCalendar(el) {
@@ -4338,13 +4443,21 @@ async function saveDiary() {
   const improvement = document.getElementById('d-improvement')?.value.trim() || '';
   const handover    = document.getElementById('d-handover')?.value.trim()    || '';
   const stockNote   = document.getElementById('d-stockNote')?.value.trim()   || '';
-  const pinToBoard  = document.getElementById('d-pin')?.checked || false;
-  const pinTitle    = document.getElementById('d-pin-title')?.value.trim()   || '';
-  const pinDue      = document.getElementById('d-pin-due')?.value.trim()     || '';
 
   if (!episode && !achievement && !improvement && !handover && !stockNote) {
     showToast('何か入力してから保存してください'); return;
   }
+
+  // セクション別ボードフラグ
+  const pinFields = {};
+  document.querySelectorAll('.mini-pin-cb').forEach(cb => {
+    pinFields[cb.dataset.field] = cb.checked;
+  });
+  const pinToBoard = Object.values(pinFields).some(v => v);
+
+  // 選択店舗
+  const diaryEl = document.getElementById('diaryInputContent');
+  const store = (diaryEl && diaryEl.dataset.selstore) || currentUser.store || '';
 
   const btn = document.querySelector('.big-submit-btn');
   if (btn) { btn.textContent = '⏳ 保存中…'; btn.disabled = true; }
@@ -4353,17 +4466,17 @@ async function saveDiary() {
   const db = getDB();
   if (!db.invDiary) db.invDiary = [];
 
-  const idx = db.invDiary.findIndex(d => d.staff === currentUser.name && d.date === today);
+  const idx = db.invDiary.findIndex(d => d.staff === currentUser.name && d.date === today && d.store === store);
   const existing = idx >= 0 ? db.invDiary[idx] : null;
 
   const entry = {
-    id: `diary_${currentUser.name}_${today}`,
+    id: `diary_${currentUser.name}_${store}_${today}`,
     date: today,
-    store: currentUser.store || '',
+    store,
     staff: currentUser.name,
     episode, achievement, improvement, handover, stockNote,
-    pinToBoard, pinTitle, pinDue,
-    pinDone: existing?.pinDone || false,  // 完了フラグを引き継ぐ
+    pinToBoard, pinFields,
+    pinDone: existing?.pinDone || false,
     reactions: existing?.reactions || {},
     comments:  existing?.comments  || [],
     updatedAt: new Date().toISOString(),
@@ -4375,15 +4488,12 @@ async function saveDiary() {
   db.invDiary.sort((a, b) => b.date.localeCompare(a.date));
   if (db.invDiary.length > DIARY_MAX_SUPABASE) db.invDiary = db.invDiary.slice(0, DIARY_MAX_SUPABASE);
 
-  // ローカルに即保存（キャッシュ更新）
   _db_cache = db;
   try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
 
-  // トーストをすぐ出して画面を再描画（Supabase通信を待たない）
   showToast('✅ 日誌を保存しました');
   renderDiaryInput();
 
-  // バックグラウンドでSupabaseに保存
   saveInvToSupabase(db).catch(e => {
     showToast('⚠️ クラウド同期に失敗しました');
     console.warn('saveDiary Supabase error:', e);
@@ -5844,16 +5954,10 @@ function renderBoard(role) {
 
   const db = getDB();
   const diary = db.invDiary || [];
+  const todos = db.boardTodos || [];  // 直接追加したToDo
 
-  // ボードに載せる設定の日誌を抽出
+  // ボードに載せる日誌エントリを全店舗分取得
   const pinned = diary.filter(d => d.pinToBoard);
-
-  // 店舗フィルター
-  const selStore = el.dataset.store || '全店舗';
-  const filtered = pinned.filter(d => selStore === '全店舗' || d.store === selStore);
-
-  const todo    = filtered.filter(d => !d.pinDone);
-  const done    = filtered.filter(d => d.pinDone);
 
   let html = `
   <div class="page-top-bar" style="border-bottom:2px solid var(--caramel);">
@@ -5864,37 +5968,116 @@ function renderBoard(role) {
       </div>
       <div>
         <div class="page-top-store" style="color:var(--caramel);">タスク・改善点</div>
-        <div class="page-top-staff">${todo.length}件 未完了</div>
+        <div class="page-top-staff">店舗ごとにまとめて表示</div>
       </div>
     </div>
   </div>
 
-  <div class="filter-store-row" style="padding-top:12px;">
-    ${['全店舗', ...STORES].map(s => `
-      <button class="sel-pill ${selStore===s?'active':''}"
-        onclick="document.getElementById('${elId}').dataset.store='${s}';renderBoard('${role}');">
-        ${s.replace('号店','')}
-      </button>`).join('')}
+  <!-- 直接ToDo追加フォーム -->
+  <div class="board-add-card">
+    <div class="board-add-title">＋ タスク・ToDoを直接追加</div>
+    <input type="text" class="memo-input" id="board-todo-text" placeholder="例）カップ Mを発注する、ラテ提供フローを見直す…" style="margin-bottom:8px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <select class="board-todo-select" id="board-todo-store">
+        ${STORES.map((s,i) => `<option value="${s}" style="color:${STORE_COLORS[i]};">${s}</option>`).join('')}
+      </select>
+      <input type="text" class="memo-input" id="board-todo-due" placeholder="期限・担当（任意）" style="flex:1;min-width:100px;">
+      <button class="board-add-btn" onclick="addBoardTodo('${role}')">追加</button>
+    </div>
   </div>`;
 
-  if (todo.length === 0 && done.length === 0) {
-    html += `<div class="tl-empty">
-      <div style="font-size:36px;">🎯</div>
-      <div>日誌で「ボードに載せる」をONにすると<br>ここに表示されます</div>
-    </div>`;
-  } else {
-    if (todo.length > 0) {
-      html += `<div class="board-section-title">📌 未完了 (${todo.length})</div>`;
-      todo.forEach(d => { html += renderBoardCard(d, role); });
+  // 店舗ごとに分けて表示
+  STORES.forEach((store, si) => {
+    const col = STORE_COLORS[si];
+    const storePinned = pinned.filter(d => d.store === store);
+    const storeTodos  = todos.filter(t => t.store === store);
+    const todoItems   = storePinned.filter(d => !d.pinDone);
+    const doneItems   = storePinned.filter(d => d.pinDone);
+    const activeTodos = storeTodos.filter(t => !t.done);
+    const doneTodos   = storeTodos.filter(t => t.done);
+    const totalActive = todoItems.length + activeTodos.length;
+    const totalDone   = doneItems.length + doneTodos.length;
+
+    html += `
+    <div class="board-store-group">
+      <div class="board-store-header" style="border-left:4px solid ${col};">
+        <span class="board-store-name" style="color:${col};">${store}</span>
+        <span class="board-store-count">${totalActive > 0 ? `📌 ${totalActive}件` : ''}${totalDone > 0 ? ` ✅ ${totalDone}完了` : ''}</span>
+      </div>`;
+
+    if (totalActive === 0 && totalDone === 0) {
+      html += `<div class="board-store-empty">タスクなし</div>`;
+    } else {
+      // 直接追加ToDoを先に表示（未完了）
+      activeTodos.forEach(t => { html += renderTodoCard(t, role); });
+      // 日誌からのピン（未完了）
+      todoItems.forEach(d => { html += renderBoardCard(d, role); });
+      // 完了済み
+      if (totalDone > 0) {
+        html += `<div style="font-size:11px;color:var(--text3);padding:8px 0 4px;font-weight:700;">✅ 完了済み</div>`;
+        doneTodos.forEach(t => { html += renderTodoCard(t, role); });
+        doneItems.forEach(d => { html += renderBoardCard(d, role); });
+      }
     }
-    if (done.length > 0) {
-      html += `<div class="board-section-title" style="color:var(--text3);">✅ 完了済み (${done.length})</div>`;
-      done.forEach(d => { html += renderBoardCard(d, role); });
-    }
-  }
+    html += `</div>`;
+  });
 
   html += '<div style="height:80px;"></div>';
   el.innerHTML = html;
+}
+
+function renderTodoCard(t, role) {
+  const storeIdx = STORES.indexOf(t.store);
+  const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
+  return `<div class="board-card ${t.done ? 'board-card--done' : ''}">
+    <div class="board-card-header">
+      <div style="flex:1;min-width:0;">
+        <span class="board-card-meta">${t.staff} · ${t.date}</span>
+        ${t.due ? `<span class="board-card-due">📅 ${escHtml(t.due)}</span>` : ''}
+      </div>
+      <button class="board-done-btn ${t.done ? 'done' : ''}"
+        onclick="toggleTodoDone('${t.id}','${role}')">
+        ${t.done ? '✅ 完了' : '○ 完了にする'}
+      </button>
+    </div>
+    <div class="board-card-body">
+      <div class="board-card-row"><span class="board-card-icon">📝</span><span>${escHtml(t.text)}</span></div>
+    </div>
+  </div>`;
+}
+
+async function addBoardTodo(role) {
+  const text  = document.getElementById('board-todo-text')?.value.trim();
+  const store = document.getElementById('board-todo-store')?.value || STORES[0];
+  const due   = document.getElementById('board-todo-due')?.value.trim() || '';
+  if (!text) { showToast('内容を入力してください'); return; }
+
+  const db = getDB();
+  if (!db.boardTodos) db.boardTodos = [];
+  db.boardTodos.unshift({
+    id: 'todo_' + Date.now(),
+    text, store, due,
+    staff: currentUser.name,
+    date: todayStr(),
+    done: false,
+  });
+
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  showToast('✅ 追加しました');
+  renderBoard(role);
+  saveInvToSupabase(db).catch(e => console.warn(e));
+}
+
+async function toggleTodoDone(todoId, role) {
+  const db = getDB();
+  const t = (db.boardTodos || []).find(x => x.id === todoId);
+  if (!t) return;
+  t.done = !t.done;
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  renderBoard(role);
+  saveInvToSupabase(db).catch(e => console.warn(e));
 }
 
 function renderBoardCard(d, role) {
@@ -5904,11 +6087,16 @@ function renderBoardCard(d, role) {
   const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric' });
   const elId = role === 'owner' ? 'boardOwnerContent' : 'boardStaffContent';
 
+  // pinFieldsでONになっているセクションのみ表示（なければ全表示）
+  const pf = d.pinFields || null;
+  const shouldShow = (field) => !pf || pf[field];
+  const FIELD_ICONS = { episode:'☕', achievement:'⭐', improvement:'💡', handover:'🔁', stockNote:'📦' };
   const body = [
-    d.pinTitle ? `<div class="board-card-pintitle">${escHtml(d.pinTitle)}</div>` : '',
-    d.improvement ? `<div class="board-card-row"><span class="board-card-icon">💡</span><span>${escHtml(d.improvement).replace(/<br>/g,' ')}</span></div>` : '',
-    d.handover    ? `<div class="board-card-row"><span class="board-card-icon">🔁</span><span>${escHtml(d.handover).replace(/<br>/g,' ')}</span></div>` : '',
-    d.episode     ? `<div class="board-card-row"><span class="board-card-icon">☕</span><span>${escHtml(d.episode).replace(/<br>/g,' ')}</span></div>` : '',
+    ...(Object.entries(FIELD_ICONS).map(([field, icon]) =>
+      shouldShow(field) && d[field]
+        ? `<div class="board-card-row"><span class="board-card-icon">${icon}</span><span>${escHtml(d[field]).replace(/<br>/g,' ')}</span></div>`
+        : ''
+    )),
   ].filter(Boolean).join('');
 
   return `<div class="board-card ${d.pinDone ? 'board-card--done' : ''}">
