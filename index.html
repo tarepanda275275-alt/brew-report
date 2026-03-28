@@ -3156,7 +3156,7 @@ select.bean-name-inp option {
     <div class="tab-content" id="tab-goals-all"><div id="goalsAllContent"></div></div>
     <div class="tab-content" id="tab-timeline"><div id="timelineContent"></div></div>
     <div class="tab-content" id="tab-stock-staff"><div id="stockViewContentStaff"></div></div>
-    <div class="tab-content" id="tab-goals"><div id="goalsContent"></div></div>
+    <div class="tab-content" id="tab-goals-staff-compat"><div id="goalsContentStaffCompat"></div></div>
     <div class="tab-content" id="tab-comments"><div id="commentsContent"></div></div>
     <div class="tab-content" id="tab-monthly"><div id="monthlyContent"></div></div>
     <div class="tab-content" id="tab-stock"><div id="stockViewContent"></div></div>
@@ -3388,10 +3388,11 @@ async function loadDBFromSupabase() {
     const db = config || {};
     db.records = records || db.records || [];
     db.users = (users && users.length > 0) ? users : (db.users || []);
+    db._brewUsers = db.users; // 互換用に保持
     try {
       const cacheObj = Object.assign({}, db);
       delete cacheObj.records;
-      delete cacheObj.users;
+      // usersはキャッシュに残す（アカウント表示に必要）
       localStorage.setItem(SK, JSON.stringify(cacheObj));
       localStorage.setItem(SK + '_records_count', String(db.records.length));
     } catch(e) {}
@@ -3400,7 +3401,7 @@ async function loadDBFromSupabase() {
   } catch(e) {
     console.warn('Supabase load failed, using local cache:', e);
   }
-  // フォールバック: ローカルキャッシュ（usersはdefaultDBで上書きしない）
+  // フォールバック: ローカルキャッシュ
   try {
     const local = JSON.parse(localStorage.getItem(SK));
     if (local) { local.records = local.records || []; local.users = local.users || []; return local; }
@@ -4183,22 +4184,19 @@ function renderDiaryInput() {
     </div>
   </div>
 
-  <script>
-    (function(){
-      const cb = document.getElementById('d-pin');
-      const extra = document.getElementById('board-pin-extra');
-      const lbl = document.getElementById('d-pin-label');
-      if(cb) cb.addEventListener('change', function(){
-        extra.style.display = this.checked ? 'block' : 'none';
-        lbl.textContent = this.checked ? 'ボードに表示中' : 'ボードに載せない';
-      });
-    })();
-  </script>
-
   <div class="submit-area">
     <button class="big-submit-btn" onclick="saveDiary()">📓 日誌を保存する</button>
   </div>
   <div style="height:40px;"></div>`;
+
+  // ボードピントグルのイベントをDOM追加後に設定
+  const cb = document.getElementById('d-pin');
+  const extra = document.getElementById('board-pin-extra');
+  const lbl = document.getElementById('d-pin-label');
+  if (cb) cb.addEventListener('change', function() {
+    extra.style.display = this.checked ? 'block' : 'none';
+    lbl.textContent = this.checked ? 'ボードに表示中' : 'ボードに載せない';
+  });
 }
 
 function renderDiaryStaffCalendar(el) {
@@ -5014,13 +5012,17 @@ function renderAccountSettings() {
   const el = document.getElementById('goalsContent');
   if (!el) return;
   const db = getDB();
-  const users = (db.users || []).concat(
-    (_db_cache && _db_cache._brewUsers) ? _db_cache._brewUsers.filter(u => !db.users.find(x => x.id === u.id)) : []
-  );
+  // brew_usersから取得したユーザーを優先、なければdb.usersを使用
+  const brewUsers = _db_cache?._brewUsers || [];
+  const dbUsers   = db.users || [];
+  // 両方をマージ（重複はidで除去）
+  const allUsers = [...brewUsers];
+  dbUsers.forEach(u => { if (!allUsers.find(x => x.id === u.id)) allUsers.push(u); });
+  const users = allUsers.length > 0 ? allUsers : dbUsers;
   let html = `<div style="padding:12px 16px 4px;font-size:18px;font-weight:900;color:var(--gold2);">👥 アカウント管理</div>
   <div style="padding:0 16px 12px;font-size:12px;color:var(--text3);">スタッフアカウントの確認・削除ができます</div>`;
-  const owners = (db.users || []).filter(u => u.role === 'owner');
-  const staff = (db.users || []).filter(u => u.role === 'staff');
+  const owners = users.filter(u => u.role === 'owner');
+  const staff  = users.filter(u => u.role === 'staff');
   if (owners.length > 0) {
     html += `<div class="sec-title">🔐 管理者</div><div class="card" style="padding:4px 12px;">`;
     owners.forEach(u => {
@@ -5129,15 +5131,24 @@ function avatarHtml(user, size = 36) {
 }
 function buildLoginChips() {
   const db = getDB();
-  const staff = db.users.filter(u => u.role === 'staff');
+  // brew_usersテーブル取得分と brew_data内users の両方をマージ
+  const brewUsers = (_db_cache && _db_cache._brewUsers) || [];
+  const dbUsers   = db.users || [];
+  const merged = [...brewUsers];
+  dbUsers.forEach(u => { if (!merged.find(x => (x.id||x.name) === (u.id||u.name))) merged.push(u); });
+  const staff = merged.filter(u => u.role === 'staff');
   const el = document.getElementById('staffChips');
   if (!el) return;
-  el.innerHTML = staff.map(u => `
-    <div class="user-chip" onclick="quickLogin('${u.name}')">
-      ${avatarHtml(u, 40)}
-      <div style="font-size:11px;font-weight:700;">${u.name}</div>
-      <div style="font-size:10px;color:var(--text3);">${(u.store||'').replace('号店','号')}</div>
-    </div>`).join('');
+  if (staff.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">スタッフアカウントがまだありません</div>';
+  } else {
+    el.innerHTML = staff.map(u => `
+      <div class="user-chip" onclick="quickLogin('${u.name}')">
+        ${avatarHtml(u, 40)}
+        <div style="font-size:11px;font-weight:700;">${u.name}</div>
+        <div style="font-size:10px;color:var(--text3);">${(u.store||'').replace('号店','号')}</div>
+      </div>`).join('');
+  }
   pendingPhotoDataUrl = null;
   const circle = document.getElementById('photoPreview');
   if (circle) circle.innerHTML = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="7" fill="#7A5A3A" opacity="0.6"/><path d="M6 34 Q6 26 20 26 Q34 26 34 34" fill="#7A5A3A" opacity="0.6"/></svg><div class="photo-upload-hint">タップして写真を選ぶ</div>`;
@@ -5168,7 +5179,11 @@ async function doLogin() {
   const db = await loadDBFromSupabase();
   _db_cache = db;
   showLoadingOverlay(false);
-  const user = db.users.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
+  // brew_usersとdb.usersの両方からスタッフを検索
+  const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
+  const seen = new Set();
+  const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
+  const user = merged.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
   if (!user) { showToast('名前またはパスワードが違います'); return; }
   currentUser = user;
   document.getElementById('hdrName').textContent = user.name;
@@ -5183,7 +5198,10 @@ async function doOwnerLogin() {
   const db = await loadDBFromSupabase();
   _db_cache = db;
   showLoadingOverlay(false);
-  const user = db.users.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
+  const allUsers = [...(db._brewUsers || []), ...(db.users || [])];
+  const seen = new Set();
+  const merged = allUsers.filter(u => { const k = u.id||u.name; if(seen.has(k)) return false; seen.add(k); return true; });
+  const user = merged.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
   if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
   currentUser = user;
   document.getElementById('hdrName').textContent = user.name;
