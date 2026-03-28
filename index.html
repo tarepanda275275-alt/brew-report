@@ -1871,16 +1871,242 @@ select.bean-name-inp option {
   font-family: inherit;
 }
 .btn-final:active { opacity: 0.7; transform: scale(0.98); }
-/* ===== 在庫管理専用CSS ===== */
-.trans-btn { flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
-.trans-btn.receive { background:rgba(46,184,92,0.15); border:1px solid rgba(46,184,92,0.3); color:var(--success); }
-.trans-btn.use { background:rgba(255,165,0,0.15); border:1px solid rgba(255,165,0,0.3); color:var(--warning); }
-.trans-btn.active-btn { opacity:1; transform:scale(1.02); box-shadow:0 2px 12px rgba(0,0,0,0.3); }
-.trans-btn:not(.active-btn) { opacity:0.55; }
+/* ===== 日誌UI ===== */
+.diary-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.diary-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--caramel);
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 52px;
+}
+.diary-date-day { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+.diary-date-month { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+.diary-store-name { font-size: 15px; font-weight: 900; line-height: 1.3; }
+.diary-staff-name { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.diary-saved-badge {
+  margin: 0 16px 8px;
+  padding: 8px 14px;
+  background: rgba(93,184,122,0.1);
+  border: 1px solid rgba(93,184,122,0.25);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--success);
+  font-weight: 700;
+}
+.diary-section {
+  margin: 0 16px 12px;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid var(--border);
+}
+.diary-section-icon { font-size: 18px; margin-bottom: 4px; }
+.diary-section-title { font-size: 13px; font-weight: 900; color: var(--text); margin-bottom: 3px; }
+.diary-section-hint { font-size: 11px; color: var(--text3); margin-bottom: 10px; line-height: 1.5; }
+.diary-textarea {
+  width: 100%;
+  min-height: 90px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  resize: vertical;
+  line-height: 1.7;
+  transition: border-color 0.2s;
+}
+.diary-textarea.short { min-height: 60px; }
+.diary-textarea:focus { outline: none; border-color: var(--caramel); }
+.diary-textarea::placeholder { color: var(--text3); font-size: 12px; }
+.diary-submit-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 16px 16px 0;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--caramel), var(--gold));
+  border: none;
+  border-radius: 14px;
+  color: var(--bg);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(200,131,58,0.35);
+  letter-spacing: 0.05em;
+}
+.diary-submit-btn:active { transform: scale(0.98); }
 
-.alert-banner { background:rgba(231,76,60,0.12); border:1px solid rgba(231,76,60,0.3); border-radius:12px; padding:12px 16px; margin:0 16px 12px; }
+/* ===== オーナー日誌一覧 ===== */
+.owner-diary-header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.owner-diary-title { font-size: 18px; font-weight: 900; color: var(--gold2); }
+.owner-diary-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+
+.inv-alert-block {
+  margin: 0 16px 12px;
+  background: rgba(208,80,80,0.08);
+  border: 1px solid rgba(208,80,80,0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.inv-alert-title { font-size: 12px; font-weight: 900; color: var(--danger); margin-bottom: 8px; }
+.inv-alert-row { font-size: 11px; color: var(--text2); padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.inv-alert-row:last-child { border-bottom: none; }
+
+.diary-card {
+  margin: 0 16px 12px;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.diary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.diary-card-meta { display: flex; align-items: center; gap: 8px; }
+.diary-card-date { font-size: 13px; font-weight: 700; color: var(--text); }
+.diary-card-store {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.diary-card-staff { font-size: 11px; color: var(--text3); }
+.diary-card-body { padding: 12px 14px; }
+.diary-card-section { margin-bottom: 10px; }
+.diary-card-section:last-child { margin-bottom: 0; }
+.diary-card-section-label { font-size: 10px; font-weight: 900; color: var(--text3); margin-bottom: 4px; }
+.diary-card-section-text { font-size: 13px; color: var(--text); line-height: 1.7; }
+
+.diary-empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+/* ===== ナビゲーション改善 ===== */
+.bottom-nav {
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-top: 2px solid transparent;
+}
+.nav-btn.active {
+  border-top-color: var(--caramel);
+}
+.nav-icon {
+  font-size: 20px;
+  line-height: 1;
+  filter: grayscale(1) opacity(0.5);
+  transition: filter 0.2s;
+}
+.nav-btn.active .nav-icon { filter: none; }
+.nav-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  transition: color 0.2s;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.nav-btn.active .nav-label { color: var(--caramel); }
+
+/* ===== アプリヘッダー改善 ===== */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.app-logo { font-size: 13px; font-weight: 900; color: var(--caramel); letter-spacing: 0.1em; }
+.app-user-info { text-align: right; cursor: pointer; }
+
+/* ===== カード共通改善 ===== */
+.card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 16px 16px 8px;
+}
+
+/* ===== 在庫入力改善 ===== */
+.inv-input-store-header {
+  padding: 14px 16px 8px;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--gold2);
+}
+.inv-item-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.inv-item-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--text); }
+.inv-item-qty {
+  font-size: 13px;
+  color: var(--text2);
+  min-width: 50px;
+  text-align: right;
+}
+.inv-item-qty.low { color: var(--danger); font-weight: 900; }
+
+/* ===== 在庫管理共通CSS ===== */
+.trans-btn { flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
+.trans-btn.receive { background:rgba(93,184,122,0.15); border:1px solid rgba(93,184,122,0.35); color:var(--success); }
+.trans-btn.use { background:rgba(224,154,74,0.15); border:1px solid rgba(224,154,74,0.35); color:var(--warning); }
+.trans-btn.adjust-type { background:rgba(74,144,200,0.15); border:1px solid rgba(74,144,200,0.35); color:var(--info); flex:1; padding:12px 0; border-radius:10px; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; transition:all 0.2s; }
+.trans-btn.active-btn { opacity:1; transform:scale(1.02); box-shadow:0 2px 14px rgba(0,0,0,0.35); }
+.trans-btn:not(.active-btn) { opacity:0.5; }
+
+.alert-banner { background:rgba(208,80,80,0.1); border:1px solid rgba(208,80,80,0.28); border-radius:12px; padding:12px 16px; margin:0 16px 12px; }
 .alert-banner-title { font-size:13px; font-weight:900; color:var(--danger); margin-bottom:6px; }
-.alert-banner-item { font-size:11px; color:var(--danger); line-height:1.6; }
+.alert-banner-item { font-size:11px; color:var(--danger); line-height:1.7; }
 
 .compare-table { width:100%; border-collapse:collapse; font-size:12px; }
 .compare-table th { padding:8px 6px; color:var(--text3); font-weight:700; text-align:left; border-bottom:1px solid var(--border); }
@@ -1905,6 +2131,9 @@ select.bean-name-inp option {
 .tag-staff { background:rgba(74,144,200,0.2); color:var(--info); }
 .del-btn { padding:6px 12px; border-radius:8px; border:1px solid var(--danger); background:transparent; color:var(--danger); font-size:12px; font-weight:700; font-family:inherit; cursor:pointer; }
 .del-btn:active { background:var(--danger); color:#fff; }
+.prog-bar { flex: 1; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--caramel), var(--gold2)); transition: width 0.5s ease; border-radius: 3px; }
+
 </style>
 </head>
 <body>
@@ -2102,26 +2331,13 @@ select.bean-name-inp option {
     </div>
   </div>
   <div class="app-body" id="appBody">
-  <!-- Staff tabs -->
-  <!-- ======== STAFF TABS (在庫管理用) ======== -->
+  <!-- ======== STAFF TABS ======== -->
   <div id="staffTabs">
-    <!-- 在庫入出庫入力タブ -->
-    <div class="tab-content active" id="tab-input">
-      <div id="stockInputContent" class="page-pad"></div>
-    </div>
-    <!-- 在庫一覧（自店）タブ -->
-    <div class="tab-content" id="tab-mydata">
-      <div id="myStockContent" class="page-pad"></div>
-    </div>
-    <!-- 履歴タブ -->
-    <div class="tab-content" id="tab-goals-staff">
-      <div id="historyStaffContent" class="page-pad"></div>
-    </div>
-    <!-- 全店比較タブ -->
-    <div class="tab-content" id="tab-dashboard-staff">
-      <div id="compareStaffContent" class="page-pad"></div>
-    </div>
-    <!-- 使わないタブ（JS互換のため残す） -->
+    <div class="tab-content active" id="tab-diary"><div id="diaryInputContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-input"><div id="stockInputContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-mydata"><div id="myStockContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-dashboard-staff"><div id="compareStaffContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-goals-staff"><div id="historyStaffContent"></div></div>
     <div class="tab-content" id="tab-episodes"><div id="episodesContent"></div></div>
     <div class="tab-content" id="tab-goals-all"><div id="goalsAllContent"></div></div>
     <div class="tab-content" id="tab-timeline"><div id="timelineContent"></div></div>
@@ -2132,24 +2348,13 @@ select.bean-name-inp option {
     <div class="tab-content" id="tab-stock"><div id="stockViewContent"></div></div>
     <div class="tab-content" id="tab-timeline-owner"><div id="timelineOwnerContent"></div></div>
   </div>
-  <!-- ======== OWNER TABS (在庫管理用) ======== -->
+  <!-- ======== OWNER TABS ======== -->
   <div id="ownerTabs" style="display:none;">
-    <!-- ダッシュボード（在庫サマリ） -->
-    <div class="tab-content active" id="tab-dashboard">
-      <div id="dashboardContent" class="page-pad"></div>
-    </div>
-    <!-- 商品マスタ設定 -->
-    <div class="tab-content" id="tab-export">
-      <div id="exportContent" class="page-pad"></div>
-    </div>
-    <!-- アカウント管理 -->
-    <div class="tab-content" id="tab-goals">
-      <div id="goalsContent" class="page-pad"></div>
-    </div>
-    <!-- 履歴（全店） -->
-    <div class="tab-content" id="tab-comments">
-      <div id="commentsContent" class="page-pad"></div>
-    </div>
+    <div class="tab-content active" id="tab-diary-owner"><div id="diaryOwnerContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-dashboard"><div id="dashboardContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-export"><div id="exportContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-goals"><div id="goalsContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-comments"><div id="commentsContent"></div></div>
   </div>
   </div><!-- /app-body -->
   <nav class="bottom-nav" id="bottomNav"></nav>
@@ -2610,7 +2815,16 @@ async function saveInvToSupabase(db) {
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', { headers: _supaHeaders() });
     const rows = await res.json();
     const existing = (rows && rows.length > 0) ? rows[0].data : {};
-    const payload = { id: 'main', data: { ...existing, invStock: db.invStock || {}, invHistory: db.invHistory || [], invItems: db.invItems || defaultDB().invItems } };
+    const payload = {
+      id: 'main',
+      data: {
+        ...existing,
+        invStock: db.invStock || {},
+        invHistory: db.invHistory || [],
+        invItems: db.invItems || defaultDB().invItems,
+        invDiary: db.invDiary || [],
+      }
+    };
     if (existing.users) payload.data.users = existing.users;
     await fetch(SUPA_URL + '/rest/v1/brew_data?on_conflict=id', {
       method: 'POST',
@@ -2852,6 +3066,206 @@ function renderCompareStores() {
   html += `<div style="height:100px;"></div>`;
   el.innerHTML = html;
 }
+// ===== 日誌機能 =====
+function getInvDiary() { return getDB().invDiary || []; }
+
+function renderDiaryInput() {
+  const el = document.getElementById('diaryInputContent');
+  if (!el) return;
+  const today = todayStr();
+  const diary = getInvDiary();
+  const existing = diary.find(d => d.staff === currentUser.name && d.date === today);
+  const v = existing || {};
+  const store = currentUser.store || '';
+  const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
+
+  el.innerHTML = `
+    <div class="diary-header">
+      <div class="diary-date-badge">
+        <span class="diary-date-day">${new Date().getDate()}</span>
+        <span class="diary-date-month">${new Date().toLocaleDateString('ja-JP',{month:'long'})}</span>
+      </div>
+      <div>
+        <div class="diary-store-name" style="color:${storeColor}">${store}</div>
+        <div class="diary-staff-name">${currentUser.name}</div>
+      </div>
+    </div>
+
+    ${existing ? `<div class="diary-saved-badge">✅ 本日の日誌は保存済みです — 上書きできます</div>` : ''}
+
+    <div class="diary-section">
+      <div class="diary-section-icon">☕</div>
+      <div class="diary-section-title">お客さんとのエピソード</div>
+      <div class="diary-section-hint">印象に残ったお客さまとのやり取りや出来事</div>
+      <textarea class="diary-textarea" id="d-episode" placeholder="例）常連のAさんが誕生日で、特別なカップでお出しすると喜んでくれた…">${v.episode || ''}</textarea>
+    </div>
+
+    <div class="diary-section">
+      <div class="diary-section-icon">⭐</div>
+      <div class="diary-section-title">今日できたこと</div>
+      <div class="diary-section-hint">うまくいったこと・成長を感じたこと</div>
+      <textarea class="diary-textarea" id="d-achievement" placeholder="例）ラテアートが初めてきれいに描けた。混雑時でも落ち着いて対応できた。">${v.achievement || ''}</textarea>
+    </div>
+
+    <div class="diary-section">
+      <div class="diary-section-icon">💡</div>
+      <div class="diary-section-title">改善点・明日からやること</div>
+      <div class="diary-section-hint">気づいた課題、次回試してみたいこと</div>
+      <textarea class="diary-textarea" id="d-improvement" placeholder="例）注文が重なったときの受付順が乱れた。次は声かけのタイミングを工夫したい。">${v.improvement || ''}</textarea>
+    </div>
+
+    <div class="diary-section">
+      <div class="diary-section-icon">🔁</div>
+      <div class="diary-section-title">翌営業日への引き継ぎ</div>
+      <div class="diary-section-hint">次のスタッフへ必ず伝えたいこと</div>
+      <textarea class="diary-textarea" id="d-handover" placeholder="例）冷蔵庫のミルク残り1本。レジのロール紙を交換してください。">${v.handover || ''}</textarea>
+    </div>
+
+    <div class="diary-section">
+      <div class="diary-section-icon">📦</div>
+      <div class="diary-section-title">在庫メモ</div>
+      <div class="diary-section-hint">気になる在庫状況など</div>
+      <textarea class="diary-textarea short" id="d-stockNote" placeholder="例）エチオピア豆 残り少なめ。カップ (M) 補充済み。">${v.stockNote || ''}</textarea>
+    </div>
+
+    <button class="diary-submit-btn" onclick="saveDiary()">
+      <span>📓 日誌を保存する</span>
+    </button>
+    <div style="height:32px;"></div>
+  `;
+}
+
+async function saveDiary() {
+  const episode = document.getElementById('d-episode')?.value.trim() || '';
+  const achievement = document.getElementById('d-achievement')?.value.trim() || '';
+  const improvement = document.getElementById('d-improvement')?.value.trim() || '';
+  const handover = document.getElementById('d-handover')?.value.trim() || '';
+  const stockNote = document.getElementById('d-stockNote')?.value.trim() || '';
+
+  if (!episode && !achievement && !improvement && !handover && !stockNote) {
+    showToast('何か入力してから保存してください'); return;
+  }
+
+  const today = todayStr();
+  const db = getDB();
+  if (!db.invDiary) db.invDiary = [];
+
+  const idx = db.invDiary.findIndex(d => d.staff === currentUser.name && d.date === today);
+  const entry = {
+    id: `diary_${currentUser.name}_${today}`,
+    date: today,
+    store: currentUser.store || '',
+    staff: currentUser.name,
+    episode, achievement, improvement, handover, stockNote,
+    updatedAt: new Date().toISOString()
+  };
+
+  if (idx >= 0) db.invDiary[idx] = entry;
+  else db.invDiary.unshift(entry);
+
+  // 最大500件保持
+  if (db.invDiary.length > 500) db.invDiary = db.invDiary.slice(0, 500);
+
+  saveDB(db);
+  try {
+    await saveInvToSupabase(db);
+    showToast('✅ 日誌を保存しました');
+    renderDiaryInput();
+  } catch(e) {
+    showToast('保存に失敗しました');
+  }
+}
+
+function renderDiaryOwner() {
+  const el = document.getElementById('diaryOwnerContent');
+  if (!el) return;
+  const diary = getInvDiary();
+  let selStore = el.dataset.store || '全店舗';
+
+  const filtered = diary.filter(d => selStore === '全店舗' || d.store === selStore)
+    .sort((a,b) => b.date.localeCompare(a.date));
+
+  // 在庫アラート取得
+  const items = getInvItems();
+  const alerts = [];
+  STORES.forEach(store => {
+    items.forEach(item => {
+      if (isLowStock(store, item.id)) alerts.push({ store, item });
+    });
+  });
+
+  el.innerHTML = `
+    <div class="owner-diary-header">
+      <div class="owner-diary-title">📖 スタッフ日誌</div>
+      <div class="owner-diary-sub">全店舗の定性情報をまとめて確認</div>
+    </div>
+
+    ${alerts.length > 0 ? `
+    <div class="inv-alert-block">
+      <div class="inv-alert-title">⚠️ 在庫アラート ${alerts.length}件</div>
+      ${alerts.slice(0,5).map(a => {
+        const col = STORE_COLORS[STORES.indexOf(a.store)] || 'var(--caramel)';
+        return `<div class="inv-alert-row"><span style="color:${col};font-weight:700;">${a.store.replace('号店','')}</span> ${a.item.name} が少なくなっています</div>`;
+      }).join('')}
+      ${alerts.length > 5 ? `<div class="inv-alert-row">... 他${alerts.length-5}件</div>` : ''}
+    </div>` : ''}
+
+    <div class="filter-store-row">
+      ${['全店舗', ...STORES].map(s => `
+        <button class="sel-pill${selStore===s?' active':''}" onclick="
+          document.getElementById('diaryOwnerContent').dataset.store='${s}';
+          renderDiaryOwner();
+        ">${s.replace('号店','')}</button>`).join('')}
+    </div>
+
+    ${filtered.length === 0 ? `
+      <div class="diary-empty">
+        <div style="font-size:40px;margin-bottom:12px;">📓</div>
+        <div style="color:var(--text3);font-size:14px;">まだ日誌がありません</div>
+      </div>` : filtered.map(d => renderDiaryCard(d)).join('')}
+
+    <div style="height:40px;"></div>
+  `;
+}
+
+function renderDiaryCard(d) {
+  const storeIdx = STORES.indexOf(d.store);
+  const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
+  const dateObj = new Date(d.date + 'T00:00:00');
+  const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', weekday:'short' });
+
+  const sections = [
+    { icon:'☕', label:'エピソード', val: d.episode },
+    { icon:'⭐', label:'できたこと', val: d.achievement },
+    { icon:'💡', label:'改善点', val: d.improvement },
+    { icon:'🔁', label:'引き継ぎ', val: d.handover },
+    { icon:'📦', label:'在庫メモ', val: d.stockNote },
+  ].filter(s => s.val);
+
+  return `
+  <div class="diary-card">
+    <div class="diary-card-header">
+      <div class="diary-card-meta">
+        <span class="diary-card-date">${dateLabel}</span>
+        <span class="diary-card-store" style="background:${col}20;color:${col};">${d.store.replace('号店','')}</span>
+      </div>
+      <div class="diary-card-staff">${d.staff}</div>
+    </div>
+    <div class="diary-card-body">
+      ${sections.map(s => `
+        <div class="diary-card-section">
+          <div class="diary-card-section-label">${s.icon} ${s.label}</div>
+          <div class="diary-card-section-text">${escHtml(s.val)}</div>
+        </div>`).join('')}
+      ${sections.length === 0 ? '<div style="color:var(--text3);font-size:12px;">内容なし</div>' : ''}
+    </div>
+  </div>`;
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
 // ===== オーナーダッシュボード =====
 function renderOwnerDashboard() {
   const el = document.getElementById('dashboardContent');
@@ -3578,29 +3992,29 @@ function enterApp() {
   if (currentUser.role === 'owner') {
     document.getElementById('staffTabs').style.display = 'none';
     document.getElementById('ownerTabs').style.display = 'block';
-    switchTab('dashboard');
-    renderOwnerDashboard();
+    switchTab('diary-owner');
+    renderDiaryOwner();
   } else {
     document.getElementById('staffTabs').style.display = 'block';
     document.getElementById('ownerTabs').style.display = 'none';
-    switchTab('input');
-    renderStockInput();
+    switchTab('diary');
+    renderDiaryInput();
   }
 }
 function setupNav() {
   const nav = document.getElementById('bottomNav');
   if (currentUser.role === 'owner') {
     nav.innerHTML = `
-      <button class="nav-btn active" id="nb-dashboard" onclick="switchTab('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">サマリ</span></button>
-      <button class="nav-btn" id="nb-comments" onclick="switchTab('comments')"><span class="nav-icon">📋</span><span class="nav-label">履歴</span></button>
-      <button class="nav-btn" id="nb-export" onclick="switchTab('export')"><span class="nav-icon">📦</span><span class="nav-label">商品設定</span></button>
+      <button class="nav-btn active" id="nb-diary-owner" onclick="switchTab('diary-owner')"><span class="nav-icon">📖</span><span class="nav-label">日誌</span></button>
+      <button class="nav-btn" id="nb-dashboard" onclick="switchTab('dashboard')"><span class="nav-icon">📦</span><span class="nav-label">在庫</span></button>
+      <button class="nav-btn" id="nb-export" onclick="switchTab('export')"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></button>
       <button class="nav-btn" id="nb-goals" onclick="switchTab('goals')"><span class="nav-icon">👥</span><span class="nav-label">アカウント</span></button>`;
   } else {
     nav.innerHTML = `
-      <button class="nav-btn active" id="nb-input" onclick="switchTab('input')"><span class="nav-icon">✏️</span><span class="nav-label">入出庫</span></button>
-      <button class="nav-btn" id="nb-mydata" onclick="switchTab('mydata')"><span class="nav-icon">📦</span><span class="nav-label">在庫一覧</span></button>
-      <button class="nav-btn" id="nb-goals-staff" onclick="switchTab('goals-staff')"><span class="nav-icon">📋</span><span class="nav-label">履歴</span></button>
-      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">🏪</span><span class="nav-label">全店比較</span></button>`;
+      <button class="nav-btn active" id="nb-diary" onclick="switchTab('diary')"><span class="nav-icon">📓</span><span class="nav-label">日誌</span></button>
+      <button class="nav-btn" id="nb-input" onclick="switchTab('input')"><span class="nav-icon">📦</span><span class="nav-label">在庫入力</span></button>
+      <button class="nav-btn" id="nb-mydata" onclick="switchTab('mydata')"><span class="nav-icon">📋</span><span class="nav-label">在庫一覧</span></button>
+      <button class="nav-btn" id="nb-dashboard-staff" onclick="switchTab('dashboard-staff')"><span class="nav-icon">🏪</span><span class="nav-label">全店</span></button>`;
   }
 }
 function switchTab(tab) {
@@ -3613,13 +4027,12 @@ function switchTab(tab) {
   if (nb) nb.classList.add('active');
   const body = document.getElementById('appBody');
   if (body) body.scrollTop = 0;
-  // 在庫管理のレンダリング振り分け
+  if (tab === 'diary') renderDiaryInput();
   if (tab === 'input') renderStockInput();
   if (tab === 'mydata') renderMyStock();
-  if (tab === 'goals-staff') renderHistoryStaff();
   if (tab === 'dashboard-staff') renderCompareStores();
+  if (tab === 'diary-owner') renderDiaryOwner();
   if (tab === 'dashboard') renderOwnerDashboard();
-  if (tab === 'comments') renderHistoryOwner();
   if (tab === 'export') renderItemSettings();
   if (tab === 'goals') renderAccountSettings();
 }
