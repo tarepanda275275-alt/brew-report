@@ -3060,6 +3060,55 @@ select.bean-name-inp option {
   margin-bottom: 8px;
 }
 
+/* ===== 商品マスター ===== */
+.master-item-row {
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.master-item-info {
+  flex: 1; min-width: 0;
+}
+.master-item-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+}
+.master-item-unit {
+  font-size: 11px; color: var(--text3); margin-left: 6px;
+}
+.master-item-thr {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  font-size: 10px; color: var(--text3);
+}
+.master-item-btns {
+  display: flex; gap: 6px; flex-shrink: 0;
+}
+.master-edit-btn {
+  padding: 5px 10px; border-radius: 8px;
+  border: 1px solid var(--caramel); background: transparent;
+  color: var(--caramel); font-size: 11px; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+}
+.master-edit-btn:active { background: rgba(181,105,42,0.1); }
+
+.qty-block-label {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  margin-bottom: 8px;
+}
+.bags-two-col {
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.bags-two-col > div { flex: 1; }
+.bags-current-info {
+  text-align: right;
+}
+.bags-stock-display {
+  display: flex; align-items: baseline; justify-content: flex-end;
+  gap: 3px; flex-wrap: wrap; margin-top: 4px;
+}
+
 </style>
 </head>
 <body>
@@ -3868,6 +3917,7 @@ function renderStockInput() {
         </div>` : ''}
 
         <div class="qty-block">
+          <div class="qty-block-label">変更量（＋入庫 / －使用）</div>
           <div class="unit-tabs" id="utab_${item.id}">
             ${unitOptions.map((u,i) => `<button class="unit-tab ${i===0?'active-utab':''}" onclick="selUnit(this,'${item.id}')" data-unit="${u}">${u}</button>`).join('')}
           </div>
@@ -3881,13 +3931,25 @@ function renderStockInput() {
         </div>
 
         <div class="bags-block">
-          <label class="bags-label">未開封の袋数（入庫した場合など）</label>
-          <div class="qty-input-row">
-            <button class="qty-stepper" onclick="stepQty('bags_${item.id}',-1)">－</button>
-            <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
-              placeholder="0" class="qty-num-input">
-            <button class="qty-stepper" onclick="stepQty('bags_${item.id}',1)">＋</button>
-            <span class="qty-unit-display">袋</span>
+          <div class="bags-two-col">
+            <div>
+              <div class="bags-label">📦 未開封（袋数）</div>
+              <div class="qty-input-row" style="gap:6px;">
+                <button class="qty-stepper" onclick="stepQty('bags_${item.id}',-1)">－</button>
+                <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
+                  placeholder="0" class="qty-num-input" style="max-width:70px;">
+                <button class="qty-stepper" onclick="stepQty('bags_${item.id}',1)">＋</button>
+                <span class="qty-unit-display">袋</span>
+              </div>
+            </div>
+            <div class="bags-current-info">
+              <div class="bags-label">現在の在庫</div>
+              <div class="bags-stock-display">
+                <span class="${low ? 'stock-low' : ''}" style="font-size:16px;font-weight:900;">${qty}</span>
+                <span style="font-size:11px;color:var(--text3);">${item.unit}</span>
+                ${bags > 0 ? `<span style="font-size:11px;color:var(--caramel);margin-left:4px;">+ 未開封${bags}袋</span>` : ''}
+              </div>
+            </div>
           </div>
         </div>
       </div>`;
@@ -4970,12 +5032,25 @@ function renderItemSettings() {
   if (!el) return;
   const db = getDB();
   const items = db.invItems || defaultDB().invItems;
-  let html = `<div style="padding:12px 16px 4px;font-size:18px;font-weight:900;color:var(--gold2);">📦 商品マスタ設定</div>
-  <div style="padding:0 16px 8px;font-size:12px;color:var(--text3);">在庫管理する商品と発注アラートしきい値を設定します</div>`;
-  // 新規追加フォーム
-  html += `<div class="card">
-    <div style="font-size:13px;font-weight:900;color:var(--caramel2);margin-bottom:12px;">➕ 商品を追加</div>
-    <div class="form-group"><label class="form-label">商品名</label><input type="text" class="finput" id="newItemName" placeholder="例：キャラメルシロップ"></div>
+
+  let html = `
+  <div class="page-top-bar" style="border-bottom:2px solid var(--caramel);">
+    <div class="page-top-left">
+      <div class="page-top-date-badge" style="background:var(--caramel);">
+        <span class="page-top-day">📦</span>
+        <span class="page-top-month">商品マスタ</span>
+      </div>
+      <div>
+        <div class="page-top-store" style="color:var(--caramel);">商品設定</div>
+        <div class="page-top-staff">${items.length}品目登録済み</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin:12px 16px;">
+    <div style="font-size:13px;font-weight:900;color:var(--caramel);margin-bottom:12px;">➕ 商品を追加</div>
+    <div class="form-group"><label class="form-label">商品名</label>
+      <input type="text" class="finput" id="newItemName" placeholder="例：キャラメルシロップ"></div>
     <div class="form-group"><label class="form-label">カテゴリ</label>
       <select class="finput" id="newItemCat">
         <option value="coffee">☕ コーヒー豆</option>
@@ -4985,55 +5060,128 @@ function renderItemSettings() {
         <option value="food">🍪 フード・食材</option>
       </select>
     </div>
-    <div class="form-group"><label class="form-label">単位（g、ml、個など）</label><input type="text" class="finput" id="newItemUnit" placeholder="例：g"></div>
+    <div class="form-group"><label class="form-label">単位（g、ml、個など）</label>
+      <input type="text" class="finput" id="newItemUnit" placeholder="例：g"></div>
     <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（各店舗）</div>
     <div class="inp-row">
-      ${STORES.map((s,i) => `<div class="form-group"><label class="form-label" style="color:${STORE_COLORS[i]};">${s.replace('号店','')}</label><input type="number" class="finput" id="newItemThr_${i}" placeholder="0" min="0"></div>`).join('')}
+      ${STORES.map((s,i) => `
+        <div class="form-group">
+          <label class="form-label" style="color:${STORE_COLORS[i]};">${s.replace('号店','')}</label>
+          <input type="number" class="finput" id="newItemThr_${i}" placeholder="0" min="0">
+        </div>`).join('')}
     </div>
     <button class="btn-p" onclick="addInvItem()">追加する</button>
-  </div>`;
-  // 既存商品一覧
-  html += `<div class="sec-title">📋 登録済み商品</div>`;
+  </div>
+
+  <div class="sec-title">📋 登録済み商品</div>`;
+
   const cats = [...new Set(items.map(i => i.category))];
   cats.forEach(cat => {
     const catItems = items.filter(i => i.category === cat);
-    html += `<div class="sec-title" style="font-size:10px;padding:8px 16px 4px;color:${getCatColor(cat)};">${getCatLabel(cat)}</div>`;
-    html += `<div class="card" style="padding:4px 12px;">`;
-    catItems.forEach((item, idx) => {
-      const globalIdx = items.indexOf(item);
-      html += `<div style="padding:10px 4px;border-bottom:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <span style="font-size:13px;font-weight:700;color:var(--text);">${item.name}</span>
-            <span style="font-size:11px;color:var(--text3);margin-left:6px;">${item.unit}</span>
-          </div>
-          <button class="del-btn" onclick="deleteInvItem('${item.id}')">削除</button>
+    html += `<div class="sec-title" style="font-size:10px;padding:6px 16px 4px;color:${getCatColor(cat)};">${getCatLabel(cat)}</div>
+    <div class="card" style="margin:0 16px 8px;padding:4px 12px;">`;
+    catItems.forEach(item => {
+      html += `<div class="master-item-row">
+        <div class="master-item-info">
+          <span class="master-item-name">${item.name}</span>
+          <span class="master-item-unit">${item.unit}</span>
         </div>
-        <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="master-item-thr">
           ${STORES.map((s,si) => {
             const thr = item.alertThreshold && item.alertThreshold[s];
-            return `<div style="font-size:10px;color:${STORE_COLORS[si]};">${s.replace('号店','')}:
-              <input type="number" value="${thr??0}" min="0" style="width:52px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:3px 5px;color:var(--text);font-size:11px;text-align:center;"
-              onchange="updateItemThreshold('${item.id}','${s}',this.value)"> ${item.unit}</div>`;
-          }).join('')}
+            return `<span style="color:${STORE_COLORS[si]};font-size:10px;">${s.replace('号店','')}:${thr??0}${item.unit}</span>`;
+          }).join(' ')}
+        </div>
+        <div class="master-item-btns">
+          <button class="master-edit-btn" onclick="editInvItem('${item.id}')">✏️ 編集</button>
+          <button class="del-btn" onclick="deleteInvItem('${item.id}')">削除</button>
         </div>
       </div>`;
     });
     html += `</div>`;
   });
-  // 登録コード設定
-  html += `<div class="sec-title">🔑 登録コード設定</div><div class="card">
+
+  const db2 = getDB();
+  html += `<div class="sec-title">🔑 登録コード設定</div>
+  <div class="card" style="margin:0 16px;">
     <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">スタッフが新規登録する際に必要なコードです</div>
     <div class="form-group"><label class="form-label">スタッフ登録コード</label>
-      <div style="display:flex;gap:8px;"><input type="text" class="finput" id="newRegCode" placeholder="${db.registerCode || 'brew2025'}"><button class="btn-s" style="margin:0;white-space:nowrap;" onclick="saveRegCode()">保存</button></div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" class="finput" id="newRegCode" placeholder="${db2.registerCode || 'brew2025'}">
+        <button class="btn-s" style="margin:0;white-space:nowrap;" onclick="saveRegCode()">保存</button>
+      </div>
     </div>
-  </div>`;
-  html += `<div style="height:100px;"></div>`;
+  </div>
+  <div style="height:100px;"></div>`;
   el.innerHTML = html;
 }
+
+// 商品編集モーダル
+function editInvItem(itemId) {
+  const db = getDB();
+  const item = (db.invItems || []).find(i => i.id === itemId);
+  if (!item) return;
+  const modal = document.createElement('div');
+  modal.id = 'editItemModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:15px;font-weight:900;color:var(--text);">✏️ 商品を編集</div>
+        <button onclick="document.getElementById('editItemModal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);">✕</button>
+      </div>
+      <div class="form-group"><label class="form-label">商品名</label>
+        <input type="text" class="finput" id="edit-name" value="${escHtml(item.name)}"></div>
+      <div class="form-group"><label class="form-label">カテゴリ</label>
+        <select class="finput" id="edit-cat">
+          <option value="coffee" ${item.category==='coffee'?'selected':''}>☕ コーヒー豆</option>
+          <option value="syrup"  ${item.category==='syrup'?'selected':''}>🍯 シロップ</option>
+          <option value="drink"  ${item.category==='drink'?'selected':''}>🥛 ドリンク材料</option>
+          <option value="cup"    ${item.category==='cup'?'selected':''}>🥤 カップ・消耗品</option>
+          <option value="food"   ${item.category==='food'?'selected':''}>🍪 フード・食材</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">単位</label>
+        <input type="text" class="finput" id="edit-unit" value="${escHtml(item.unit)}"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（各店舗）</div>
+      ${STORES.map((s,si) => `
+        <div class="form-group">
+          <label class="form-label" style="color:${STORE_COLORS[si]};">${s}</label>
+          <input type="number" class="finput" id="edit-thr-${si}"
+            value="${(item.alertThreshold && item.alertThreshold[s]) ?? 0}" min="0">
+        </div>`).join('')}
+      <button onclick="saveEditInvItem('${itemId}')"
+        style="width:100%;height:48px;border-radius:12px;background:var(--caramel);border:none;color:#fff;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;margin-top:8px;">
+        保存する
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function saveEditInvItem(itemId) {
+  const db = getDB();
+  const item = (db.invItems || []).find(i => i.id === itemId);
+  if (!item) return;
+  item.name     = document.getElementById('edit-name')?.value.trim() || item.name;
+  item.category = document.getElementById('edit-cat')?.value || item.category;
+  item.unit     = document.getElementById('edit-unit')?.value.trim() || item.unit;
+  if (!item.alertThreshold) item.alertThreshold = {};
+  STORES.forEach((s, si) => {
+    item.alertThreshold[s] = parseFloat(document.getElementById(`edit-thr-${si}`)?.value || '0') || 0;
+  });
+  // ローカル即反映
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  document.getElementById('editItemModal')?.remove();
+  showToast('✅ 更新しました');
+  renderItemSettings();
+  // バックグラウンド保存
+  saveInvToSupabase(db).catch(e => console.warn(e));
+}
+
 async function addInvItem() {
   const name = (document.getElementById('newItemName')?.value || '').trim();
-  const cat = document.getElementById('newItemCat')?.value || 'coffee';
+  const cat  = document.getElementById('newItemCat')?.value || 'coffee';
   const unit = (document.getElementById('newItemUnit')?.value || '').trim() || '個';
   if (!name) { showToast('商品名を入力してください'); return; }
   const db = getDB();
@@ -5045,30 +5193,39 @@ async function addInvItem() {
   });
   const newItem = { id: 'item_' + Date.now(), name, category: cat, unit, alertThreshold };
   db.invItems.push(newItem);
-  saveDB(db);
-  await saveInvToSupabase(db);
+  // ローカル即反映
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
   showToast(`「${name}」を追加しました`);
   renderItemSettings();
+  // バックグラウンド保存
+  saveInvToSupabase(db).catch(e => console.warn(e));
 }
+
 async function deleteInvItem(itemId) {
   showConfirm('この商品を削除しますか？\n関連する在庫データも削除されます。', async () => {
     const db = getDB();
     db.invItems = (db.invItems || []).filter(i => i.id !== itemId);
     STORES.forEach(s => { if (db.invStock && db.invStock[s]) delete db.invStock[s][itemId]; });
-    saveDB(db);
-    await saveInvToSupabase(db);
+    // ローカル即反映
+    _db_cache = db;
+    try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
     showToast('削除しました');
     renderItemSettings();
+    // バックグラウンド保存
+    saveInvToSupabase(db).catch(e => console.warn(e));
   }, { icon: '🗑️', okLabel: '削除する', danger: true });
 }
+
 async function updateItemThreshold(itemId, store, val) {
   const db = getDB();
   const item = (db.invItems || []).find(i => i.id === itemId);
   if (!item) return;
   if (!item.alertThreshold) item.alertThreshold = {};
   item.alertThreshold[store] = parseFloat(val) || 0;
-  saveDB(db);
-  await saveInvToSupabase(db);
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  saveInvToSupabase(db).catch(e => console.warn(e));
 }
 
 function showAlertThresholdModal(store) {
