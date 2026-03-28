@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title> BREW STOCK — つなぐ珈琲 在庫管理</title>
+<title>☕ BREW STOCK — つなぐ珈琲 在庫管理</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script>
 (function(global){
@@ -412,9 +412,9 @@ body {
 .login-tab {
   flex: 1;
   padding: 12px 6px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(0,0,0,0.12);
   border-bottom: none;
-  background: rgba(26,14,6,0.6);
+  background: rgba(240,235,224,0.85);
   color: var(--text3);
   font-size: 12px;
   font-weight: 700;
@@ -428,33 +428,33 @@ body {
 .login-tab:first-child { margin-right: 3px; }
 .login-tab:nth-child(2) { margin-right: 3px; }
 .login-tab.active {
-  background: rgba(44,26,16,0.98);
-  color: var(--caramel2);
-  border-color: rgba(200,131,58,0.4);
-  border-bottom: 1px solid rgba(44,26,16,0.98);
+  background: rgba(255,255,255,0.92);
+  color: var(--caramel);
+  border-color: rgba(181,105,42,0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.92);
   z-index: 2;
 }
 .login-card {
-  background: rgba(44,26,16,0.98);
-  border: 1px solid rgba(200,131,58,0.3);
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(181,105,42,0.2);
   border-radius: 0 0 22px 22px;
   padding: 28px 24px 24px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: 0 8px 32px rgba(100,60,20,0.15);
   position: relative;
   z-index: 1;
 }
 .login-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text3);
-  letter-spacing: 2px;
+  color: var(--text2);
+  letter-spacing: 1.5px;
   margin-bottom: 7px;
   display: block;
 }
 .login-input {
   width: 100%;
-  background: rgba(255,255,255,0.06);
-  border: 1.5px solid rgba(255,255,255,0.12);
+  background: #FAFAF7;
+  border: 1.5px solid rgba(0,0,0,0.15);
   border-radius: 12px;
   padding: 13px 16px;
   font-size: 16px;
@@ -464,9 +464,10 @@ body {
   transition: border-color 0.2s, background 0.2s;
   margin-bottom: 14px;
 }
+.login-input::placeholder { color: #B0956A; }
 .login-input:focus {
   border-color: var(--caramel);
-  background: rgba(200,131,58,0.08);
+  background: #FFF8F0;
 }
 .login-btn {
   width: 100%;
@@ -2456,6 +2457,85 @@ select.bean-name-inp option {
 .stock-view-card { box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
 .big-alert-banner { box-shadow: 0 2px 12px rgba(192,57,43,0.15); }
 
+/* ===== ページ共通ヘッダー（スタッフ・オーナー統一） ===== */
+.page-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  background: var(--surface);
+  margin-bottom: 2px;
+}
+.page-top-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.page-top-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  padding: 8px 10px;
+  min-width: 48px;
+  flex-shrink: 0;
+}
+.page-top-day { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+.page-top-month { font-size: 9px; color: rgba(255,255,255,0.85); margin-top: 2px; white-space: nowrap; }
+.page-top-store { font-size: 15px; font-weight: 900; }
+.page-top-staff { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* 保存済みバッジ */
+.diary-saved-badge {
+  margin: 8px 16px;
+  padding: 10px 14px;
+  background: rgba(46,125,79,0.08);
+  border: 1px solid rgba(46,125,79,0.2);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 700;
+}
+.diary-new-badge {
+  margin: 8px 16px;
+  padding: 10px 14px;
+  background: rgba(181,105,42,0.08);
+  border: 1px solid rgba(181,105,42,0.2);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--caramel);
+  font-weight: 700;
+}
+
+/* 日誌フォームカード */
+.diary-form-card {
+  margin: 8px 16px;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+.diary-form-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.diary-form-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.diary-form-icon { font-size: 16px; }
+.diary-form-hint { font-size: 11px; color: var(--text3); margin-bottom: 10px; line-height: 1.5; }
+
+
+
 /* ===== リアクション ===== */
 .reaction-area {
   padding: 10px 14px 8px;
@@ -3297,14 +3377,20 @@ async function saveInvToSupabase(db) {
     const res = await fetch(SUPA_URL + '/rest/v1/brew_data?id=eq.main&select=data', { headers: _supaHeaders() });
     const rows = await res.json();
     const existing = (rows && rows.length > 0) ? rows[0].data : {};
+
+    // 日誌は降順ソート＋上限トリムして保存（軽量化）
+    const diary = [...(db.invDiary || [])];
+    diary.sort((a, b) => b.date.localeCompare(a.date));
+    const diaryTrimmed = diary.slice(0, DIARY_MAX_SUPABASE);
+
     const payload = {
       id: 'main',
       data: {
         ...existing,
         invStock: db.invStock || {},
-        invHistory: db.invHistory || [],
+        invHistory: (db.invHistory || []).slice(0, 2000),
         invItems: db.invItems || defaultDB().invItems,
-        invDiary: db.invDiary || [],
+        invDiary: diaryTrimmed,
       }
     };
     if (existing.users) payload.data.users = existing.users;
@@ -3335,9 +3421,17 @@ function renderStockInput() {
   const hasAlert = alerts.length > 0;
 
   let html = `
-  <div class="inv-page-header" style="border-bottom:3px solid ${storeColor};">
-    <div class="inv-page-title">📝 入出庫入力</div>
-    <div class="inv-page-store" style="color:${storeColor};">${store}</div>
+  <div class="page-top-bar" style="border-bottom:3px solid ${storeColor};">
+    <div class="page-top-left">
+      <div class="page-top-date-badge" style="background:${storeColor};">
+        <span class="page-top-day">📦</span>
+        <span class="page-top-month">入出庫入力</span>
+      </div>
+      <div>
+        <div class="page-top-store" style="color:${storeColor};">${store}</div>
+        <div class="page-top-staff">${currentUser.name}</div>
+      </div>
+    </div>
   </div>`;
 
   // アラートバナー（目立つデザイン）
@@ -3573,9 +3667,18 @@ function renderMyStock() {
   if (hdr) hdr.style.background = alerts.length > 0 ? 'rgba(208,80,80,0.18)' : '';
 
   let html = `
-  <div class="inv-page-header" style="border-bottom:3px solid ${storeColor};">
-    <div class="inv-page-title">📦 在庫一覧</div>
-    <div class="inv-page-store" style="color:${storeColor};">${store}</div>
+  <div class="page-top-bar" style="border-bottom:3px solid ${storeColor};">
+    <div class="page-top-left">
+      <div class="page-top-date-badge" style="background:${storeColor};">
+        <span class="page-top-day">📋</span>
+        <span class="page-top-month">在庫一覧</span>
+      </div>
+      <div>
+        <div class="page-top-store" style="color:${storeColor};">${store}</div>
+        <div class="page-top-staff">${alerts.length > 0 ? `🚨 ${alerts.length}品目アラート` : '✅ 在庫OK'}</div>
+      </div>
+    </div>
+    <button class="diary-mode-btn" onclick="showAlertThresholdModal('${store}')">⚙️ しきい値</button>
   </div>`;
 
   // 目立つアラートバナー
@@ -3622,11 +3725,7 @@ function renderMyStock() {
     });
   });
 
-  html += `<div style="padding:8px 16px 100px;">
-    <button class="diary-edit-btn" style="width:100%;padding:12px;border-radius:12px;font-size:13px;" onclick="showAlertThresholdModal('${store}')">
-      ⚙️ 発注アラートのしきい値を設定
-    </button>
-  </div>`;
+  html += `<div style="height:100px;"></div>`;
   el.innerHTML = html;
 }
 // ===== 入出庫履歴（スタッフ） =====
@@ -3710,19 +3809,30 @@ function renderCompareStores() {
   el.innerHTML = html;
 }
 // ===== 日誌機能 =====
-function getInvDiary() { return getDB().invDiary || []; }
+// ===== 日誌データ軽量化ユーティリティ =====
+const DIARY_CACHE_DAYS = 90;   // ローカルキャッシュ保持日数
+const DIARY_MAX_SUPABASE = 200; // Supabase保存上限
+
+function getDiaryCutoffDate() {
+  const d = new Date();
+  d.setDate(d.getDate() - DIARY_CACHE_DAYS);
+  return d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+}
+
+function getInvDiary(opts = {}) {
+  const all = getDB().invDiary || [];
+  if (opts.all) return all; // 全件取得（集計用）
+  // デフォルト: 直近90日のみ返す（UI表示・カレンダー用）
+  const cutoff = getDiaryCutoffDate();
+  return all.filter(d => d.date >= cutoff);
+}
 
 function renderDiaryInput() {
   const el = document.getElementById('diaryInputContent');
   if (!el) return;
 
-  // モード切り替え: 'write' or 'calendar'
   const mode = el.dataset.mode || 'write';
-
-  if (mode === 'calendar') {
-    renderDiaryStaffCalendar(el);
-    return;
-  }
+  if (mode === 'calendar') { renderDiaryStaffCalendar(el); return; }
 
   const today = todayStr();
   const diary = getInvDiary();
@@ -3730,64 +3840,66 @@ function renderDiaryInput() {
   const v = existing || {};
   const store = currentUser.store || '';
   const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
+  const now = new Date();
+  const dayNum = now.getDate();
+  const monthLabel = now.toLocaleDateString('ja-JP', { month: 'long' });
+  const weekLabel = now.toLocaleDateString('ja-JP', { weekday: 'short' });
 
   el.innerHTML = `
-    <div class="diary-header">
-      <div class="diary-date-badge">
-        <span class="diary-date-day">${new Date().getDate()}</span>
-        <span class="diary-date-month">${new Date().toLocaleDateString('ja-JP',{month:'long'})}</span>
+  <div class="page-top-bar" style="border-bottom:3px solid ${storeColor};">
+    <div class="page-top-left">
+      <div class="page-top-date-badge" style="background:${storeColor};">
+        <span class="page-top-day">${dayNum}</span>
+        <span class="page-top-month">${monthLabel}（${weekLabel}）</span>
       </div>
-      <div style="flex:1;">
-        <div class="diary-store-name" style="color:${storeColor}">${store}</div>
-        <div class="diary-staff-name">${currentUser.name}</div>
+      <div>
+        <div class="page-top-store" style="color:${storeColor};">${store}</div>
+        <div class="page-top-staff">${currentUser.name}</div>
       </div>
-      <button class="diary-mode-btn" onclick="document.getElementById('diaryInputContent').dataset.mode='calendar';renderDiaryInput();">
-        📅 過去ログ
-      </button>
     </div>
+    <button class="diary-mode-btn" onclick="document.getElementById('diaryInputContent').dataset.mode='calendar';renderDiaryInput();">
+      📅 過去ログ
+    </button>
+  </div>
 
-    ${existing ? `<div class="diary-saved-badge">✅ 本日の日誌は保存済みです — 上書きできます</div>` : ''}
+  ${existing ? `<div class="diary-saved-badge">✅ 本日の日誌は保存済み — 上書きできます</div>` : `<div class="diary-new-badge">📝 今日の日誌を記録しましょう</div>`}
 
-    <div class="diary-section">
-      <div class="diary-section-icon">☕</div>
-      <div class="diary-section-title">お客さんとのエピソード</div>
-      <div class="diary-section-hint">印象に残ったお客さまとのやり取りや出来事</div>
+  <div class="diary-form-card">
+    <div class="diary-form-section">
+      <div class="diary-form-label"><span class="diary-form-icon">☕</span>お客さんとのエピソード</div>
+      <div class="diary-form-hint">印象に残ったお客さまとのやり取りや出来事</div>
       <textarea class="diary-textarea" id="d-episode" placeholder="例）常連のAさんが誕生日で、特別なカップでお出しすると喜んでくれた…">${v.episode || ''}</textarea>
     </div>
 
-    <div class="diary-section">
-      <div class="diary-section-icon">⭐</div>
-      <div class="diary-section-title">今日できたこと</div>
-      <div class="diary-section-hint">うまくいったこと・成長を感じたこと</div>
+    <div class="diary-form-section">
+      <div class="diary-form-label"><span class="diary-form-icon">⭐</span>今日できたこと</div>
+      <div class="diary-form-hint">うまくいったこと・成長を感じたこと</div>
       <textarea class="diary-textarea" id="d-achievement" placeholder="例）ラテアートが初めてきれいに描けた。混雑時でも落ち着いて対応できた。">${v.achievement || ''}</textarea>
     </div>
 
-    <div class="diary-section">
-      <div class="diary-section-icon">💡</div>
-      <div class="diary-section-title">改善点・明日からやること</div>
-      <div class="diary-section-hint">気づいた課題、次回試してみたいこと</div>
+    <div class="diary-form-section">
+      <div class="diary-form-label"><span class="diary-form-icon">💡</span>改善点・明日からやること</div>
+      <div class="diary-form-hint">気づいた課題、次回試してみたいこと</div>
       <textarea class="diary-textarea" id="d-improvement" placeholder="例）注文が重なったときの受付順が乱れた。次は声かけのタイミングを工夫したい。">${v.improvement || ''}</textarea>
     </div>
 
-    <div class="diary-section">
-      <div class="diary-section-icon">🔁</div>
-      <div class="diary-section-title">翌営業日への引き継ぎ</div>
-      <div class="diary-section-hint">次のスタッフへ必ず伝えたいこと</div>
+    <div class="diary-form-section">
+      <div class="diary-form-label"><span class="diary-form-icon">🔁</span>翌営業日への引き継ぎ</div>
+      <div class="diary-form-hint">次のスタッフへ必ず伝えたいこと</div>
       <textarea class="diary-textarea" id="d-handover" placeholder="例）冷蔵庫のミルク残り1本。レジのロール紙を交換してください。">${v.handover || ''}</textarea>
     </div>
 
-    <div class="diary-section">
-      <div class="diary-section-icon">📦</div>
-      <div class="diary-section-title">在庫メモ</div>
-      <div class="diary-section-hint">気になる在庫状況など</div>
+    <div class="diary-form-section" style="border-bottom:none;">
+      <div class="diary-form-label"><span class="diary-form-icon">📦</span>在庫メモ</div>
+      <div class="diary-form-hint">気になる在庫状況など</div>
       <textarea class="diary-textarea short" id="d-stockNote" placeholder="例）エチオピア豆 残り少なめ。カップ (M) 補充済み。">${v.stockNote || ''}</textarea>
     </div>
+  </div>
 
-    <button class="diary-submit-btn" onclick="saveDiary()">
-      <span>📓 日誌を保存する</span>
-    </button>
-    <div style="height:32px;"></div>
-  `;
+  <div class="submit-area">
+    <button class="big-submit-btn" onclick="saveDiary()">📓 日誌を保存する</button>
+  </div>
+  <div style="height:40px;"></div>`;
 }
 
 function renderDiaryStaffCalendar(el) {
@@ -3940,7 +4052,9 @@ async function saveDiary() {
   else db.invDiary.unshift(entry);
 
   // 最大500件保持
-  if (db.invDiary.length > 500) db.invDiary = db.invDiary.slice(0, 500);
+  // 日付降順ソートして上限トリム（軽量化）
+  db.invDiary.sort((a, b) => b.date.localeCompare(a.date));
+  if (db.invDiary.length > DIARY_MAX_SUPABASE) db.invDiary = db.invDiary.slice(0, DIARY_MAX_SUPABASE);
 
   saveDB(db);
   try {
