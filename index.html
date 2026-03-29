@@ -3905,6 +3905,12 @@ function isLowStock(store, itemId) {
   const items = getInvItems();
   const item = items.find(i => i.id === itemId);
   if (!item) return false;
+  // 袋数アラート（未開封袋数しきい値が設定されている場合）
+  const bagThr = item.bagAlertThreshold && item.bagAlertThreshold[store];
+  if (bagThr != null && bagThr > 0) {
+    return getStockBags(store, itemId) <= bagThr;
+  }
+  // 通常の残量アラート
   const thr = item.alertThreshold && item.alertThreshold[store];
   if (thr == null) return false;
   return getStockQty(store, itemId) <= thr;
@@ -4038,24 +4044,30 @@ function renderStockInput() {
             <div>
               <div class="bags-label">📦 未開封（袋数）</div>
               <div class="qty-input-row" style="gap:6px;">
-                <button class="qty-stepper" onclick="stepQty('bags_${item.id}',-1)">－</button>
+                <button class="qty-stepper" onclick="stepQtyAndCalc('bags_${item.id}','total_${item.id}',-1,${item.qtyPerBag||0})">－</button>
                 <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
-                  placeholder="${bags}" value="${bags}" class="qty-num-input" style="max-width:70px;">
-                <button class="qty-stepper" onclick="stepQty('bags_${item.id}',1)">＋</button>
+                  placeholder="${bags}" value="${bags}" class="qty-num-input" style="max-width:70px;"
+                  oninput="calcTotal('total_${item.id}','bags_${item.id}','opened_${item.id}',${item.qtyPerBag||0},'${item.unit}')">
+                <button class="qty-stepper" onclick="stepQtyAndCalc('bags_${item.id}','total_${item.id}',1,${item.qtyPerBag||0})">＋</button>
                 <span class="qty-unit-display">袋</span>
               </div>
             </div>
             <div>
               <div class="bags-label">✂️ 開封済み（袋数）</div>
               <div class="qty-input-row" style="gap:6px;">
-                <button class="qty-stepper" onclick="stepQty('opened_${item.id}',-1)">－</button>
+                <button class="qty-stepper" onclick="stepQtyAndCalc('opened_${item.id}','total_${item.id}',-1,${item.qtyPerBag||0})">－</button>
                 <input type="number" id="opened_${item.id}" min="0" inputmode="numeric"
-                  placeholder="${opened}" value="${opened}" class="qty-num-input" style="max-width:70px;">
-                <button class="qty-stepper" onclick="stepQty('opened_${item.id}',1)">＋</button>
+                  placeholder="${opened}" value="${opened}" class="qty-num-input" style="max-width:70px;"
+                  oninput="calcTotal('total_${item.id}','bags_${item.id}','opened_${item.id}',${item.qtyPerBag||0},'${item.unit}')">
+                <button class="qty-stepper" onclick="stepQtyAndCalc('opened_${item.id}','total_${item.id}',1,${item.qtyPerBag||0})">＋</button>
                 <span class="qty-unit-display">袋</span>
               </div>
             </div>
           </div>
+          ${item.qtyPerBag > 0 ? `
+          <div id="total_${item.id}" style="margin-top:8px;padding:8px 12px;background:rgba(200,131,58,0.1);border-radius:8px;font-size:13px;font-weight:700;color:var(--caramel);">
+            合計: <b>${bags * item.qtyPerBag + opened}</b> ${item.unit}（未開封${bags}袋×${item.qtyPerBag}${item.unit} ＋ 開封${opened}袋）
+          </div>` : ''}
         </div>
       </div>`;
     });
@@ -4096,6 +4108,24 @@ function stepQty(inputId, delta) {
   if (!el) return;
   const cur = parseFloat(el.value || '0') || 0;
   el.value = Math.max(0, cur + delta);
+}
+function stepQtyAndCalc(inputId, totalId, delta, qtyPerBag) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const cur = parseFloat(el.value || '0') || 0;
+  el.value = Math.max(0, cur + delta);
+  const bagsId = inputId.startsWith('bags_') ? inputId : inputId.replace('opened_','bags_');
+  const openedId = inputId.startsWith('opened_') ? inputId : inputId.replace('bags_','opened_');
+  const unit = document.getElementById(totalId)?.dataset.unit || '';
+  calcTotal(totalId, bagsId, openedId, qtyPerBag, unit);
+}
+function calcTotal(totalId, bagsId, openedId, qtyPerBag, unit) {
+  const el = document.getElementById(totalId);
+  if (!el || !qtyPerBag) return;
+  const bags = parseFloat(document.getElementById(bagsId)?.value || '0') || 0;
+  const opened = parseFloat(document.getElementById(openedId)?.value || '0') || 0;
+  const total = bags * qtyPerBag + opened;
+  el.innerHTML = `合計: <b>${total}</b> ${unit}（未開封${bags}袋×${qtyPerBag}${unit} ＋ 開封${opened}袋）`;
 }
 
 // 未開封袋数の取得
@@ -5236,12 +5266,22 @@ function renderItemSettings() {
     </div>
     <div class="form-group"><label class="form-label">単位（g、ml、個など）</label>
       <input type="text" class="finput" id="newItemUnit" placeholder="例：g"></div>
-    <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（各店舗）</div>
+    <div class="form-group"><label class="form-label">1袋あたりの入数（任意）</label>
+      <input type="number" class="finput" id="newItemQtyPerBag" placeholder="例：200（200g入り1袋）" min="0"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（各店舗・残量）</div>
     <div class="inp-row">
       ${STORES.map((s,i) => `
         <div class="form-group">
           <label class="form-label" style="color:${STORE_COLORS[i]};">${s.replace('号店','')}</label>
           <input type="number" class="finput" id="newItemThr_${i}" placeholder="0" min="0">
+        </div>`).join('')}
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（未開封袋数・任意）</div>
+    <div class="inp-row">
+      ${STORES.map((s,i) => `
+        <div class="form-group">
+          <label class="form-label" style="color:${STORE_COLORS[i]};">${s.replace('号店','')}（袋）</label>
+          <input type="number" class="finput" id="newItemBagThr_${i}" placeholder="0" min="0">
         </div>`).join('')}
     </div>
     <button class="btn-p" onclick="addInvItem()">追加する</button>
@@ -5258,12 +5298,13 @@ function renderItemSettings() {
       html += `<div class="master-item-row">
         <div class="master-item-info">
           <span class="master-item-name">${item.name}</span>
-          <span class="master-item-unit">${item.unit}</span>
+          <span class="master-item-unit">${item.unit}${item.qtyPerBag ? `・1袋=${item.qtyPerBag}${item.unit}` : ''}</span>
         </div>
         <div class="master-item-thr">
           ${STORES.map((s,si) => {
             const thr = item.alertThreshold && item.alertThreshold[s];
-            return `<span style="color:${STORE_COLORS[si]};font-size:10px;">${s.replace('号店','')}:${thr??0}${item.unit}</span>`;
+            const bagThr = item.bagAlertThreshold && item.bagAlertThreshold[s];
+            return `<span style="color:${STORE_COLORS[si]};font-size:10px;">${s.replace('号店','')}:${thr??0}${item.unit}${bagThr > 0 ? `/袋${bagThr}` : ''}</span>`;
           }).join(' ')}
         </div>
         <div class="master-item-btns">
@@ -5316,12 +5357,21 @@ function editInvItem(itemId) {
         </select></div>
       <div class="form-group"><label class="form-label">単位</label>
         <input type="text" class="finput" id="edit-unit" value="${escHtml(item.unit)}"></div>
-      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（各店舗）</div>
+      <div class="form-group"><label class="form-label">1袋あたりの入数（任意）</label>
+        <input type="number" class="finput" id="edit-qtyPerBag" value="${item.qtyPerBag || ''}" placeholder="例：200（200g入り1袋）" min="0"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;">発注アラートしきい値（残量）</div>
       ${STORES.map((s,si) => `
         <div class="form-group">
           <label class="form-label" style="color:${STORE_COLORS[si]};">${s}</label>
           <input type="number" class="finput" id="edit-thr-${si}"
             value="${(item.alertThreshold && item.alertThreshold[s]) ?? 0}" min="0">
+        </div>`).join('')}
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;margin-top:8px;">発注アラートしきい値（未開封袋数・任意）</div>
+      ${STORES.map((s,si) => `
+        <div class="form-group">
+          <label class="form-label" style="color:${STORE_COLORS[si]};">${s}（袋）</label>
+          <input type="number" class="finput" id="edit-bagthr-${si}"
+            value="${(item.bagAlertThreshold && item.bagAlertThreshold[s]) ?? ''}" placeholder="0" min="0">
         </div>`).join('')}
       <button onclick="saveEditInvItem('${itemId}')"
         style="width:100%;height:48px;border-radius:12px;background:var(--caramel);border:none;color:#fff;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;margin-top:8px;">
@@ -5339,9 +5389,14 @@ async function saveEditInvItem(itemId) {
   item.name     = document.getElementById('edit-name')?.value.trim() || item.name;
   item.category = document.getElementById('edit-cat')?.value || item.category;
   item.unit     = document.getElementById('edit-unit')?.value.trim() || item.unit;
+  const qpb = parseFloat(document.getElementById('edit-qtyPerBag')?.value || '0');
+  item.qtyPerBag = qpb > 0 ? qpb : null;
   if (!item.alertThreshold) item.alertThreshold = {};
+  if (!item.bagAlertThreshold) item.bagAlertThreshold = {};
   STORES.forEach((s, si) => {
     item.alertThreshold[s] = parseFloat(document.getElementById(`edit-thr-${si}`)?.value || '0') || 0;
+    const bagThr = parseFloat(document.getElementById(`edit-bagthr-${si}`)?.value || '');
+    item.bagAlertThreshold[s] = isNaN(bagThr) ? 0 : bagThr;
   });
   // ローカル即反映
   _db_cache = db;
@@ -5362,10 +5417,13 @@ async function addInvItem() {
   if (!db.invItems) db.invItems = defaultDB().invItems;
   if (db.invItems.find(i => i.name === name)) { showToast('同じ名前の商品がすでに存在します'); return; }
   const alertThreshold = {};
+  const bagAlertThreshold = {};
   STORES.forEach((s, si) => {
     alertThreshold[s] = parseFloat(document.getElementById(`newItemThr_${si}`)?.value || '0') || 0;
+    bagAlertThreshold[s] = parseFloat(document.getElementById(`newItemBagThr_${si}`)?.value || '0') || 0;
   });
-  const newItem = { id: 'item_' + Date.now(), name, category: cat, unit, alertThreshold };
+  const qpb = parseFloat(document.getElementById('newItemQtyPerBag')?.value || '0');
+  const newItem = { id: 'item_' + Date.now(), name, category: cat, unit, alertThreshold, bagAlertThreshold, qtyPerBag: qpb > 0 ? qpb : null };
   db.invItems.push(newItem);
   // ローカル即反映
   _db_cache = db;
