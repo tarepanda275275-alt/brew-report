@@ -8597,31 +8597,6 @@ function renderExport() {
   const el = document.getElementById('exportExcelContent');
   if (!el) return;
   el.innerHTML = `
-    <div class="sec-title">📤 Excelで出力</div>
-    <div class="export-grid">
-      <div class="exp-btn highlight" onclick="exportXLSX('all')"><span class="exp-icon">📊</span><span class="exp-name">全データ</span><span class="exp-desc">全店舗・全期間</span></div>
-      <div class="exp-btn" onclick="exportXLSX('month')"><span class="exp-icon">📅</span><span class="exp-name">今月</span><span class="exp-desc">当月のみ</span></div>
-      <div class="exp-btn highlight" onclick="exportXLSX('weekly')"><span class="exp-icon">📆</span><span class="exp-name">今週</span><span class="exp-desc">直近7日間</span></div>
-      <div class="exp-btn" onclick="exportXLSXReflections()"><span class="exp-icon">💬</span><span class="exp-name">気づき・振り返り</span><span class="exp-desc">エピソード一覧</span></div>
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.7;padding:0 4px;">
-      💡 「共有する」→ メール / LINE などで送れます。PCのExcelやNumbersで開けます。
-    </div>
-    <div class="sec-title" style="margin-top:24px;">📥 データを取り込む</div>
-    <div class="card">
-      <div style="font-size:13px;color:var(--text2);font-weight:700;margin-bottom:6px;">CSVファイルから読み込む</div>
-      <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;">
-        以前出力したCSVや、Excelで作成した売上データを取り込めます。<br>
-        <b style="color:var(--caramel2)">必要な列：</b> 日付, 店舗, スタッフ, 売上金額
-      </div>
-      <div class="import-drop-zone" id="importDropZone" onclick="document.getElementById('importFileInput').click()">
-        <div style="font-size:28px;margin-bottom:8px;">📂</div>
-        <div style="font-size:13px;font-weight:700;color:var(--text2);">タップしてファイルを選ぶ</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv / .csv 対応</div>
-        <input type="file" id="importFileInput" accept=".csv,.csv,.xls" style="display:none" onchange="handleImportFile(this)">
-      </div>
-      <div id="importPreview" style="margin-top:12px;"></div>
-    </div>
     <div class="sec-title">👥 アカウント管理</div>
     <div class="card">
       <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;margin-bottom:10px;">新規登録コード（スタッフに伝えてください）</div>
@@ -8657,40 +8632,15 @@ function renderExport() {
           <button class="qbtn" onclick="deleteUser('${u.name}')" style="color:var(--danger);border-color:rgba(208,80,80,0.3);font-size:11px;">削除</button>
         </div>`).join('') || '<div class="no-data-msg">スタッフなし</div>'}
     </div>
-    <div class="sec-title">📦 在庫品目マスタ</div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;">
-        スタッフが在庫入力時にプルダウンで選べる商品名を管理します
-      </div>
-      <div id="stockItemsList" style="margin-bottom:12px;">
-        ${(db.stockItems||[]).map((item,i) => `
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <div style="flex:1;background:var(--surface3);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text1);">${item}</div>
-            <button onclick="deleteStockItem(${i})" style="background:none;border:1px solid rgba(208,80,80,0.3);border-radius:8px;padding:8px 12px;color:var(--danger);font-size:12px;cursor:pointer;">削除</button>
-          </div>`).join('')}
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" class="finput" id="newStockItemInput" placeholder="新しい品目名（例：マンデリン豆）" style="font-size:13px;padding:10px 12px;">
-        <button class="qbtn" onclick="addStockItem()" style="white-space:nowrap;padding:10px 16px;">追加</button>
-      </div>
-    </div>
-    <div class="sec-title">🔧 データ管理</div>
-    <div class="card">
-      <div style="font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:14px;">テストデータを追加してグラフや集計を確認できます</div>
-
-    </div>
     <div class="sec-title">💾 バックアップ・復元</div>
     <div class="card">
       <div style="font-size:12px;color:var(--text3);line-height:1.8;margin-bottom:14px;">
-        売上データ・スタッフ・設定をすべて含むバックアップを作成します。<br>
-        <span style="color:var(--caramel2);font-weight:700;">📱 操作手順：</span>ボタンを押す → 「全てコピー」→ メモアプリに貼り付けて保存
+        スタッフ・設定をすべて含むバックアップを作成します。<br>
+        <span style="color:var(--caramel2);font-weight:700;">📱 操作手順：</span>ボタンを押す → メモアプリに貼り付けて保存
       </div>
       <button class="btn-s" onclick="downloadBackup()" style="background:linear-gradient(135deg,var(--caramel2),var(--gold2));color:#fff;border:none;font-weight:700;padding:12px 20px;">⬇️ バックアップをダウンロード</button>
       <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
         <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">バックアップデータから復元する</div>
-        <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:10px;">
-          メモアプリに保存したバックアップデータを貼り付けてください
-        </div>
         <textarea id="backupPasteArea" placeholder="ここにバックアップデータを貼り付け..." style="
           width:100%;height:100px;background:var(--surface3);border:1px dashed var(--border);
           border-radius:10px;padding:10px;font-size:11px;color:var(--text2);
@@ -8698,7 +8648,9 @@ function renderExport() {
         " oninput="previewPastedBackup(this.value)"></textarea>
         <div id="backupRestorePreview" style="margin-top:10px;"></div>
       </div>
-    </div>`;
+    </div>
+    <div style="height:100px;"></div>`;
+}
 }
 function exportXLSX(type) {
   const db = getDB();
