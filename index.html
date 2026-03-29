@@ -3331,10 +3331,10 @@ select.bean-name-inp option {
 <div id="mainApp">
   <div class="app-header" id="appHeader">
     <div class="header-brand">☕ STOCK</div>
-    <div class="header-user" onclick="doLogout()">
-      <div class="avatar" id="hdrAvatar">?</div>
+    <div class="header-user">
+      <div class="avatar" id="hdrAvatar" onclick="openProfileModal()" style="cursor:pointer;">?</div>
       <span id="hdrName">ゲスト</span>
-      <span style="font-size:10px;color:var(--text3)">ログアウト</span>
+      <span style="font-size:10px;color:var(--text3);cursor:pointer;" onclick="doLogout()">ログアウト</span>
     </div>
   </div>
   <div class="app-body" id="appBody">
@@ -3885,7 +3885,8 @@ async function saveAvatarColor() {
     renderHeaderAvatar(currentUser);
     buildLoginChips();
     showToast('✅ カラーを変更しました！');
-    switchTab(currentUser.role === 'owner' ? 'diary-owner' : 'diary');
+    const modal = document.getElementById('profileModal');
+    if (modal) modal.remove();
   } catch(e) {
     showLoadingOverlay(false);
     showToast('⚠️ 保存に失敗しました');
@@ -5758,6 +5759,36 @@ buildLoginChips();
     }
   };
   reader.readAsDataURL(file);
+}
+function openProfileModal() {
+  const colors = ['#C8833A','#4A90C8','#5DB87A','#C85A8A','#8B5AC8','#C8C03A','#5AB8C8','#C87A5A','#5A8BC8','#7AC85A'];
+  const charSum = currentUser.name ? [...currentUser.name].reduce((s,c) => s + c.charCodeAt(0), 0) : 0;
+  const currentColor = currentUser.color || colors[charSum % colors.length];
+  const modal = document.createElement('div');
+  modal.id = 'profileModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:20px;padding:24px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:${currentColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span style="font-size:24px;font-weight:900;color:#fff;">${(currentUser.name||'?')[0]}</span>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:900;color:var(--cream);">${currentUser.name}</div>
+          <div style="font-size:12px;color:var(--text3);">${currentUser.store || ''}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">🎨 アバターカラー</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;" id="editColorPicker">
+        ${colors.map(c => `<div class="color-swatch${c === currentColor ? ' selected-swatch' : ''}" data-color="${c}" style="background:${c};" onclick="selectAvatarColorEdit(this)"></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('profileModal').remove()" style="flex:1;padding:12px;background:var(--surface3);border:none;border-radius:12px;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">キャンセル</button>
+        <button onclick="saveAvatarColor()" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--caramel),var(--gold));border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">保存する</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 function doLogout() {
   showLogoutDialog();
