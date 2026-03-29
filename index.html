@@ -576,6 +576,17 @@ body {
   display: flex;
   justify-content: center;
 }
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.selected-swatch { border-color: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.3); transform: scale(1.15); }
 .photo-preview-circle {
   width: 90px;
   height: 90px;
@@ -3241,7 +3252,20 @@ select.bean-name-inp option {
         <option value="2号店秋田">2号店 秋田</option>
         <option value="3号店横手">3号店 横手</option>
       </select>
-      <span class="login-label" style="margin-top:10px;">パスワード（4文字以上）</span>
+      <span class="login-label" style="margin-top:10px;">アバターカラー</span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;" id="newColorPicker">
+        <div class="color-swatch selected-swatch" data-color="#C8833A" style="background:#C8833A;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#4A90C8" style="background:#4A90C8;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#5DB87A" style="background:#5DB87A;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#C85A8A" style="background:#C85A8A;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#8B5AC8" style="background:#8B5AC8;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#C8C03A" style="background:#C8C03A;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#5AB8C8" style="background:#5AB8C8;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#C87A5A" style="background:#C87A5A;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#5A8BC8" style="background:#5A8BC8;" onclick="selectAvatarColor(this)"></div>
+        <div class="color-swatch" data-color="#7AC85A" style="background:#7AC85A;" onclick="selectAvatarColor(this)"></div>
+      </div>
+      <span class="login-label">パスワード（4文字以上）</span>
       <input type="password" class="login-input" id="newPass" placeholder="自分で決めてください" autocomplete="off">
       <span class="login-label">パスワード（確認）</span>
       <input type="password" class="login-input" id="newPass2" placeholder="もう一度入力" autocomplete="off">
@@ -3835,6 +3859,38 @@ let miniChartInst = null;
 let dashCharts = {};
 let currentPeriod = 'daily';
 let selectedCommentTarget = '全店舗';
+let pendingAvatarColor = '#C8833A';
+function selectAvatarColor(el) {
+  document.querySelectorAll('#newColorPicker .color-swatch').forEach(s => s.classList.remove('selected-swatch'));
+  el.classList.add('selected-swatch');
+  pendingAvatarColor = el.dataset.color;
+}
+function selectAvatarColorEdit(el) {
+  document.querySelectorAll('#editColorPicker .color-swatch').forEach(s => s.classList.remove('selected-swatch'));
+  el.classList.add('selected-swatch');
+}
+async function saveAvatarColor() {
+  const el = document.querySelector('#editColorPicker .selected-swatch');
+  if (!el) return;
+  const color = el.dataset.color;
+  currentUser.color = color;
+  showLoadingOverlay(true);
+  try {
+    await _upsertUserToSupabase(currentUser);
+    const db = getDB();
+    const u = (db.users||[]).find(x => x.name === currentUser.name);
+    if (u) u.color = color;
+    _db_cache = db;
+    showLoadingOverlay(false);
+    renderHeaderAvatar(currentUser);
+    buildLoginChips();
+    showToast('✅ カラーを変更しました！');
+    switchTab(currentUser.role === 'owner' ? 'diary-owner' : 'diary');
+  } catch(e) {
+    showLoadingOverlay(false);
+    showToast('⚠️ 保存に失敗しました');
+  }
+}
 let pendingPhotoDataUrl = null;
 // ===== 在庫管理ヘルパー =====
 function getInvItems() { return (getDB().invItems || defaultDB().invItems); }
@@ -5529,10 +5585,8 @@ function avatarHtml(user, size = 36) {
     '#C8833A','#4A90C8','#5DB87A','#C85A8A','#8B5AC8',
     '#C8C03A','#5AB8C8','#C87A5A','#5A8BC8','#7AC85A'
   ];
-  // 名前の全文字コードを合計してカラーを決定（かぶりにくい）
   const charSum = user.name ? [...user.name].reduce((s,c) => s + c.charCodeAt(0), 0) : 0;
-  const colorIdx = charSum % colors.length;
-  const bg = colors[colorIdx];
+  const bg = user.color || colors[charSum % colors.length];
   return `<div class="chip-avatar-placeholder" style="width:${size}px;height:${size}px;background:${bg};color:#fff;font-size:${Math.round(size*0.45)}px;font-weight:900;display:flex;align-items:center;justify-content:center;border-radius:50%;">${initials}</div>`;
 }
 function buildLoginChips() {
@@ -5588,7 +5642,7 @@ function renderHeaderAvatar(user) {
     '#C8C03A','#5AB8C8','#C87A5A','#5A8BC8','#7AC85A'
   ];
   const charSum = user.name ? [...user.name].reduce((s,c) => s + c.charCodeAt(0), 0) : 0;
-  const bg = colors[charSum % colors.length];
+  const bg = user.color || colors[charSum % colors.length];
   const initials = user.name ? user.name.trim()[0] : '?';
   el.textContent = initials;
   el.style.background = bg;
@@ -5666,7 +5720,7 @@ async function doCreateAccount() {
   showLoadingOverlay(false);
   if (code !== (db.registerCode || REGISTER_CODE)) { showToast('承認コードが違います。管理者に確認してください'); return; }
   if ((db.users || []).find(u => u.name === name)) { showToast('その名前はすでに使われています'); return; }
-  const newUser = { name, id: name, pass, role: 'staff', store, photo: null };
+  const newUser = { name, id: name, pass, role: 'staff', store, photo: null, color: pendingAvatarColor || '#C8833A' };
   showLoadingOverlay(true);
   try {
     await _upsertUserToSupabase(newUser);
@@ -7133,22 +7187,26 @@ function renderMyData() {
   const store = currentUser.store;
   const records = db.records.filter(r => r.store === store).sort((a, b) => b.date.localeCompare(a.date));
   const el = document.getElementById('mydataContent');
+  const colors = ['#C8833A','#4A90C8','#5DB87A','#C85A8A','#8B5AC8','#C8C03A','#5AB8C8','#C87A5A','#5A8BC8','#7AC85A'];
+  const charSum = currentUser.name ? [...currentUser.name].reduce((s,c) => s + c.charCodeAt(0), 0) : 0;
+  const currentColor = currentUser.color || colors[charSum % colors.length];
   const profileSection = `
     <div class="sec-title">👤 プロフィール</div>
     <div class="card" style="display:flex;align-items:center;gap:16px;">
-      <div onclick="document.getElementById('profilePhotoInput').click()" style="cursor:pointer;flex-shrink:0;">
-        <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--caramel);display:flex;align-items:center;justify-content:center;background:var(--surface3);">
-          ${currentUser.photo
-            ? `<img src="${currentUser.photo}" style="width:100%;height:100%;object-fit:cover;">`
-            : `<span style="font-size:28px;font-weight:900;color:var(--caramel);">${(currentUser.name||'?')[0]}</span>`}
-        </div>
-        <div style="font-size:10px;color:var(--caramel2);text-align:center;margin-top:4px;font-weight:700;">変更</div>
-        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="updateProfilePhoto(this)">
+      <div style="width:64px;height:64px;border-radius:50%;background:${currentColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:28px;font-weight:900;color:#fff;">${(currentUser.name||'?')[0]}</span>
       </div>
       <div>
         <div style="font-size:18px;font-weight:900;color:var(--cream);">${currentUser.name}</div>
         <div style="font-size:12px;color:var(--text3);margin-top:2px;">${currentUser.store || ''}</div>
       </div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">🎨 アバターカラーを変更</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;" id="editColorPicker">
+        ${colors.map(c => `<div class="color-swatch${c === currentColor ? ' selected-swatch' : ''}" data-color="${c}" style="background:${c};" onclick="selectAvatarColorEdit(this)"></div>`).join('')}
+      </div>
+      <button class="login-btn" style="padding:10px 20px;font-size:13px;" onclick="saveAvatarColor()">カラーを保存する</button>
     </div>`;
   if (!records.length) {
     el.innerHTML = profileSection + `<div class="sec-title">📈 ${store} のグラフ</div><div class="no-data-msg"><span class="nde">☕</span>まだデータがありません。<br>最初の入力をしてみましょう！</div>`;
