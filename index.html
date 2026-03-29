@@ -4020,7 +4020,7 @@ function renderStockInput() {
       const opened = getStockOpened(store, item.id);
       const low = isLowStock(store, item.id);
 
-      const isBagItem = item.category !== 'coffee' && item.category !== 'food';
+      const isBagItem = item.category === 'cup';
 
       html += `<div class="inv-item-card ${low ? 'inv-item-card--alert' : ''}">
         <div class="inv-item-card-header">
