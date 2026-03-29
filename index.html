@@ -3954,7 +3954,7 @@ async function _saveInvData(field, value) {
   saveDB(db);
   await saveInvToSupabase(db);
 }
-// ===== 在庫入出庫入力 (スタッフ) =====
+// ===== 在庫残量入力 (スタッフ) =====
 function renderStockInput() {
   const el = document.getElementById('stockInputContent');
   if (!el) return;
@@ -3962,26 +3962,30 @@ function renderStockInput() {
   const items = getInvItems();
   const cats = [...new Set(items.map(i => i.category))];
   const storeColor = STORE_COLORS[STORES.indexOf(store)] || 'var(--caramel)';
-
-  // アラート確認
   const alerts = items.filter(i => isLowStock(store, i.id));
   const hasAlert = alerts.length > 0;
+  const today = todayStr();
+  const db = getDB();
+
+  // 今日すでに入力済みか確認
+  const todayHistory = (db.invHistory || []).filter(h => h.date === today && h.store === store && h.type === 'snapshot');
+  const hasToday = todayHistory.length > 0;
+  const lastEntry = hasToday ? todayHistory[0] : null;
 
   let html = `
   <div class="page-top-bar" style="border-bottom:3px solid ${storeColor};">
     <div class="page-top-left">
       <div class="page-top-date-badge" style="background:${storeColor};">
         <span class="page-top-day">📦</span>
-        <span class="page-top-month">入出庫入力</span>
+        <span class="page-top-month">在庫入力</span>
       </div>
       <div>
         <div class="page-top-store" style="color:${storeColor};">${store}</div>
-        <div class="page-top-staff">${currentUser.name}</div>
+        <div class="page-top-staff">${currentUser.name} · ${today}</div>
       </div>
     </div>
   </div>`;
 
-  // アラートバナー（目立つデザイン）
   if (hasAlert) {
     html += `<div class="big-alert-banner">
       <div class="big-alert-icon">🚨</div>
@@ -3992,20 +3996,14 @@ function renderStockInput() {
     </div>`;
   }
 
-  // 入出庫タイプ選択（大きめボタン）
-  html += `<div class="itype-row">
-    <button id="itype-in"     class="itype-btn itype-in active-itype"  onclick="selectIType('in')">
-      <span class="itype-icon">📦</span><span class="itype-label">入庫</span>
-    </button>
-    <button id="itype-use"    class="itype-btn itype-use"   onclick="selectIType('use')">
-      <span class="itype-icon">📤</span><span class="itype-label">使用</span>
-    </button>
-    <button id="itype-adjust" class="itype-btn itype-adj"   onclick="selectIType('adjust')">
-      <span class="itype-icon">🔧</span><span class="itype-label">修正</span>
-    </button>
-  </div>`;
+  if (hasToday) {
+    html += `<div style="margin:12px 16px 0;padding:10px 14px;background:rgba(200,131,58,0.12);border-radius:10px;border:1px solid rgba(200,131,58,0.3);font-size:12px;color:var(--caramel);font-weight:700;">
+      ✅ 本日 ${lastEntry.time} に入力済みです。修正する場合はそのまま入力して上書き保存できます。
+    </div>`;
+  }
 
-  // 商品リスト
+  html += `<div style="margin:12px 16px 4px;font-size:12px;color:var(--text3);">1日の終わりに残った在庫量を入力してください。</div>`;
+
   cats.forEach(cat => {
     const catItems = items.filter(i => i.category === cat);
     html += `<div class="inv-cat-label" style="color:${getCatColor(cat)};">${getCatLabel(cat)}</div>`;
@@ -4014,49 +4012,27 @@ function renderStockInput() {
       const bags = getStockBags(store, item.id);
       const opened = getStockOpened(store, item.id);
       const low = isLowStock(store, item.id);
-      const isCoffee = item.category === 'coffee' && item.name.includes('豆');
-      const defaultUnit = item.unit || 'g';
-
-      // 単位タブ選択肢決定
-      let unitOptions = ['g', '袋', '個'];
-      if (defaultUnit === '個') unitOptions = ['個', '袋'];
-      else if (defaultUnit === 'ml') unitOptions = ['ml', '袋'];
-      else unitOptions = ['g', '袋', '個'];
 
       html += `<div class="inv-item-card ${low ? 'inv-item-card--alert' : ''}">
         <div class="inv-item-card-header">
-          <div>
-            <div class="inv-item-card-name">${item.name}</div>
-            <div class="inv-item-card-stock ${low ? 'stock-low' : ''}">
-              現在 <b>${qty} ${item.unit}</b>${bags > 0 ? ` + 未開封 <b>${bags} 袋</b>` : ''}${low ? ' 🚨' : ''}
-            </div>
+          <div class="inv-item-card-name">${item.name}</div>
+          <div class="inv-item-card-stock ${low ? 'stock-low' : ''}">
+            前回 <b>${qty} ${item.unit}</b>
+            ${bags > 0 ? `・未開封 <b>${bags}</b>袋` : ''}
+            ${opened > 0 ? `・開封 <b>${opened}</b>袋` : ''}
+            ${low ? ' 🚨' : ''}
           </div>
         </div>
-
-        ${isCoffee ? `
-        <div class="roast-row">
-          <div class="roast-label">焙煎度</div>
-          <div class="roast-tabs" id="roast_${item.id}">
-            <button class="roast-tab active-roast" onclick="selRoast(this,'${item.id}','浅煎り')">浅煎り</button>
-            <button class="roast-tab" onclick="selRoast(this,'${item.id}','中煎り')">中煎り</button>
-            <button class="roast-tab" onclick="selRoast(this,'${item.id}','中深煎り')">中深煎り</button>
-          </div>
-        </div>` : ''}
-
         <div class="qty-block">
-          <div class="qty-block-label">変更量（＋入庫 / －使用）</div>
-          <div class="unit-tabs" id="utab_${item.id}">
-            ${unitOptions.map((u,i) => `<button class="unit-tab ${i===0?'active-utab':''}" onclick="selUnit(this,'${item.id}')" data-unit="${u}">${u}</button>`).join('')}
-          </div>
+          <div class="qty-block-label">残量（${item.unit}）</div>
           <div class="qty-input-row">
             <button class="qty-stepper" onclick="stepQty('qty_${item.id}',-1)">－</button>
             <input type="number" id="qty_${item.id}" min="0" inputmode="decimal"
-              placeholder="0" class="qty-num-input">
+              placeholder="${qty}" value="${qty}" class="qty-num-input">
             <button class="qty-stepper" onclick="stepQty('qty_${item.id}',1)">＋</button>
-            <span class="qty-unit-display" id="unit_${item.id}">${unitOptions[0]}</span>
+            <span class="qty-unit-display">${item.unit}</span>
           </div>
         </div>
-
         <div class="bags-block">
           <div class="bags-two-col">
             <div>
@@ -4064,7 +4040,7 @@ function renderStockInput() {
               <div class="qty-input-row" style="gap:6px;">
                 <button class="qty-stepper" onclick="stepQty('bags_${item.id}',-1)">－</button>
                 <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
-                  placeholder="0" class="qty-num-input" style="max-width:70px;">
+                  placeholder="${bags}" value="${bags}" class="qty-num-input" style="max-width:70px;">
                 <button class="qty-stepper" onclick="stepQty('bags_${item.id}',1)">＋</button>
                 <span class="qty-unit-display">袋</span>
               </div>
@@ -4074,19 +4050,10 @@ function renderStockInput() {
               <div class="qty-input-row" style="gap:6px;">
                 <button class="qty-stepper" onclick="stepQty('opened_${item.id}',-1)">－</button>
                 <input type="number" id="opened_${item.id}" min="0" inputmode="numeric"
-                  placeholder="0" class="qty-num-input" style="max-width:70px;">
+                  placeholder="${opened}" value="${opened}" class="qty-num-input" style="max-width:70px;">
                 <button class="qty-stepper" onclick="stepQty('opened_${item.id}',1)">＋</button>
                 <span class="qty-unit-display">袋</span>
               </div>
-            </div>
-          </div>
-          <div class="bags-current-info" style="margin-top:8px;">
-            <div class="bags-label">現在の在庫</div>
-            <div class="bags-stock-display">
-              <span class="${low ? 'stock-low' : ''}" style="font-size:16px;font-weight:900;">${qty}</span>
-              <span style="font-size:11px;color:var(--text3);">${item.unit}</span>
-              ${bags > 0 ? `<span style="font-size:11px;color:var(--caramel);margin-left:4px;">未開封${bags}袋</span>` : ''}
-              ${opened > 0 ? `<span style="font-size:11px;color:var(--caramel2);margin-left:4px;">開封${opened}袋</span>` : ''}
             </div>
           </div>
         </div>
@@ -4094,27 +4061,17 @@ function renderStockInput() {
     });
   });
 
-  // メモ欄
   html += `<div style="padding:0 16px 8px;">
     <div class="memo-label">📝 メモ（任意）</div>
-    <input type="text" class="memo-input" id="invNote" placeholder="例：納品確認済み、発注済みなど">
-  </div>`;
-
-  html += `<div class="submit-area">
-    <button class="big-submit-btn" onclick="submitInvTransaction()">✅ 登録する</button>
+    <input type="text" class="memo-input" id="invNote" placeholder="例：豆が少なめ、発注済みなど" value="${lastEntry ? (lastEntry.note||'') : ''}">
+  </div>
+  <div class="submit-area">
+    <button class="big-submit-btn" onclick="submitInvSnapshot()">${hasToday ? '🔄 上書き保存する' : '✅ 保存する'}</button>
   </div>
   <div style="height:40px;"></div>`;
 
   el.innerHTML = html;
-  window._currentIType = 'in';
   window._roastMap = {};
-  window._unitMap = {};
-  // 初期単位セット
-  items.forEach(item => {
-    const u = item.unit || 'g';
-    let init = ['ml','ml'].includes(u) ? u : (u === '個' ? '個' : 'g');
-    window._unitMap[item.id] = init;
-  });
 }
 
 function selRoast(btn, itemId, roast) {
@@ -4153,6 +4110,65 @@ function getStockOpened(store, itemId) {
   const key = itemId + '__opened';
   return (s[store] && s[store][key] != null) ? s[store][key] : 0;
 }
+async function submitInvSnapshot() {
+  const store = currentUser.store || '';
+  const items = getInvItems();
+  const note = (document.getElementById('invNote')?.value || '').trim();
+  const now = new Date();
+  const date = todayStr();
+  const time = now.toTimeString().slice(0,5);
+  const db = getDB();
+  if (!db.invStock) db.invStock = {};
+  if (!db.invStock[store]) db.invStock[store] = {};
+  if (!db.invHistory) db.invHistory = [];
+
+  let updated = 0;
+  items.forEach(item => {
+    const qtyInput = document.getElementById(`qty_${item.id}`);
+    const bagsInput = document.getElementById(`bags_${item.id}`);
+    const openedInput = document.getElementById(`opened_${item.id}`);
+    const qtyVal = parseFloat(qtyInput?.value ?? '') ;
+    const bagsVal = parseFloat(bagsInput?.value ?? '');
+    const openedVal = parseFloat(openedInput?.value ?? '');
+    const bagsKey = item.id + '__bags';
+    const openedKey = item.id + '__opened';
+
+    // 値が入力されていれば上書き保存
+    if (!isNaN(qtyVal)) db.invStock[store][item.id] = Math.max(0, qtyVal);
+    if (!isNaN(bagsVal)) db.invStock[store][bagsKey] = Math.max(0, bagsVal);
+    if (!isNaN(openedVal)) db.invStock[store][openedKey] = Math.max(0, openedVal);
+
+    const histEntry = {
+      id: date + '_' + item.id,  // 同じ日は上書きされるIDにする
+      date, time, store,
+      staff: currentUser.name,
+      itemId: item.id,
+      itemName: item.name,
+      type: 'snapshot',
+      qty: db.invStock[store][item.id] || 0,
+      bags: db.invStock[store][bagsKey] || 0,
+      opened: db.invStock[store][openedKey] || 0,
+      unit: item.unit || '',
+      note
+    };
+    // 同日同商品のhistoryは上書き
+    const existIdx = db.invHistory.findIndex(h => h.id === histEntry.id);
+    if (existIdx >= 0) db.invHistory[existIdx] = histEntry;
+    else db.invHistory.unshift(histEntry);
+    updated++;
+  });
+
+  if (updated === 0) { showToast('商品が登録されていません'); return; }
+  if (db.invHistory.length > 2000) db.invHistory = db.invHistory.slice(0, 2000);
+
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  showToast(`✅ 在庫を保存しました（${updated}品目）`);
+  renderStockInput();
+
+  saveInvToSupabase(db).catch(() => showToast('⚠️ クラウド同期に失敗しました'));
+}
+
 async function submitInvTransaction() {
   const store = currentUser.store || '';
   const items = getInvItems();
