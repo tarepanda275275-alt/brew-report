@@ -408,25 +408,29 @@ body {
   display: flex;
   position: relative;
   margin-bottom: -1px;
+  gap: 2px;
 }
 .login-tab {
   flex: 1;
-  padding: 12px 6px;
+  padding: 10px 2px;
   border: 1px solid rgba(0,0,0,0.12);
   border-bottom: none;
   background: rgba(240,235,224,0.85);
   color: var(--text3);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
   text-align: center;
   transition: all 0.25s;
-  letter-spacing: 0.5px;
+  letter-spacing: 0px;
   border-radius: 14px 14px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.login-tab:first-child { margin-right: 3px; }
-.login-tab:nth-child(2) { margin-right: 3px; }
+.login-tab:first-child { margin-right: 0; }
+.login-tab:nth-child(2) { margin-right: 0; }
 .login-tab.active {
   background: rgba(255,255,255,0.92);
   color: var(--caramel);
@@ -441,7 +445,7 @@ body {
   padding: 28px 24px 24px;
   box-shadow: 0 8px 32px rgba(100,60,20,0.15);
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 .login-label {
   font-size: 11px;
