@@ -4020,14 +4020,17 @@ function renderStockInput() {
       const opened = getStockOpened(store, item.id);
       const low = isLowStock(store, item.id);
 
-      const isBagItem = item.category === 'cup';
+      const isBagItem = item.category === 'cup' || item.category === 'drink';
+      const isDrink = item.category === 'drink';
 
       html += `<div class="inv-item-card ${low ? 'inv-item-card--alert' : ''}">
         <div class="inv-item-card-header">
           <div class="inv-item-card-name">${item.name}</div>
           <div class="inv-item-card-stock ${low ? 'stock-low' : ''}">
             ${isBagItem
-              ? `前回: 使用中<b>${getStockFloor(store, item.id)}</b>${item.unit} 開封済み<b>${opened}</b>${item.unit} 未開封<b>${bags}</b>袋`
+              ? isDrink
+                ? `前回: 使用中<b>${getStockFloorLabel(store, item.id) || getStockFloor(store, item.id) + item.unit}</b> 未開封<b>${bags}</b>袋`
+                : `前回: 使用中<b>${getStockFloor(store, item.id)}</b>${item.unit} 開封済み<b>${opened}</b>${item.unit} 未開封<b>${bags}</b>袋`
               : `前回 <b>${qty} ${item.unit}</b>`}
             ${low ? ' 🚨' : ''}
           </div>
@@ -4047,6 +4050,15 @@ function renderStockInput() {
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div>
               <div class="bags-label">🟡 使用中（${item.unit}）</div>
+              ${isDrink ? `
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+                ${['ほぼ満タン','3/4','1/2','1/4','残りわずか'].map(v => `
+                  <button onclick="selectFloorLevel(this,'floor_${item.id}','total_${item.id}','floor_${item.id}','opened_${item.id}','bags_${item.id}',${item.qtyPerBag||0},'${item.unit}')"
+                    data-label="${v}"
+                    style="padding:5px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface3);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">
+                    ${v}
+                  </button>`).join('')}
+              </div>` : ''}
               <div class="qty-input-row" style="gap:6px;">
                 <button class="qty-stepper" onclick="stepQtyAndCalc('floor_${item.id}','total_${item.id}',-1,${item.qtyPerBag||0})">－</button>
                 <input type="number" id="floor_${item.id}" min="0" inputmode="decimal"
@@ -4056,7 +4068,7 @@ function renderStockInput() {
                 <span class="qty-unit-display">${item.unit}</span>
               </div>
             </div>
-            <div>
+            ${!isDrink ? `<div>
               <div class="bags-label">✂️ 開封済み（${item.unit}）</div>
               <div class="qty-input-row" style="gap:6px;">
                 <button class="qty-stepper" onclick="stepQtyAndCalc('opened_${item.id}','total_${item.id}',-1,${item.qtyPerBag||0})">－</button>
@@ -4066,7 +4078,7 @@ function renderStockInput() {
                 <button class="qty-stepper" onclick="stepQtyAndCalc('opened_${item.id}','total_${item.id}',1,${item.qtyPerBag||0})">＋</button>
                 <span class="qty-unit-display">${item.unit}</span>
               </div>
-            </div>
+            </div>` : `<input type="hidden" id="opened_${item.id}" value="0">`}
             <div>
               <div class="bags-label">📦 未開封（袋数）${item.qtyPerBag ? `<span style="font-size:10px;color:var(--caramel);margin-left:4px;">1袋=${item.qtyPerBag}${item.unit}</span>` : ''}</div>
               <div class="qty-input-row" style="gap:6px;">
@@ -4126,6 +4138,27 @@ function selUnit(btn, itemId) {
   if (disp) disp.textContent = unit;
 }
 
+function selectFloorLevel(btn, inputId, totalId, floorId, openedId, bagsId, qtyPerBag, unit) {
+  // 同じグループのボタンのスタイルをリセット
+  btn.closest('div').querySelectorAll('button').forEach(b => {
+    b.style.background = 'var(--surface3)';
+    b.style.color = 'var(--text2)';
+    b.style.borderColor = 'var(--border2)';
+  });
+  btn.style.background = 'var(--caramel)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--caramel)';
+  // ラベルをinputに入力（テキスト形式で保存）
+  const input = document.getElementById(inputId);
+  if (input) {
+    const labelMap = {'ほぼ満タン': 0.9, '3/4': 0.75, '1/2': 0.5, '1/4': 0.25, '残りわずか': 0.1};
+    // ラベルをそのまま値として使う（表示用）
+    input.dataset.levelLabel = btn.dataset.label;
+    input.value = btn.dataset.label;
+    input.style.fontSize = '11px';
+  }
+  calcTotal3(totalId, floorId, openedId, bagsId, qtyPerBag, unit);
+}
 function stepQty(inputId, delta) {
   const el = document.getElementById(inputId);
   if (!el) return;
@@ -4169,17 +4202,25 @@ function getStockFloor(store, itemId) {
   const key = itemId + '__floor';
   return (s[store] && s[store][key] != null) ? s[store][key] : 0;
 }
+function getStockFloorLabel(store, itemId) {
+  const s = getInvStock();
+  const key = itemId + '__floorLabel';
+  return (s[store] && s[store][key]) || '';
+}
 function calcTotal3(totalId, floorId, openedId, bagsId, qtyPerBag, unit) {
   const el = document.getElementById(totalId);
   if (!el) return;
-  const floor = parseFloat(document.getElementById(floorId)?.value || '0') || 0;
+  const floorEl = document.getElementById(floorId);
+  const floorLabel = floorEl?.dataset.levelLabel || '';
+  const floorVal = parseFloat(floorEl?.value || '0') || 0;
   const opened = parseFloat(document.getElementById(openedId)?.value || '0') || 0;
   const bags = parseFloat(document.getElementById(bagsId)?.value || '0') || 0;
+  const floorDisplay = floorLabel || `${floorVal}${unit}`;
   if (qtyPerBag > 0) {
-    const total = floor + opened + (bags * qtyPerBag);
-    el.innerHTML = `合計 <b>${total} ${unit}</b>（使用中${floor} ＋ 開封済み${opened} ＋ 未開封${bags}袋×${qtyPerBag}）`;
+    const total = floorVal + opened + (bags * qtyPerBag);
+    el.innerHTML = `合計 <b>${total} ${unit}</b>（使用中${floorDisplay} ＋ 開封済み${opened} ＋ 未開封${bags}袋×${qtyPerBag}）`;
   } else {
-    el.innerHTML = `合計 <b>${floor + opened} ${unit}</b> ＋ 未開封 <b>${bags} 袋</b>`;
+    el.innerHTML = `使用中 <b>${floorDisplay}</b> ＋ 未開封 <b>${bags} 袋</b>`;
   }
 }
 async function submitInvSnapshot() {
@@ -4204,14 +4245,17 @@ async function submitInvSnapshot() {
     const bagsVal = parseFloat(bagsInput?.value ?? '');
     const openedVal = parseFloat(openedInput?.value ?? '');
     const floorVal = parseFloat(floorInput?.value ?? '');
+    const floorLabel = floorInput?.dataset.levelLabel || '';
     const bagsKey = item.id + '__bags';
     const openedKey = item.id + '__opened';
     const floorKey = item.id + '__floor';
+    const floorLabelKey = item.id + '__floorLabel';
 
     if (!isNaN(qtyVal)) db.invStock[store][item.id] = Math.max(0, qtyVal);
     if (!isNaN(bagsVal)) db.invStock[store][bagsKey] = Math.max(0, bagsVal);
     if (!isNaN(openedVal)) db.invStock[store][openedKey] = Math.max(0, openedVal);
     if (!isNaN(floorVal)) db.invStock[store][floorKey] = Math.max(0, floorVal);
+    if (floorLabel) db.invStock[store][floorLabelKey] = floorLabel;
 
     const histEntry = {
       id: date + '_' + item.id,
@@ -4224,6 +4268,7 @@ async function submitInvSnapshot() {
       bags: db.invStock[store][bagsKey] || 0,
       opened: db.invStock[store][openedKey] || 0,
       floor: db.invStock[store][floorKey] || 0,
+      floorLabel: db.invStock[store][floorLabelKey] || '',
       unit: item.unit || '',
       note
     };
