@@ -3346,7 +3346,7 @@ select.bean-name-inp option {
     <div class="tab-content active" id="tab-diary-owner"><div id="diaryOwnerContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-board-owner"><div id="boardOwnerContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-tl-owner"><div id="tlOwnerContent" class="page-pad"></div></div>
-    <div class="tab-content" id="tab-export"><div id="exportContent" class="page-pad"></div></div>
+    <div class="tab-content" id="tab-export"><div id="exportContent" class="page-pad"></div><div id="exportExcelContent" class="page-pad"></div></div>
     <div class="tab-content" id="tab-goals"><div id="goalsContent" class="page-pad"></div></div>
     <!-- 旧タブ互換 -->
     <div class="tab-content" id="tab-dashboard"><div id="dashboardContent" class="page-pad"></div></div>
@@ -6024,7 +6024,7 @@ function switchTab(tab) {
   if (tab === 'diary-owner')  renderDiaryOwner();
   if (tab === 'board-owner')  renderBoard('owner');
   if (tab === 'tl-owner')     renderTimeline('owner');
-  if (tab === 'export')       renderItemSettings();
+  if (tab === 'export')       { renderItemSettings(); renderExport(); }
   if (tab === 'goals')        renderAccountSettings();
   // 旧タブ互換
   if (tab === 'dashboard')         renderOwnerDashboard();
@@ -8594,7 +8594,8 @@ function fillMonthlyTable(records) {
 }
 function renderExport() {
   const db = getDB();
-  const el = document.getElementById('exportContent');
+  const el = document.getElementById('exportExcelContent');
+  if (!el) return;
   el.innerHTML = `
     <div class="sec-title">📤 Excelで出力</div>
     <div class="export-grid">
