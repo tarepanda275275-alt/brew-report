@@ -3417,6 +3417,7 @@ async function _loadUsersFromSupabase() {
         role:  d.role  || 'staff',
         store: d.store || '',
         photo: d.photo || null,
+        color: d.color || null,
       };
     });
   } catch(e) {
@@ -4019,11 +4020,15 @@ function renderStockInput() {
       const opened = getStockOpened(store, item.id);
       const low = isLowStock(store, item.id);
 
+      const isBagItem = item.category !== 'coffee' && item.category !== 'food';
+
       html += `<div class="inv-item-card ${low ? 'inv-item-card--alert' : ''}">
         <div class="inv-item-card-header">
           <div class="inv-item-card-name">${item.name}</div>
           <div class="inv-item-card-stock ${low ? 'stock-low' : ''}">
-            前回: 使用中<b>${getStockFloor(store, item.id)}</b> 開封済み<b>${opened}</b> 未開封<b>${bags}</b>袋
+            ${isBagItem
+              ? `前回: 使用中<b>${getStockFloor(store, item.id)}</b>${item.unit} 開封済み<b>${opened}</b>${item.unit} 未開封<b>${bags}</b>袋`
+              : `前回 <b>${qty} ${item.unit}</b>`}
             ${low ? ' 🚨' : ''}
           </div>
         </div>
@@ -4037,6 +4042,7 @@ function renderStockInput() {
             <span class="qty-unit-display">${item.unit}</span>
           </div>
         </div>
+        ${isBagItem ? `
         <div class="bags-block">
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div>
@@ -4085,7 +4091,7 @@ function renderStockInput() {
               }
             })()}
           </div>
-        </div>
+        </div>` : ''}
       </div>`;
     });
   });
