@@ -3212,6 +3212,7 @@ select.bean-name-inp option {
     <div class="login-tabs">
       <button class="login-tab active" id="ltab-staff" onclick="switchLoginTab('staff')">👤 スタッフ</button>
       <button class="login-tab" id="ltab-new" onclick="switchLoginTab('new')">✨ 新規登録</button>
+      <button class="login-tab" id="ltab-reset" onclick="switchLoginTab('reset')">🔑 PW変更</button>
       <button class="login-tab" id="ltab-owner" onclick="switchLoginTab('owner')">🔐 管理者</button>
     </div>
     <!-- STAFF LOGIN panel -->
@@ -3254,6 +3255,20 @@ select.bean-name-inp option {
       <span class="login-label">管理者承認コード</span>
       <input type="password" class="login-input" id="newOwnerCode" placeholder="管理者から聞いてください">
       <button class="login-btn" onclick="doCreateAccount()">アカウントを作成する →</button>
+      <div class="owner-hint">承認コードは管理者に確認してください</div>
+    </div>
+    <!-- PASSWORD RESET panel -->
+    <div class="login-card" id="loginPanelReset" style="display:none;">
+      <div class="new-acct-banner">🔑 パスワード変更</div>
+      <span class="login-label">ID（名前）</span>
+      <input type="text" class="login-input" id="resetName" placeholder="自分のIDを入力" autocomplete="off">
+      <span class="login-label">新しいパスワード（4文字以上）</span>
+      <input type="password" class="login-input" id="resetNewPass" placeholder="新しいパスワード" autocomplete="off">
+      <span class="login-label">新しいパスワード（確認）</span>
+      <input type="password" class="login-input" id="resetNewPass2" placeholder="もう一度入力" autocomplete="off">
+      <span class="login-label">承認コード</span>
+      <input type="password" class="login-input" id="resetCode" placeholder="管理者から聞いてください">
+      <button class="login-btn" onclick="doResetPassword()">パスワードを変更する →</button>
       <div class="owner-hint">承認コードは管理者に確認してください</div>
     </div>
     <!-- OWNER LOGIN panel -->
@@ -3947,6 +3962,7 @@ function renderStockInput() {
     catItems.forEach(item => {
       const qty = getStockQty(store, item.id);
       const bags = getStockBags(store, item.id);
+      const opened = getStockOpened(store, item.id);
       const low = isLowStock(store, item.id);
       const isCoffee = item.category === 'coffee' && item.name.includes('豆');
       const defaultUnit = item.unit || 'g';
@@ -4003,13 +4019,24 @@ function renderStockInput() {
                 <span class="qty-unit-display">袋</span>
               </div>
             </div>
-            <div class="bags-current-info">
-              <div class="bags-label">現在の在庫</div>
-              <div class="bags-stock-display">
-                <span class="${low ? 'stock-low' : ''}" style="font-size:16px;font-weight:900;">${qty}</span>
-                <span style="font-size:11px;color:var(--text3);">${item.unit}</span>
-                ${bags > 0 ? `<span style="font-size:11px;color:var(--caramel);margin-left:4px;">+ 未開封${bags}袋</span>` : ''}
+            <div>
+              <div class="bags-label">✂️ 開封済み（袋数）</div>
+              <div class="qty-input-row" style="gap:6px;">
+                <button class="qty-stepper" onclick="stepQty('opened_${item.id}',-1)">－</button>
+                <input type="number" id="opened_${item.id}" min="0" inputmode="numeric"
+                  placeholder="0" class="qty-num-input" style="max-width:70px;">
+                <button class="qty-stepper" onclick="stepQty('opened_${item.id}',1)">＋</button>
+                <span class="qty-unit-display">袋</span>
               </div>
+            </div>
+          </div>
+          <div class="bags-current-info" style="margin-top:8px;">
+            <div class="bags-label">現在の在庫</div>
+            <div class="bags-stock-display">
+              <span class="${low ? 'stock-low' : ''}" style="font-size:16px;font-weight:900;">${qty}</span>
+              <span style="font-size:11px;color:var(--text3);">${item.unit}</span>
+              ${bags > 0 ? `<span style="font-size:11px;color:var(--caramel);margin-left:4px;">未開封${bags}袋</span>` : ''}
+              ${opened > 0 ? `<span style="font-size:11px;color:var(--caramel2);margin-left:4px;">開封${opened}袋</span>` : ''}
             </div>
           </div>
         </div>
@@ -4070,6 +4097,12 @@ function getStockBags(store, itemId) {
   const key = itemId + '__bags';
   return (s[store] && s[store][key] != null) ? s[store][key] : 0;
 }
+// 開封済み袋数の取得
+function getStockOpened(store, itemId) {
+  const s = getInvStock();
+  const key = itemId + '__opened';
+  return (s[store] && s[store][key] != null) ? s[store][key] : 0;
+}
 async function submitInvTransaction() {
   const store = currentUser.store || '';
   const items = getInvItems();
@@ -4087,19 +4120,23 @@ async function submitInvTransaction() {
   items.forEach(item => {
     const input = document.getElementById(`qty_${item.id}`);
     const bagsInput = document.getElementById(`bags_${item.id}`);
+    const openedInput = document.getElementById(`opened_${item.id}`);
     const rawVal = parseFloat(input?.value || '0') || 0;
     const bagsVal = parseFloat(bagsInput?.value || '0') || 0;
+    const openedVal = parseFloat(openedInput?.value || '0') || 0;
     const unit = (window._unitMap && window._unitMap[item.id]) || item.unit || 'g';
     const roast = (window._roastMap && window._roastMap[item.id]) || '';
     const bagsKey = item.id + '__bags';
+    const openedKey = item.id + '__opened';
 
-    if (rawVal <= 0 && bagsVal <= 0) return;
+    if (rawVal <= 0 && bagsVal <= 0 && openedVal <= 0) return;
 
     // 単位がgでなく袋の場合、1袋を既定量に換算（仮：1袋=200g、ユーザーがメモで管理）
     let qtyInUnit = rawVal;
 
     const cur = db.invStock[store][item.id] || 0;
     const curBags = db.invStock[store][bagsKey] || 0;
+    const curOpened = db.invStock[store][openedKey] || 0;
 
     if (rawVal > 0) {
       if (type === 'in') db.invStock[store][item.id] = cur + qtyInUnit;
@@ -4113,6 +4150,12 @@ async function submitInvTransaction() {
       else db.invStock[store][bagsKey] = bagsVal;
     }
 
+    if (openedVal > 0) {
+      if (type === 'in') db.invStock[store][openedKey] = curOpened + openedVal;
+      else if (type === 'use') db.invStock[store][openedKey] = Math.max(0, curOpened - openedVal);
+      else db.invStock[store][openedKey] = openedVal;
+    }
+
     const histEntry = {
       id: Date.now() + '_' + item.id,
       date, time, store,
@@ -4122,10 +4165,12 @@ async function submitInvTransaction() {
       type,
       qty: rawVal,
       bags: bagsVal,
+      opened: openedVal,
       unit,
       roast,
       afterQty: db.invStock[store][item.id],
       afterBags: db.invStock[store][bagsKey] || 0,
+      afterOpened: db.invStock[store][openedKey] || 0,
       note
     };
     db.invHistory.unshift(histEntry);
@@ -4209,6 +4254,7 @@ function renderMyStock() {
     catItems.forEach(item => {
       const qty = getStockQty(store, item.id);
       const bags = getStockBags(store, item.id);
+      const opened = getStockOpened(store, item.id);
       const low = isLowStock(store, item.id);
       const thr = item.alertThreshold && item.alertThreshold[store];
       const pct = thr > 0 ? Math.min(100, Math.round((qty / (thr * 3)) * 100)) : 50;
@@ -4219,7 +4265,8 @@ function renderMyStock() {
           <div class="stock-view-name">${item.name}</div>
           <div class="stock-view-qty ${low ? 'qty-alert' : ''}">${qty} <span class="stock-view-unit">${item.unit}</span></div>
         </div>
-        ${bags > 0 ? `<div class="stock-bags-row">＋ 未開封 <b>${bags}</b> 袋</div>` : ''}
+        ${bags > 0 ? `<div class="stock-bags-row">📦 未開封 <b>${bags}</b> 袋</div>` : ''}
+        ${opened > 0 ? `<div class="stock-bags-row" style="color:var(--caramel2);">✂️ 開封済み <b>${opened}</b> 袋</div>` : ''}
         <div class="stock-bar-row">
           <div class="stock-prog-bar"><div class="stock-prog-fill" style="width:${pct}%;background:${barColor};"></div></div>
           <span class="stock-thr-label">アラート: ${thr ?? '-'} ${item.unit}</span>
@@ -5391,14 +5438,49 @@ function renderAccountSettings() {
 // ===== グローバル変数（2番目の宣言は除去済み） =====
 function getDB() { return loadDB(); }
 function switchLoginTab(mode) {
-  ['staff','new','owner'].forEach(m => {
+  ['staff','new','reset','owner'].forEach(m => {
     const t = document.getElementById(`ltab-${m}`);
     if (t) t.classList.toggle('active', m === mode || (m === 'owner' && mode === 'owner-new'));
   });
   document.getElementById('loginPanelStaff').style.display    = mode === 'staff'     ? 'block' : 'none';
   document.getElementById('loginPanelNew').style.display      = mode === 'new'       ? 'block' : 'none';
+  document.getElementById('loginPanelReset').style.display    = mode === 'reset'     ? 'block' : 'none';
   document.getElementById('loginPanelOwner').style.display    = mode === 'owner'     ? 'block' : 'none';
   document.getElementById('loginPanelOwnerNew').style.display = mode === 'owner-new' ? 'block' : 'none';
+}
+
+async function doResetPassword() {
+  const name = document.getElementById('resetName').value.trim();
+  const newPass = document.getElementById('resetNewPass').value;
+  const newPass2 = document.getElementById('resetNewPass2').value;
+  const code = document.getElementById('resetCode').value.trim();
+  if (!name) { showToast('IDを入力してください'); return; }
+  if (newPass.length < 4) { showToast('パスワードは4文字以上にしてください'); return; }
+  if (newPass !== newPass2) { showToast('パスワードが一致しません'); return; }
+  showLoadingOverlay(true);
+  const db = await loadDBFromSupabase();
+  _db_cache = db;
+  showLoadingOverlay(false);
+  const registerCode = db.registerCode || REGISTER_CODE;
+  if (code !== registerCode) { showToast('承認コードが違います。管理者に確認してください'); return; }
+  const user = (db.users || []).find(u => u.name === name || u.id === name);
+  if (!user) { showToast('IDが見つかりません'); return; }
+  user.pass = newPass;
+  showLoadingOverlay(true);
+  try {
+    await _upsertUserToSupabase(user);
+    _db_cache = db;
+    showLoadingOverlay(false);
+    showToast('✅ パスワードを変更しました！ログインしてください');
+    document.getElementById('resetName').value = '';
+    document.getElementById('resetNewPass').value = '';
+    document.getElementById('resetNewPass2').value = '';
+    document.getElementById('resetCode').value = '';
+    switchLoginTab('staff');
+  } catch(e) {
+    showLoadingOverlay(false);
+    showToast('⚠️ 変更に失敗しました: ' + e.message);
+  }
 }
 async function doCreateOwnerAccount() {
   const name = document.getElementById('newOwnerName').value.trim();
