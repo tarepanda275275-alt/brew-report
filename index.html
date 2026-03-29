@@ -3241,17 +3241,6 @@ select.bean-name-inp option {
         <option value="2号店秋田">2号店 秋田</option>
         <option value="3号店横手">3号店 横手</option>
       </select>
-      <span class="login-label">プロフィール写真（任意）</span>
-      <div class="photo-upload-wrap" onclick="document.getElementById('photoFileInput').click()">
-        <div class="photo-preview-circle" id="photoPreview">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="16" r="7" fill="#7A5A3A" opacity="0.6"/>
-            <path d="M6 34 Q6 26 20 26 Q34 26 34 34" fill="#7A5A3A" opacity="0.6"/>
-          </svg>
-          <div class="photo-upload-hint">タップして写真を選ぶ</div>
-        </div>
-        <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoSelect(this)">
-      </div>
       <span class="login-label" style="margin-top:10px;">パスワード（4文字以上）</span>
       <input type="password" class="login-input" id="newPass" placeholder="自分で決めてください" autocomplete="off">
       <span class="login-label">パスワード（確認）</span>
@@ -5535,13 +5524,16 @@ function handlePhotoSelect(input) {
   reader.readAsDataURL(file);
 }
 function avatarHtml(user, size = 36) {
-  if (user.photo) {
-    return `<img src="${user.photo}" class="chip-avatar" style="width:${size}px;height:${size}px;" alt="${user.name}">`;
-  }
   const initials = user.name ? user.name.trim()[0] : '?';
-  const colors = ['#C8833A','#4A90C8','#5DB87A','#D4A843','#8B5A2B'];
-  const colorIdx = user.name ? user.name.charCodeAt(0) % colors.length : 0;
-  return `<div class="chip-avatar-placeholder" style="width:${size}px;height:${size}px;background:${colors[colorIdx]};color:#1A0F08;font-size:${Math.round(size*0.45)}px;font-weight:900;">${initials}</div>`;
+  const colors = [
+    '#C8833A','#4A90C8','#5DB87A','#C85A8A','#8B5AC8',
+    '#C8C03A','#5AB8C8','#C87A5A','#5A8BC8','#7AC85A'
+  ];
+  // 名前の全文字コードを合計してカラーを決定（かぶりにくい）
+  const charSum = user.name ? [...user.name].reduce((s,c) => s + c.charCodeAt(0), 0) : 0;
+  const colorIdx = charSum % colors.length;
+  const bg = colors[colorIdx];
+  return `<div class="chip-avatar-placeholder" style="width:${size}px;height:${size}px;background:${bg};color:#fff;font-size:${Math.round(size*0.45)}px;font-weight:900;display:flex;align-items:center;justify-content:center;border-radius:50%;">${initials}</div>`;
 }
 function buildLoginChips() {
   const db = getDB();
@@ -5591,15 +5583,16 @@ function quickLogin(name) {
 function renderHeaderAvatar(user) {
   const el = document.getElementById('hdrAvatar');
   if (!el) return;
-  if (user.photo) {
-    el.innerHTML = `<img src="${user.photo}" class="hdr-avatar-img" alt="${user.name}">`;
-    el.style.background = 'none';
-    el.style.padding = '0';
-  } else {
-    const initials = user.name ? user.name.trim()[0] : '?';
-    el.textContent = initials;
-    el.style.background = 'var(--caramel)';
-  }
+  const colors = [
+    '#C8833A','#4A90C8','#5DB87A','#C85A8A','#8B5AC8',
+    '#C8C03A','#5AB8C8','#C87A5A','#5A8BC8','#7AC85A'
+  ];
+  const charSum = user.name ? [...user.name].reduce((s,c) => s + c.charCodeAt(0), 0) : 0;
+  const bg = colors[charSum % colors.length];
+  const initials = user.name ? user.name.trim()[0] : '?';
+  el.textContent = initials;
+  el.style.background = bg;
+  el.style.padding = '';
 }
 async function doLogin() {
   const name = document.getElementById('nameInput').value.trim();
@@ -5673,7 +5666,7 @@ async function doCreateAccount() {
   showLoadingOverlay(false);
   if (code !== (db.registerCode || REGISTER_CODE)) { showToast('承認コードが違います。管理者に確認してください'); return; }
   if ((db.users || []).find(u => u.name === name)) { showToast('その名前はすでに使われています'); return; }
-  const newUser = { name, id: name, pass, role: 'staff', store, photo: pendingPhotoDataUrl || null };
+  const newUser = { name, id: name, pass, role: 'staff', store, photo: null };
   showLoadingOverlay(true);
   try {
     await _upsertUserToSupabase(newUser);
