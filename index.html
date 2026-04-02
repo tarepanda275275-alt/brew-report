@@ -7762,9 +7762,9 @@ function setEpFilter(store) {
 }
 
 // =====================
-// TIMELINE
+// TIMELINE (旧BrewReport用・未使用)
 // =====================
-function renderTimeline(tabId) {
+function renderTimelineLegacy(tabId) {
   const contentId = tabId === 'timeline-owner' ? 'timelineOwnerContent' : 'timelineContent';
   const el = document.getElementById(contentId);
   if (!el) return;
