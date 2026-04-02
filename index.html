@@ -5552,16 +5552,16 @@ async function updateItemThreshold(itemId, store, val) {
 
 async function showAlertThresholdModal(store) {
   // 最新のinvItemsをSupabaseから取得
+  let items = getInvItems();
   try {
     const config = await _loadConfig();
     if (config && config.invItems && config.invItems.length > 0) {
       const db = getDB();
       db.invItems = config.invItems;
       _db_cache = db;
+      items = config.invItems;
     }
   } catch(e) { console.warn('invItems reload failed:', e); }
-
-  const items = getInvItems();
   const modal = document.createElement('div');
   modal.id = 'alertThreshModal';
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);display:flex;align-items:flex-end;justify-content:center;';
