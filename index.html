@@ -4020,19 +4020,60 @@ function renderStockInput() {
 
       const isBagItem = item.category === 'cup' || item.category === 'drink';
       const isDrink = item.category === 'drink';
+      const isCoffee = item.category === 'coffee';
+      const ROASTS = ['浅煎り','中煎り','中深煎り','深煎り'];
+
+      // 煎り具合ごとの既存在庫を取得
+      const roastStocks = isCoffee ? ROASTS.map(r => {
+        const key = item.id + '__roast__' + r;
+        const s = getInvStock();
+        return { roast: r, qty: (s[store] && s[store][key] != null) ? s[store][key] : 0 };
+      }).filter(r => r.qty > 0) : [];
+
+      // 追加済み煎り具合の入力欄（初期表示用）
+      const initRoasts = isCoffee ? (roastStocks.length > 0 ? roastStocks : [{ roast: '浅煎り', qty: 0 }]) : [];
 
       html += `<div class="inv-item-card ${low ? 'inv-item-card--alert' : ''}">
         <div class="inv-item-card-header">
           <div class="inv-item-card-name">${item.name}</div>
           <div class="inv-item-card-stock ${low ? 'stock-low' : ''}">
-            ${isBagItem
-              ? isDrink
-                ? `前回: 使用中<b>${getStockFloorLabel(store, item.id) || getStockFloor(store, item.id) + item.unit}</b> 未開封<b>${bags}</b>袋`
-                : `前回: 使用中<b>${getStockFloor(store, item.id)}</b>${item.unit} 開封済み<b>${opened}</b>${item.unit} 未開封<b>${bags}</b>袋`
-              : `前回 <b>${qty} ${item.unit}</b>`}
+            ${isCoffee
+              ? roastStocks.length > 0
+                ? roastStocks.map(r => `${r.roast}: <b>${r.qty}${item.unit}</b>`).join('・')
+                : `前回 <b>${qty} ${item.unit}</b>`
+              : isBagItem
+                ? isDrink
+                  ? `前回: 使用中<b>${getStockFloorLabel(store, item.id) || getStockFloor(store, item.id) + item.unit}</b> 未開封<b>${bags}</b>袋`
+                  : `前回: 使用中<b>${getStockFloor(store, item.id)}</b>${item.unit} 開封済み<b>${opened}</b>${item.unit} 未開封<b>${bags}</b>袋`
+                : `前回 <b>${qty} ${item.unit}</b>`}
             ${low ? ' 🚨' : ''}
           </div>
         </div>
+
+        ${isCoffee ? `
+        <div class="qty-block" id="roast_block_${item.id}">
+          ${initRoasts.map((r, idx) => `
+          <div class="roast-entry" id="roast_entry_${item.id}_${idx}" style="margin-bottom:10px;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+              ${ROASTS.map(rv => `<button onclick="selectRoastBtn(this,'${item.id}',${idx})"
+                data-roast="${rv}"
+                style="padding:5px 10px;border-radius:20px;border:1px solid var(--border2);background:${rv===r.roast?'var(--caramel)':'var(--surface3)'};color:${rv===r.roast?'#fff':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${rv}</button>`).join('')}
+            </div>
+            <div class="qty-input-row">
+              <button class="qty-stepper" onclick="stepQty('roast_qty_${item.id}_${idx}',-1)">－</button>
+              <input type="number" id="roast_qty_${item.id}_${idx}" min="0" inputmode="decimal"
+                data-roast="${r.roast}" placeholder="0" value="${r.qty}" class="qty-num-input">
+              <button class="qty-stepper" onclick="stepQty('roast_qty_${item.id}_${idx}',1)">＋</button>
+              <span class="qty-unit-display">${item.unit}</span>
+              ${idx > 0 ? `<button onclick="removeRoastEntry('${item.id}',${idx})" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:0 4px;">✕</button>` : ''}
+            </div>
+          </div>`).join('')}
+          <button onclick="addRoastEntry('${item.id}','${item.unit}')" style="padding:6px 14px;border-radius:20px;border:1px dashed var(--border2);background:transparent;color:var(--caramel);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">＋ 煎り具合を追加</button>
+        </div>
+        <div style="padding:0 2px;">
+          <div class="memo-label" style="font-size:11px;">📦 メモ欄（任意）</div>
+          <input type="text" id="coffee_note_${item.id}" class="memo-input" placeholder="例：キリマン残り少なめ" style="font-size:12px;padding:8px 10px;">
+        </div>` : `
         <div class="qty-block">
           <div class="qty-block-label">残量（${item.unit}）</div>
           <div class="qty-input-row">
@@ -4042,7 +4083,8 @@ function renderStockInput() {
             <button class="qty-stepper" onclick="stepQty('qty_${item.id}',1)">＋</button>
             <span class="qty-unit-display">${item.unit}</span>
           </div>
-        </div>
+        </div>`}
+
         ${isBagItem ? `
         <div class="bags-block">
           <div style="display:flex;flex-direction:column;gap:10px;">
@@ -4157,6 +4199,52 @@ function selectFloorLevel(btn, inputId, totalId, floorId, openedId, bagsId, qtyP
   }
   calcTotal3(totalId, floorId, openedId, bagsId, qtyPerBag, unit);
 }
+function selectRoastBtn(btn, itemId, idx) {
+  const container = btn.closest('.roast-entry');
+  container.querySelectorAll('button[data-roast]').forEach(b => {
+    b.style.background = 'var(--surface3)';
+    b.style.color = 'var(--text2)';
+  });
+  btn.style.background = 'var(--caramel)';
+  btn.style.color = '#fff';
+  const input = document.getElementById(`roast_qty_${itemId}_${idx}`);
+  if (input) input.dataset.roast = btn.dataset.roast;
+}
+
+function addRoastEntry(itemId, unit) {
+  const block = document.getElementById(`roast_block_${itemId}`);
+  if (!block) return;
+  const entries = block.querySelectorAll('.roast-entry');
+  const idx = entries.length;
+  const ROASTS = ['浅煎り','中煎り','中深煎り','深煎り'];
+  const div = document.createElement('div');
+  div.className = 'roast-entry';
+  div.id = `roast_entry_${itemId}_${idx}`;
+  div.style.marginBottom = '10px';
+  div.innerHTML = `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+      ${ROASTS.map((rv,i) => `<button onclick="selectRoastBtn(this,'${itemId}',${idx})"
+        data-roast="${rv}"
+        style="padding:5px 10px;border-radius:20px;border:1px solid var(--border2);background:${i===0?'var(--caramel)':'var(--surface3)'};color:${i===0?'#fff':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${rv}</button>`).join('')}
+    </div>
+    <div class="qty-input-row">
+      <button class="qty-stepper" onclick="stepQty('roast_qty_${itemId}_${idx}',-1)">－</button>
+      <input type="number" id="roast_qty_${itemId}_${idx}" min="0" inputmode="decimal"
+        data-roast="浅煎り" placeholder="0" value="0" class="qty-num-input">
+      <button class="qty-stepper" onclick="stepQty('roast_qty_${itemId}_${idx}',1)">＋</button>
+      <span class="qty-unit-display">${unit}</span>
+      <button onclick="removeRoastEntry('${itemId}',${idx})" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:0 4px;">✕</button>
+    </div>`;
+  // 追加ボタンの前に挿入
+  const addBtn = block.querySelector('button[onclick^="addRoastEntry"]');
+  block.insertBefore(div, addBtn);
+}
+
+function removeRoastEntry(itemId, idx) {
+  const entry = document.getElementById(`roast_entry_${itemId}_${idx}`);
+  if (entry) entry.remove();
+}
+
 function stepQty(inputId, delta) {
   const el = document.getElementById(inputId);
   if (!el) return;
@@ -4248,6 +4336,45 @@ async function submitInvSnapshot() {
     const openedKey = item.id + '__opened';
     const floorKey = item.id + '__floor';
     const floorLabelKey = item.id + '__floorLabel';
+
+    // 煎り具合別在庫（coffeeカテゴリ）
+    if (item.category === 'coffee') {
+      const block = document.getElementById(`roast_block_${item.id}`);
+      if (block) {
+        const entries = block.querySelectorAll('.roast-entry');
+        let totalQty = 0;
+        const roastData = [];
+        entries.forEach((entry, idx) => {
+          const input = document.getElementById(`roast_qty_${item.id}_${idx}`);
+          if (!input) return;
+          const roast = input.dataset.roast || '浅煎り';
+          const val = parseFloat(input.value || '0') || 0;
+          const roastKey = item.id + '__roast__' + roast;
+          db.invStock[store][roastKey] = val;
+          totalQty += val;
+          roastData.push({ roast, qty: val });
+        });
+        db.invStock[store][item.id] = totalQty;
+        const coffeeNote = document.getElementById(`coffee_note_${item.id}`)?.value || '';
+        const histEntry = {
+          id: date + '_' + item.id,
+          date, time, store,
+          staff: currentUser.name,
+          itemId: item.id,
+          itemName: item.name,
+          type: 'snapshot',
+          qty: totalQty,
+          roastData,
+          unit: item.unit || '',
+          note: coffeeNote
+        };
+        const existIdx = db.invHistory.findIndex(h => h.id === histEntry.id);
+        if (existIdx >= 0) db.invHistory[existIdx] = histEntry;
+        else db.invHistory.unshift(histEntry);
+        updated++;
+        return;
+      }
+    }
 
     if (!isNaN(qtyVal)) db.invStock[store][item.id] = Math.max(0, qtyVal);
     if (!isNaN(bagsVal)) db.invStock[store][bagsKey] = Math.max(0, bagsVal);
