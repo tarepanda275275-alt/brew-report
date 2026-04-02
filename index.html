@@ -6485,11 +6485,19 @@ function renderTimeline(role) {
     date: d.date, store: d.store, staff: d.staff, data: d,
   }));
 
-  // 在庫入出庫 → TLアイテム化
-  const stockItems = hist.slice(0, 300).map(h => ({
-    type: 'stock', ts: h.date + 'T' + (h.time || '00:00') + ':00',
-    date: h.date, store: h.store, staff: h.staff, data: h,
-  }));
+  // 在庫履歴は店舗×日付×スタッフでまとめて1件だけ表示
+  const stockSeen = new Set();
+  const stockItems = hist.slice(0, 500).reduce((acc, h) => {
+    const key = `${h.store}__${h.date}__${h.staff}`;
+    if (!stockSeen.has(key)) {
+      stockSeen.add(key);
+      acc.push({
+        type: 'stock', ts: h.date + 'T' + (h.time || '00:00') + ':00',
+        date: h.date, store: h.store, staff: h.staff, data: h,
+      });
+    }
+    return acc;
+  }, []);
 
   // 合体・降順ソート・最新100件
   const all = [...diaryItems, ...stockItems]
@@ -6534,34 +6542,24 @@ function renderTimeline(role) {
             <span class="tl-staff">${item.staff}</span>
             <span class="tl-badge tl-badge-diary">日誌</span>
           </div>
-          ${sections.slice(0,2).map(s => `
+          ${sections.length > 0 ? sections.map(s => `
             <div class="tl-section">
               <span class="tl-section-icon">${s.icon}</span>
               <div class="tl-section-text">${escHtml(s.val).replace(/<br>/g,' ')}</div>
-            </div>`).join('')}
-          ${sections.length > 2 ? `<div class="tl-more">他 ${sections.length-2} 件…</div>` : ''}
+            </div>`).join('') : '<div style="font-size:12px;color:var(--text3);">内容なし</div>'}
         </div>
       </div>`;
     } else {
       const h = item.data;
-      const typeIcon  = {in:'📦', use:'📤', adjust:'🔧'}[h.type] || '?';
-      const typeLabel = {in:'入庫', use:'使用', adjust:'修正'}[h.type] || '';
-      const typeColor = {in:'var(--success)', use:'var(--warning)', adjust:'var(--info)'}[h.type];
-      const item2 = items.find(i => i.id === h.itemId);
       html += `<div class="tl-item">
-        <div class="tl-dot" style="background:${col};"></div>
+        <div class="tl-dot" style="background:${col};opacity:0.5;"></div>
         <div class="tl-body">
           <div class="tl-meta">
             <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
             <span class="tl-staff">${item.staff}</span>
-            <span class="tl-badge" style="background:${typeColor}20;color:${typeColor};">${typeIcon} ${typeLabel}</span>
+            <span class="tl-badge" style="background:rgba(200,131,58,0.1);color:var(--caramel);">📦 在庫入力</span>
           </div>
-          <div class="tl-stock-row">
-            <span class="tl-stock-name">${h.itemName}</span>
-            <span class="tl-stock-qty" style="color:${typeColor};">${h.type==='in'?'+':''}${h.type==='use'?'-':''}${h.qty} ${item2?.unit||''}</span>
-            <span class="tl-stock-time">${h.time || ''}</span>
-          </div>
-          ${h.note ? `<div class="tl-note">📝 ${escHtml(h.note)}</div>` : ''}
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;">${h.time || ''} に在庫を更新しました${h.note ? `・📝 ${escHtml(h.note)}` : ''}</div>
         </div>
       </div>`;
     }
