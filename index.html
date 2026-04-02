@@ -4042,9 +4042,14 @@ function renderStockInput() {
                 ? roastStocks.map(r => `${r.roast}: <b>${r.qty}${item.unit}</b>`).join('・')
                 : `前回 <b>${qty} ${item.unit}</b>`
               : isBagItem
-                ? isDrink
-                  ? `前回: 使用中<b>${getStockFloorLabel(store, item.id) || getStockFloor(store, item.id) + item.unit}</b> 未開封<b>${bags}</b>袋`
-                  : `前回: 使用中<b>${getStockFloor(store, item.id)}</b>${item.unit} 開封済み<b>${opened}</b>${item.unit} 未開封<b>${bags}</b>袋`
+                ? (() => {
+                    const floor = getStockFloor(store, item.id);
+                    const qpb = item.qtyPerBag || 0;
+                    const total = floor + opened + (bags * qpb);
+                    return isDrink
+                      ? `前回: 店頭<b>${getStockFloorLabel(store, item.id) || floor + item.unit}</b> 未開封<b>${bags}</b>袋`
+                      : `前回の合計: <b>${total} ${item.unit}</b>（店頭${floor} 開封済み${opened} 未開封${bags}袋）`;
+                  })()
                 : `前回 <b>${qty} ${item.unit}</b>`}
             ${low ? ' 🚨' : ''}
           </div>
@@ -4073,23 +4078,11 @@ function renderStockInput() {
         <div style="padding:0 2px;">
           <div class="memo-label" style="font-size:11px;">📦 メモ欄（任意）</div>
           <input type="text" id="coffee_note_${item.id}" class="memo-input" placeholder="例：キリマン残り少なめ" style="font-size:12px;padding:8px 10px;">
-        </div>` : `
-        <div class="qty-block">
-          <div class="qty-block-label">残量（${item.unit}）</div>
-          <div class="qty-input-row">
-            <button class="qty-stepper" onclick="stepQty('qty_${item.id}',-1)">－</button>
-            <input type="number" id="qty_${item.id}" min="0" inputmode="decimal"
-              placeholder="${qty}" value="${qty}" class="qty-num-input">
-            <button class="qty-stepper" onclick="stepQty('qty_${item.id}',1)">＋</button>
-            <span class="qty-unit-display">${item.unit}</span>
-          </div>
-        </div>`}
-
-        ${isBagItem ? `
+        </div>` : isBagItem ? `
         <div class="bags-block">
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div>
-              <div class="bags-label">🟡 使用中（${item.unit}）</div>
+              <div class="bags-label">🏪 店頭（${item.unit}）</div>
               ${isDrink ? `
               <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
                 ${['ほぼ満タン','3/4','1/2','1/4','残りわずか'].map(v => `
@@ -4120,7 +4113,7 @@ function renderStockInput() {
               </div>
             </div>` : `<input type="hidden" id="opened_${item.id}" value="0">`}
             <div>
-              <div class="bags-label">📦 未開封（袋数）${item.qtyPerBag ? `<span style="font-size:10px;color:var(--caramel);margin-left:4px;">1袋=${item.qtyPerBag}${item.unit}</span>` : ''}</div>
+              <div class="bags-label">📦 未開封（袋数）${item.qtyPerBag ? `<span style="font-size:10px;color:var(--caramel);margin-left:4px;">1袋=${item.qtyPerBag}${item.unit}</span>` : `<span style="font-size:10px;color:var(--text3);margin-left:4px;">※設定タブで1袋入数を設定できます</span>`}</div>
               <div class="qty-input-row" style="gap:6px;">
                 <button class="qty-stepper" onclick="stepQtyAndCalc('bags_${item.id}','total_${item.id}',-1,${item.qtyPerBag||0})">－</button>
                 <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
@@ -4137,13 +4130,23 @@ function renderStockInput() {
               const qpb = item.qtyPerBag || 0;
               const total = floor + opened + (bags * qpb);
               if (qpb > 0) {
-                return `合計 <b>${total} ${item.unit}</b>（使用中${floor} ＋ 開封済み${opened} ＋ 未開封${bags}袋×${qpb}）`;
+                return `合計 <b>${total} ${item.unit}</b>（店頭${floor} ＋ 開封済み${opened} ＋ 未開封${bags}袋×${qpb}）`;
               } else {
                 return `合計 <b>${floor + opened} ${item.unit}</b> ＋ 未開封 <b>${bags} 袋</b>`;
               }
             })()}
           </div>
-        </div>` : ''}
+        </div>` : `
+        <div class="qty-block">
+          <div class="qty-block-label">残量（${item.unit}）</div>
+          <div class="qty-input-row">
+            <button class="qty-stepper" onclick="stepQty('qty_${item.id}',-1)">－</button>
+            <input type="number" id="qty_${item.id}" min="0" inputmode="decimal"
+              placeholder="${qty}" value="${qty}" class="qty-num-input">
+            <button class="qty-stepper" onclick="stepQty('qty_${item.id}',1)">＋</button>
+            <span class="qty-unit-display">${item.unit}</span>
+          </div>
+        </div>`}
       </div>`;
     });
   });
