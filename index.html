@@ -5832,6 +5832,16 @@ async function doLogin() {
     const user = users.find(u => u.role === 'staff' && (u.name === name || u.id === name) && u.pass === pass);
     if (!user) { showToast('名前またはパスワードが違います'); return; }
     currentUser = user;
+    // ★ invItemsをSupabaseから取得してキャッシュ更新
+    try {
+      const config = await _loadConfig();
+      if (config && config.invItems && config.invItems.length > 0) {
+        if (!_db_cache) _db_cache = {};
+        _db_cache.invItems = config.invItems;
+        _db_cache.invStock = config.invStock || _db_cache.invStock || {};
+        _db_cache.invHistory = config.invHistory || _db_cache.invHistory || [];
+      }
+    } catch(e) { console.warn('invItems load failed:', e); }
     document.getElementById('hdrName').textContent = user.name;
     renderHeaderAvatar(user);
     checkReportGate();
@@ -5860,6 +5870,16 @@ async function doOwnerLogin() {
     const user = users.find(u => u.role === 'owner' && (u.id === id || u.name === id) && u.pass === pass);
     if (!user) { showToast('管理者IDまたはパスワードが違います'); return; }
     currentUser = user;
+    // ★ invItemsをSupabaseから取得してキャッシュ更新
+    try {
+      const config = await _loadConfig();
+      if (config && config.invItems && config.invItems.length > 0) {
+        if (!_db_cache) _db_cache = {};
+        _db_cache.invItems = config.invItems;
+        _db_cache.invStock = config.invStock || _db_cache.invStock || {};
+        _db_cache.invHistory = config.invHistory || _db_cache.invHistory || [];
+      }
+    } catch(e) { console.warn('invItems load failed:', e); }
     document.getElementById('hdrName').textContent = user.name;
     renderHeaderAvatar(user);
     checkReportGate();
