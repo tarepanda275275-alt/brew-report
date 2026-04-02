@@ -6018,15 +6018,23 @@ function confirmLogout() {
   currentUser = null;
   formData = {};
   stepIdx = 0;
-  _recordsLoaded = false; // ★ ログアウト時にリセット
+  _recordsLoaded = false;
   document.getElementById('mainApp').classList.remove('active');
   document.getElementById('reportGate').classList.remove('active');
   document.getElementById('loginScreen').classList.add('active');
   const pi = document.getElementById('passInput');
   if (pi) pi.value = '';
   initData();
-buildLoginChips();
   switchLoginTab('staff');
+  // Supabaseからユーザーを再取得してチップを更新
+  _loadUsersFromSupabase().then(users => {
+    if (users && users.length > 0) {
+      if (!_db_cache) _db_cache = {};
+      _db_cache.users = users;
+      _db_cache._brewUsers = users;
+    }
+    buildLoginChips();
+  }).catch(() => buildLoginChips());
 }
 function checkReportGate() {
   // 在庫管理版ではレポートゲートは不要
