@@ -4113,7 +4113,7 @@ function renderStockInput() {
               </div>
             </div>` : `<input type="hidden" id="opened_${item.id}" value="0">`}
             <div>
-              <div class="bags-label">📦 未開封（袋数）${item.qtyPerBag ? `<span style="font-size:10px;color:var(--caramel);margin-left:4px;">1袋=${item.qtyPerBag}${item.unit}</span>` : `<span style="font-size:10px;color:var(--text3);margin-left:4px;">※設定タブで1袋入数を設定できます</span>`}</div>
+              <div class="bags-label">📦 未開封（袋数）<span onclick="openQtyPerBagModal('${item.id}','${item.unit}')" style="font-size:10px;color:var(--caramel);margin-left:4px;cursor:pointer;text-decoration:underline;">${item.qtyPerBag ? `1袋=${item.qtyPerBag}${item.unit} ✏️` : `1袋入数を設定する ✏️`}</span></div>
               <div class="qty-input-row" style="gap:6px;">
                 <button class="qty-stepper" onclick="stepQtyAndCalc('bags_${item.id}','total_${item.id}',-1,${item.qtyPerBag||0})">－</button>
                 <input type="number" id="bags_${item.id}" min="0" inputmode="numeric"
@@ -4202,6 +4202,49 @@ function selectFloorLevel(btn, inputId, totalId, floorId, openedId, bagsId, qtyP
   }
   calcTotal3(totalId, floorId, openedId, bagsId, qtyPerBag, unit);
 }
+async function openQtyPerBagModal(itemId, unit) {
+  const db = getDB();
+  const item = (db.invItems || []).find(i => i.id === itemId);
+  if (!item) return;
+  const cur = item.qtyPerBag || '';
+  const modal = document.createElement('div');
+  modal.id = 'qtyPerBagModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:20px;padding:24px;width:100%;max-width:320px;">
+      <div style="font-size:15px;font-weight:900;color:var(--text);margin-bottom:16px;">📦 1袋あたりの入数設定</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">${item.name}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <span style="font-size:13px;color:var(--text3);">1袋 =</span>
+        <input type="number" id="qtyPerBagInput" value="${cur}" min="0" inputmode="decimal"
+          style="flex:1;height:44px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:0 12px;font-size:16px;font-weight:700;color:var(--text);font-family:inherit;outline:none;">
+        <span style="font-size:13px;color:var(--text3);">${unit}</span>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('qtyPerBagModal').remove()" style="flex:1;padding:12px;background:var(--surface3);border:none;border-radius:12px;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">キャンセル</button>
+        <button onclick="saveQtyPerBag('${itemId}')" style="flex:1;padding:12px;background:var(--caramel);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">保存する</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  setTimeout(() => document.getElementById('qtyPerBagInput')?.focus(), 100);
+}
+
+async function saveQtyPerBag(itemId) {
+  const val = parseFloat(document.getElementById('qtyPerBagInput')?.value || '0');
+  const db = getDB();
+  const item = (db.invItems || []).find(i => i.id === itemId);
+  if (!item) return;
+  item.qtyPerBag = val > 0 ? val : null;
+  _db_cache = db;
+  try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  document.getElementById('qtyPerBagModal')?.remove();
+  showToast('✅ 1袋入数を保存しました');
+  saveInvToSupabase(db).catch(e => console.warn(e));
+  // 在庫入力画面を再描画
+  renderStockInput();
+}
+
 function selectRoastBtn(btn, itemId, idx) {
   const container = btn.closest('.roast-entry');
   container.querySelectorAll('button[data-roast]').forEach(b => {
