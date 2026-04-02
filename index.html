@@ -6594,43 +6594,6 @@ function setTlStoreFilter(store, role) {
   renderTimeline(role);
 }
 
-  all.forEach(item => {
-    const storeIdx = STORES.indexOf(item.store);
-    const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
-
-    // 日付区切り
-    if (item.date !== lastDate) {
-      const dateObj = new Date(item.date + 'T00:00:00');
-      const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', weekday:'short' });
-      html += `<div class="tl-date-sep">${dateLabel}</div>`;
-      lastDate = item.date;
-    }
-
-    if (item.type === 'diary') {
-      const d = item.data;
-      const sections = [
-        { icon:'☕', label:'エピソード', val: d.episode },
-        { icon:'⭐', label:'できたこと', val: d.achievement },
-        { icon:'💡', label:'改善点', val: d.improvement },
-        { icon:'🔁', label:'引き継ぎ', val: d.handover },
-        { icon:'📦', label:'在庫メモ', val: d.stockNote },
-      ].filter(s => s.val);
-
-      html += `<div class="tl-item">
-        <div class="tl-dot" style="background:${col};"></div>
-        <div class="tl-body">
-          <div class="tl-meta">
-            <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
-            <span class="tl-staff">${item.staff}</span>
-            <span class="tl-badge tl-badge-diary">日誌</span>
-          </div>
-          ${sections.length > 0 ? sections.map(s => `
-            <div class="tl-section">
-              <span class="tl-section-icon">${s.icon}</span>
-              <div class="tl-section-text">${escHtml(s.val).replace(/<br>/g,' ')}</div>
-            </div>`).join('') : '<div style="font-size:12px;color:var(--text3);">内容なし</div>'}
-        </div>
-      </div>`;
 // ===== ボード（タスク・改善点ダッシュボード） =====
 function renderBoard(role) {
   const elId = role === 'owner' ? 'boardOwnerContent' : 'boardStaffContent';
