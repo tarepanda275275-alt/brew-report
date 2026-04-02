@@ -6212,10 +6212,18 @@ function enterApp() {
   document.getElementById('reportGate').classList.remove('active');
   document.getElementById('mainApp').classList.add('active');
   setupNav();
-  // ★ ログイン後にrecordsを非同期で取得（Egress削減のため起動時は取得しない）
   _recordsLoaded = false;
+
+  // ★ Supabaseから最新のinvItemsを取得してキャッシュを更新
+  _loadConfig().then(config => {
+    if (config && config.invItems && config.invItems.length > 0) {
+      const db = getDB();
+      db.invItems = config.invItems;
+      _db_cache = db;
+    }
+  }).catch(() => {});
+
   ensureRecordsLoaded().then(() => {
-    // records取得完了後に現在の画面を再描画
     if (currentUser.role === 'owner') {
       renderDiaryOwner();
     } else {
