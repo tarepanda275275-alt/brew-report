@@ -5550,7 +5550,17 @@ async function updateItemThreshold(itemId, store, val) {
   saveInvToSupabase(db).catch(e => console.warn(e));
 }
 
-function showAlertThresholdModal(store) {
+async function showAlertThresholdModal(store) {
+  // 最新のinvItemsをSupabaseから取得
+  try {
+    const config = await _loadConfig();
+    if (config && config.invItems && config.invItems.length > 0) {
+      const db = getDB();
+      db.invItems = config.invItems;
+      _db_cache = db;
+    }
+  } catch(e) { console.warn('invItems reload failed:', e); }
+
   const items = getInvItems();
   const modal = document.createElement('div');
   modal.id = 'alertThreshModal';
