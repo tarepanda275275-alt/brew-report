@@ -4428,6 +4428,15 @@ async function submitInvSnapshot() {
     if (!isNaN(floorVal)) db.invStock[store][floorKey] = Math.max(0, floorVal);
     if (floorLabel) db.invStock[store][floorLabelKey] = floorLabel;
 
+    // cup/drinkの場合は合計をqtyとして保存
+    if (item.category === 'cup' || item.category === 'drink') {
+      const f = isNaN(floorVal) ? (db.invStock[store][floorKey] || 0) : Math.max(0, floorVal);
+      const o = isNaN(openedVal) ? (db.invStock[store][openedKey] || 0) : Math.max(0, openedVal);
+      const b = isNaN(bagsVal) ? (db.invStock[store][bagsKey] || 0) : Math.max(0, bagsVal);
+      const qpb = item.qtyPerBag || 0;
+      db.invStock[store][item.id] = f + o + (b * qpb);
+    }
+
     const histEntry = {
       id: date + '_' + item.id,
       date, time, store,
