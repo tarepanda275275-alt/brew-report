@@ -6478,16 +6478,17 @@ function renderTimeline(role) {
   const diary  = getDB().invDiary  || [];
   const hist   = getDB().invHistory || [];
   const items  = getInvItems();
+  const filterStore = window._tlStoreFilter || '全店舗';
 
   // 日誌エントリ → TLアイテム化
-  const diaryItems = diary.map(d => ({
+  let diaryItems = diary.map(d => ({
     type: 'diary', ts: d.updatedAt || (d.date + 'T00:00:00'),
     date: d.date, store: d.store, staff: d.staff, data: d,
   }));
 
   // 在庫履歴は店舗×日付×スタッフでまとめて1件だけ表示
   const stockSeen = new Set();
-  const stockItems = hist.slice(0, 500).reduce((acc, h) => {
+  let stockItems = hist.slice(0, 500).reduce((acc, h) => {
     const key = `${h.store}__${h.date}__${h.staff}`;
     if (!stockSeen.has(key)) {
       stockSeen.add(key);
@@ -6499,18 +6500,91 @@ function renderTimeline(role) {
     return acc;
   }, []);
 
+  // 店舗フィルター
+  if (filterStore !== '全店舗') {
+    diaryItems = diaryItems.filter(i => i.store === filterStore);
+    stockItems = stockItems.filter(i => i.store === filterStore);
+  }
+
   // 合体・降順ソート・最新100件
   const all = [...diaryItems, ...stockItems]
     .sort((a, b) => b.ts.localeCompare(a.ts))
     .slice(0, 100);
 
+  // フィルタータブ
+  const filterTabsHTML = ['全店舗', ...STORES].map(s =>
+    `<button class="tl-filter-tab${s === filterStore ? ' active' : ''}" onclick="setTlStoreFilter('${s}','${role}')">${s.replace('号店','号')}</button>`
+  ).join('');
+
   if (all.length === 0) {
-    el.innerHTML = `<div class="tl-empty"><div style="font-size:36px;">📰</div><div>まだ記録がありません</div></div>`;
+    el.innerHTML = `<div class="tl-wrap"><div style="padding:12px 16px;">${filterTabsHTML.replace(/button/g,'button style="margin:2px;"')}</div><div class="tl-empty"><div style="font-size:36px;">📰</div><div>まだ記録がありません</div></div></div>`;
     return;
   }
 
   let lastDate = '';
-  let html = '<div class="tl-wrap">';
+  let html = `<div class="tl-wrap"><div style="display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px 4px;">${filterTabsHTML}</div>`;
+
+  all.forEach(item => {
+    const storeIdx = STORES.indexOf(item.store);
+    const col = STORE_COLORS[storeIdx] || 'var(--caramel)';
+
+    // 日付区切り
+    if (item.date !== lastDate) {
+      const dateObj = new Date(item.date + 'T00:00:00');
+      const dateLabel = dateObj.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', weekday:'short' });
+      html += `<div class="tl-date-sep">${dateLabel}</div>`;
+      lastDate = item.date;
+    }
+
+    if (item.type === 'diary') {
+      const d = item.data;
+      const sections = [
+        { icon:'☕', label:'エピソード', val: d.episode },
+        { icon:'⭐', label:'できたこと', val: d.achievement },
+        { icon:'💡', label:'改善点', val: d.improvement },
+        { icon:'🔁', label:'引き継ぎ', val: d.handover },
+        { icon:'📦', label:'在庫メモ', val: d.stockNote },
+      ].filter(s => s.val);
+
+      html += `<div class="tl-item">
+        <div class="tl-dot" style="background:${col};"></div>
+        <div class="tl-body">
+          <div class="tl-meta">
+            <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
+            <span class="tl-staff">${item.staff}</span>
+            <span class="tl-badge tl-badge-diary">日誌</span>
+          </div>
+          ${sections.length > 0 ? sections.map(s => `
+            <div class="tl-section">
+              <span class="tl-section-icon">${s.icon}</span>
+              <div class="tl-section-text" style="white-space:pre-wrap;">${escHtml(s.val).replace(/&lt;br&gt;/g,'\n').replace(/<br>/g,'\n')}</div>
+            </div>`).join('') : '<div style="font-size:12px;color:var(--text3);">内容なし</div>'}
+        </div>
+      </div>`;
+    } else {
+      const h = item.data;
+      html += `<div class="tl-item">
+        <div class="tl-dot" style="background:${col};opacity:0.5;"></div>
+        <div class="tl-body">
+          <div class="tl-meta">
+            <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
+            <span class="tl-staff">${item.staff}</span>
+            <span class="tl-badge" style="background:rgba(200,131,58,0.1);color:var(--caramel);">📦 在庫入力</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;">${h.time || ''} に在庫を更新しました${h.note ? `・📝 ${escHtml(h.note)}` : ''}</div>
+        </div>
+      </div>`;
+    }
+  });
+
+  html += '</div><div style="height:60px;"></div>';
+  el.innerHTML = html;
+}
+
+function setTlStoreFilter(store, role) {
+  window._tlStoreFilter = store;
+  renderTimeline(role);
+}
 
   all.forEach(item => {
     const storeIdx = STORES.indexOf(item.store);
@@ -6549,39 +6623,6 @@ function renderTimeline(role) {
             </div>`).join('') : '<div style="font-size:12px;color:var(--text3);">内容なし</div>'}
         </div>
       </div>`;
-    } else {
-      const h = item.data;
-      html += `<div class="tl-item">
-        <div class="tl-dot" style="background:${col};opacity:0.5;"></div>
-        <div class="tl-body">
-          <div class="tl-meta">
-            <span class="tl-store" style="color:${col};">${item.store.replace('号店','')}</span>
-            <span class="tl-staff">${item.staff}</span>
-            <span class="tl-badge" style="background:rgba(200,131,58,0.1);color:var(--caramel);">📦 在庫入力</span>
-          </div>
-          <div style="font-size:12px;color:var(--text3);margin-top:4px;">${h.time || ''} に在庫を更新しました${h.note ? `・📝 ${escHtml(h.note)}` : ''}</div>
-        </div>
-      </div>`;
-    }
-  });
-
-  html += '</div><div style="height:60px;"></div>';
-  el.innerHTML = `
-    <div class="page-top-bar" style="border-bottom:2px solid var(--caramel);">
-      <div class="page-top-left">
-        <div class="page-top-date-badge" style="background:var(--caramel);">
-          <span class="page-top-day">📰</span>
-          <span class="page-top-month">タイムライン</span>
-        </div>
-        <div>
-          <div class="page-top-store" style="color:var(--caramel);">全店舗</div>
-          <div class="page-top-staff">最新100件</div>
-        </div>
-      </div>
-    </div>
-    ${html}`;
-}
-
 // ===== ボード（タスク・改善点ダッシュボード） =====
 function renderBoard(role) {
   const elId = role === 'owner' ? 'boardOwnerContent' : 'boardStaffContent';
